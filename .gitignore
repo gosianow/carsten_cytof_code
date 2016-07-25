@@ -1,0 +1,10 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!README.md
+!pipeline.R
+
+# ...even if they are in subdirectories
+!*/
