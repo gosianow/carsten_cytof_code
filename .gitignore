@@ -5,6 +5,7 @@
 !.gitignore
 !README.md
 !*.R
+!*.sh
 
 # ...even if they are in subdirectories
 !*/
