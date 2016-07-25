@@ -4,7 +4,7 @@
 # But not these files...
 !.gitignore
 !README.md
-!pipeline.R
+!*.R
 
 # ...even if they are in subdirectories
 !*/
