@@ -516,7 +516,6 @@ samp <- rep( names(fcsT), sapply(fcsT,nrow) )
 inds <- split(1:nrow(el), samp)  # create indices by sample
 
 ts <- table(samp)
-#ns <- pmin(ts,5000)  # per-sample, how many cells to downsample
 (ns <- pmin(ts, tsne_pmin))  # per-sample, how many cells to downsample
 
 # get subsampled indices

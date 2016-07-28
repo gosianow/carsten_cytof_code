@@ -1,0 +1,169 @@
+##############################################################################
+## <<02_flowsom.R>>
+
+# BioC 3.3
+# Created 27 July 2016
+# Updated 
+
+##############################################################################
+Sys.time()
+##############################################################################
+
+# Load packages
+library(flowCore)
+library(gdata)
+library(FlowSOM)
+library(Repitools)
+library(gplots)
+library(ggplot2)
+library(plyr)
+library(reshape2)
+library(coop)
+library(pheatmap)
+library(RColorBrewer)
+
+##############################################################################
+# Test arguments
+##############################################################################
+
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+# pca_score_cutoff=3
+# pca_skip_top=0
+# flowsom_prefix=''
+
+##############################################################################
+# Read in the arguments
+##############################################################################
+
+args <- (commandArgs(trailingOnly = TRUE))
+for (i in 1:length(args)) {
+  eval(parse(text = args[[i]]))
+}
+
+print(args)
+
+##############################################################################
+
+setwd(rwd)
+
+### Set seed to be reproducible with FlowSOM clustering
+options(myseed = 1234)
+set.seed(1234)
+
+
+# ------------------------------------------------------------
+# define directories
+# ------------------------------------------------------------
+
+fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
+pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
+hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
+
+
+# ------------------------------------------------------------
+# Load data
+# ------------------------------------------------------------
+
+# read metadata
+md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+
+# read panel, pick which columns to use
+panel <- read.xls("panel.xlsx",stringsAsFactors=FALSE)
+
+
+# define FCS file names
+f <- file.path(fcsDir, md$filename)
+names(f) <- md$shortname
+
+
+# read raw FCS files in
+fcs <- lapply(f, read.FCS)
+
+
+# get isotope mass of columns in fcs files.. to match against the panel
+panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
+
+
+# cols - get fcs columns that are in the panel with transform = 1
+cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
+
+# Antigen - get the antigen name
+m <- match(panel_mass, panel$Isotope)
+
+fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
+
+fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
+
+
+# arc-sin-h the columns specific 
+fcsT <- lapply(fcs, function(u) {
+  e <- exprs(u)
+  e[,cols] <- asinh( e[,cols] / 5 )
+  exprs(u) <- e
+  u
+})
+
+
+
+# ------------------------------------------------------------
+# Load more data
+# ------------------------------------------------------------
+
+
+prs <- read.table(file.path(pcaDir,"princompscore_by_sample.xls"), header = TRUE, sep = "\t", as.is = TRUE)
+prs <- prs[order(prs$avg_score, decreasing = TRUE), ]
+
+# -------------------------------------
+# run FlowSOM and make heatmaps
+# -------------------------------------
+
+
+# selected columns with PCA scores higher than a cutoff but skipp top X scores 
+
+if(pca_skip_top > 0)
+  prs <- prs[-c(1:pca_skip_top), ]
+
+scols <- which(colnames(fcsT[[1]]) %in% prs[prs$avg_score > pca_score_cutoff, "mass"])
+
+
+# Number of clusters
+nmetaclusts <- 20
+
+set.seed(1234)
+
+fs <- as(fcsT,"flowSet")
+
+system.time( fsom <- FlowSOM::ReadInput(fs, transform = FALSE, scale = FALSE) )
+system.time( fsom <- FlowSOM::BuildSOM(fsom, colsToUse = scols) )
+system.time( fsom_mc <- FlowSOM::metaClustering_consensus(fsom$map$codes, k=nmetaclusts) )
+
+# get cluster ids
+clust <- fsom_mc[fsom$map$mapping[,1]]
+# get cluster frequencies
+freq_clust <- table(clust)
+
+
+
+
+### Save clustering results
+
+save(fsom, file = file.path(hmDir, paste0(flowsom_prefix, "fsom.rda")))
+save(fsom_mc, file = file.path(hmDir, paste0(flowsom_prefix, "fsom_mc.rda")))
+
+
+freq_clust_out <- data.frame(cluster = names(freq_clust), freq = as.numeric(freq_clust))
+write.table(freq_clust_out, file=file.path(hmDir, paste0(flowsom_prefix, "cluster_counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+clust_out <- data.frame(cluster = clust, stringsAsFactors = FALSE)
+write.table(clust_out, file = file.path(hmDir, paste0(flowsom_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+scols_out <- data.frame(clustering_observables = colnames(fcsT[[1]])[scols], stringsAsFactors = FALSE)
+write.table(scols_out, file = file.path(hmDir, paste0(flowsom_prefix, "clustering_observables.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+labels <- data.frame(cluster = 1:nmetaclusts, label = sprintf("%02d", 1:nmetaclusts))
+write.table(labels, file = file.path(hmDir, paste0(flowsom_prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+sessionInfo()
