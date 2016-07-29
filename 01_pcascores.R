@@ -23,7 +23,7 @@ library(coop)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02'
 
 
 ##############################################################################
@@ -123,7 +123,10 @@ prs <- data.frame(mass = rownames(prs), marker = fcs_panel$Antigen[cols], avg_sc
 write.table(prs, file = file.path(pcaDir,"princompscore_by_sample.xls"), sep="\t", row.names=FALSE, quote=FALSE)
 
 
+
+
 ### Plot chanel distributions
+
 pdf(file.path(pcaDir,"channel_distributions.pdf"))
 
 m <- match(panel_mass[cols], panel$Isotope)
@@ -157,4 +160,42 @@ dev.off()
 
 
 
+
+
+### Plot chanel distributions with ggplot - not finished
+
+# samp <- rep( names(fcsT), sapply(fcsT, nrow) )
+# 
+# e <- do.call("rbind",es)
+# colnames(e) <- fcs_panel$Antigen[cols]
+# 
+# 
+# ggdf <- data.frame(samp = samp, e)
+# 
+# 
+# pdf(file.path(pcaDir,"channel_distributions.pdf"))
+# for (i in seq(length(ggp)))
+#   print(ggp[[i]])
+# dev.off()
+
+
+
+
+
 sessionInfo()
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################
+### Done!
+################################

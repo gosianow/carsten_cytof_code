@@ -27,9 +27,8 @@ library(RColorBrewer)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# pca_score_cutoff=3
-# pca_skip_top=0
 # flowsom_prefix=''
+# path_clustering_observables='pca1_clustering_observables.xls'
 
 ##############################################################################
 # Read in the arguments
@@ -45,11 +44,14 @@ print(args)
 ##############################################################################
 
 setwd(rwd)
+rand_seed <- 1234
+
 
 ### Set seed to be reproducible with FlowSOM clustering
-options(myseed = 1234)
-set.seed(1234)
+options(myseed = rand_seed)
+set.seed(rand_seed)
 
+getOption("myseed")
 
 # ------------------------------------------------------------
 # define directories
@@ -109,27 +111,29 @@ fcsT <- lapply(fcs, function(u) {
 # Load more data
 # ------------------------------------------------------------
 
+if(!grepl("/", path_clustering_observables)){
+  clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
+}else{
+  clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
+}
 
-prs <- read.table(file.path(pcaDir,"princompscore_by_sample.xls"), header = TRUE, sep = "\t", as.is = TRUE)
-prs <- prs[order(prs$avg_score, decreasing = TRUE), ]
+
+clust_observ <- clust_observ[, 1]
+
 
 # -------------------------------------
 # run FlowSOM and make heatmaps
 # -------------------------------------
 
+# selected columns for clustering 
 
-# selected columns with PCA scores higher than a cutoff but skipp top X scores 
-
-if(pca_skip_top > 0)
-  prs <- prs[-c(1:pca_skip_top), ]
-
-scols <- which(colnames(fcsT[[1]]) %in% prs[prs$avg_score > pca_score_cutoff, "mass"])
+scols <- which(colnames(fcsT[[1]]) %in% clust_observ)
 
 
 # Number of clusters
 nmetaclusts <- 20
 
-set.seed(1234)
+set.seed(rand_seed)
 
 fs <- as(fcsT,"flowSet")
 
@@ -139,6 +143,7 @@ system.time( fsom_mc <- FlowSOM::metaClustering_consensus(fsom$map$codes, k=nmet
 
 # get cluster ids
 clust <- fsom_mc[fsom$map$mapping[,1]]
+
 # get cluster frequencies
 freq_clust <- table(clust)
 
@@ -154,12 +159,9 @@ save(fsom_mc, file = file.path(hmDir, paste0(flowsom_prefix, "fsom_mc.rda")))
 freq_clust_out <- data.frame(cluster = names(freq_clust), freq = as.numeric(freq_clust))
 write.table(freq_clust_out, file=file.path(hmDir, paste0(flowsom_prefix, "cluster_counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
+
 clust_out <- data.frame(cluster = clust, stringsAsFactors = FALSE)
 write.table(clust_out, file = file.path(hmDir, paste0(flowsom_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
-scols_out <- data.frame(clustering_observables = colnames(fcsT[[1]])[scols], stringsAsFactors = FALSE)
-write.table(scols_out, file = file.path(hmDir, paste0(flowsom_prefix, "clustering_observables.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 labels <- data.frame(cluster = 1:nmetaclusts, label = sprintf("%02d", 1:nmetaclusts))
@@ -167,3 +169,19 @@ write.table(labels, file = file.path(hmDir, paste0(flowsom_prefix, "clustering_l
 
 
 sessionInfo()
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################
+### Done!
+################################

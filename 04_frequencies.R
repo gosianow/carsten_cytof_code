@@ -187,3 +187,19 @@ write.table(freq_out, file=file.path(frqDir,paste0(prefix, "counts.xls")), row.n
 
 
 sessionInfo()
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################
+### Done!
+################################

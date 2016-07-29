@@ -52,6 +52,8 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # read cluster merging file
 cm <- read.xls(path_cluster_merging)
 
+cm
+
 # remove spaces in labels bcs they are problematic...
 cm$label <- factor(cm$label, labels = gsub(" ", "_", levels(cm$label))) 
 
@@ -104,3 +106,19 @@ write.table(labels, file = file.path(hmDir, paste0(merging_prefix, "clustering_l
 
 
 sessionInfo()
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################
+### Done!
+################################

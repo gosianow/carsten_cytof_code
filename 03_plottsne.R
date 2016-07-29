@@ -10,20 +10,15 @@ Sys.time()
 ##############################################################################
 
 # Load packages
-library(flowCore)
 library(gdata)
-library(FlowSOM)
 library(Repitools)
 library(gplots)
 library(ggplot2)
 library(plyr)
-library(reshape2)
-library(coop)
-library(pheatmap)
+library(reshape2) # melt
 library(RColorBrewer)
-library(ggdendro)
 library(Rtsne)
-
+library(coop) # cosine
 
 ##############################################################################
 # Test arguments
@@ -36,6 +31,8 @@ library(Rtsne)
 # path_clustering='pca1_cl20_clustering.xls'
 # path_clustering_labels='pca1_cl20_clustering_labels.xls'
 # tsne_cmin=1000
+# pdf_width=15
+# pdf_height=10
 
 ##############################################################################
 # Read in the arguments
@@ -82,42 +79,6 @@ sneDir <- "040_tsnemaps"; if( !file.exists(sneDir) ) dir.create(sneDir)
 # read metadata
 md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
 
-# read panel, pick which columns to use
-panel <- read.xls("panel.xlsx",stringsAsFactors=FALSE)
-
-
-# define FCS file names
-f <- file.path(fcsDir, md$filename)
-names(f) <- md$shortname
-
-
-# read raw FCS files in
-fcs <- lapply(f, read.FCS)
-
-
-# get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
-
-
-# cols - get fcs columns that are in the panel with transform = 1
-cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
-
-# Antigen - get the antigen name
-m <- match(panel_mass, panel$Isotope)
-
-fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
-
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[,cols] <- asinh( e[,cols] / 5 )
-  exprs(u) <- e
-  u
-})
-
 
 # ------------------------------------------------------------
 # Load cluster data
@@ -147,6 +108,7 @@ rtsne_data <- read.table(file.path(sneDir, path_rtsne_data), header = TRUE, sep 
 # tSNE plots
 # ------------------------------------------------------------
 
+# get clustering for cells that were used in tSNE
 clust <- clust[rtsne_data$cell_index]
 
 ggdf <- data.frame(tSNE1 = rtsne_out$Y[,1], tSNE2 = rtsne_out$Y[,2], cluster = clust, sample = rtsne_data$sample_name)
@@ -162,6 +124,12 @@ ggdf$cluster <- factor(ggdf$cluster, levels = levels(labels$label))
 
 
 
+### Skipp drop cluster
+
+ggdf <- ggdf[ggdf$cluster != "drop", ]
+ggdf$cluster <- factor(ggdf$cluster)
+
+
 ### Plot of tsne - all cells, all clusters
 
 ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
@@ -172,10 +140,10 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   theme(strip.text.x = element_text(size=15, face="bold"),
     axis.title.x  = element_text(size=15, face="bold"),
     axis.title.y  = element_text(size=15, face="bold")) +
-  scale_color_manual(values = tsne_colors) +
+  scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
-pdf(file.path(sneDir, paste0(prefix, "tSNE.pdf")), w=15, h=10)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNE.pdf")), width = pdf_width, height = pdf_height)                 
 print(ggp)
 dev.off()
 
@@ -200,7 +168,7 @@ ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
   scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) + 
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
-pdf(file.path(sneDir, paste0(prefix, "tSNE_subset.pdf")), w=15,h=10)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNE_subset.pdf")), width = pdf_width, height = pdf_height)                 
 print(ggp)
 dev.off()
 
@@ -244,10 +212,9 @@ ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
 
-pdf(file.path(sneDir, paste0(prefix, "tSNE_filtered.pdf")), w=15, h=10)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNE_filtered.pdf")), width = pdf_width, height = pdf_height)                 
 print(ggp)
 dev.off()
-
 
 
 
@@ -269,8 +236,6 @@ sessionInfo()
 
 
 
-
-
-
-
-
+################################
+### Done!
+################################

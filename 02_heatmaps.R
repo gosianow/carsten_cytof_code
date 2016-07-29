@@ -29,9 +29,10 @@ library(ggdendro)
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 # heatmap_prefix='pca1_cl20_'
-# path_clustering_observables='pca1_cl20_clustering_observables.xls'
+# path_clustering_observables='pca1_clustering_observables.xls'
 # path_clustering='pca1_cl20_clustering.xls'
 # path_clustering_labels='pca1_cl20_clustering_labels.xls'
+# path_pcascore='princompscore_by_sample.xls'
 # xspace=2
 
 ##############################################################################
@@ -110,10 +111,22 @@ fcsT <- lapply(fcs, function(u) {
 # Load more data
 # ------------------------------------------------------------
 
-prs <- read.table(file.path(pcaDir,"princompscore_by_sample.xls"), header = TRUE, sep = "\t", as.is = TRUE)
+
+if(!grepl("/", path_pcascore)){
+  prs <- read.table(file.path(pcaDir, path_pcascore), header = TRUE, sep = "\t", as.is = TRUE)
+}else{
+  prs <- read.table(path_pcascore, header = TRUE, sep = "\t", as.is = TRUE)
+}
+
 rownames(prs) <- prs$mass
 
-clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
+
+if(!grepl("/", path_clustering_observables)){
+  clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
+}else{
+  clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
+}
+
 clust_observ <- clust_observ[, 1]
 
 
@@ -321,7 +334,7 @@ pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYl
 
 
 # ------------------------------------------------------------
-# ggplot tile + ggdendrogram
+# ggplot tile
 # ------------------------------------------------------------
 
 ggdf <- data.frame(cluster = labels$label, cbind(al[,-1], alX[,-1]))
@@ -375,8 +388,8 @@ dev.off()
 
 
 # ------------------------------------------------------------
-# ggdendogram
-
+# ggplot tile + ggdendogram - not finished yet
+# ------------------------------------------------------------
 
 
 # ggp <- ggdendrogram(cluster_rows, rotate = FALSE, size = 2) 
@@ -425,3 +438,19 @@ dev.off()
 
 
 sessionInfo()
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################
+### Done!
+################################

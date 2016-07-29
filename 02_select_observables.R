@@ -1,8 +1,8 @@
 ##############################################################################
-## <<03_runtsne.R>>
+## <<02_select_observables.R>>
 
 # BioC 3.3
-# Created 28 July 2016
+# Created 27 July 2016
 # Updated 
 
 ##############################################################################
@@ -12,17 +12,11 @@ Sys.time()
 # Load packages
 library(flowCore)
 library(gdata)
-library(FlowSOM)
 library(Repitools)
 library(gplots)
 library(ggplot2)
 library(plyr)
 library(reshape2)
-library(coop)
-library(pheatmap)
-library(RColorBrewer)
-library(ggdendro)
-library(Rtsne)
 
 
 ##############################################################################
@@ -30,9 +24,9 @@ library(Rtsne)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# path_clustering_observables='pca1_cl20_clustering_observables.xls'
-# tsne_prefix='pca1_cl20_'
-# tsne_pmin=1500
+# pca_score_cutoff=3
+# pca_skip_top=0
+# observ_prefix='pca1_'
 
 ##############################################################################
 # Read in the arguments
@@ -44,18 +38,12 @@ for (i in 1:length(args)) {
 }
 
 print(args)
-print(rwd)
-print(path_clustering_observables)
-print(tsne_prefix)
-print(tsne_pmin)
 
 ##############################################################################
 
 setwd(rwd)
-rand_seed <- 1234
 
-prefix <- tsne_prefix
-
+prefix <- observ_prefix
 
 # ------------------------------------------------------------
 # define directories
@@ -64,7 +52,6 @@ prefix <- tsne_prefix
 fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
 pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
 hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
-sneDir <- "040_tsnemaps"; if( !file.exists(sneDir) ) dir.create(sneDir)
 
 
 # ------------------------------------------------------------
@@ -111,114 +98,38 @@ fcsT <- lapply(fcs, function(u) {
 })
 
 
+
 # ------------------------------------------------------------
 # Load more data
 # ------------------------------------------------------------
 
-if(!grepl("/", path_clustering_observables)){
-  clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
-}else{
-  clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
-}
-clust_observ <- clust_observ[, 1]
 
-# ------------------------------------------------------------
-
-### Indeces of observables used for clustering 
-
-scols <- which(fcs_panel$colnames %in% clust_observ)
+prs <- read.table(file.path(pcaDir,"princompscore_by_sample.xls"), header = TRUE, sep = "\t", as.is = TRUE)
+prs <- prs[order(prs$avg_score, decreasing = TRUE), ]
 
 
-# ---------------------------------------
-# tSNE analyses
-# ---------------------------------------
+# -------------------------------------
+# selected observables with PCA scores higher than a cutoff but skipp top X scores 
+# -------------------------------------
 
 
-# re-extract the data as list of tables
-es <- lapply(fcsT, function(u) {
-  exprs(u)[,scols]
-})
+if(pca_skip_top > 0)
+  prs <- prs[-c(1:pca_skip_top), ]
 
-e <- do.call("rbind",es)
-colnames(e) <- fcs_panel$Antigen[scols]
+scols <- which(colnames(fcsT[[1]]) %in% prs[prs$avg_score > pca_score_cutoff, "mass"])
 
+clustering_observables <- colnames(fcsT[[1]])[scols]
 
 
-# normalize to 0-1
-el <- e
-rng <- apply(el,2,quantile,p=c(.01,.99))
-for(i in 1:ncol(el)) {
-  el[,i] <- (el[,i]-rng[1,i])/(rng[2,i]-rng[1,i])
-}
-el[el<0] <- 0
-el[el>1] <- 1
+### Save the observables
 
-
-
-# find duplicates
-dups <- duplicated(el)  
-w <- which(!dups)
-
-
-### Data subsampling
-samp <- rep( names(fcsT), sapply(fcsT,nrow) )
-
-# create indices by sample
-inds <- split(1:nrow(el), samp) 
-
-# per-sample, how many cells to downsample
-ts <- table(samp)
-ns <- pmin(ts, tsne_pmin)  
-
-
-# get subsampled indices
-subs <- mapply(function(u,v) {
-  set.seed(rand_seed)
-  s <- sample(u, ns[v], replace = FALSE)
-  intersect(s,w)
-}, inds, names(inds))
-
-
-inds2keep <- c(unlist(subs))
-
-el_sub <- el[inds2keep, ]
-
-
-
-### Run tSNE
-set.seed(rand_seed)
-rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
-
-# load(file.path(sneDir, paste0(prefix, "rtsne_out.rda")))
-
-
-### Save rtsne results
-
-rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], el_sub)
-
-write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-
-
-save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out.rda")))
-
-
-
-
+scols_out <- data.frame(clustering_observables = clustering_observables, stringsAsFactors = FALSE)
+write.table(scols_out, file = file.path(hmDir, paste0(prefix, "clustering_observables.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 
 
 sessionInfo()
-
-
-
-
-
-
-
-
-
-
 
 
 
