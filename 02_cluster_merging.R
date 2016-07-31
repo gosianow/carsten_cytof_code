@@ -87,8 +87,13 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 labels
 
 
+if(sum(duplicated(labels$label)) > 0 | sum(duplicated(labels$cluster)) > 0)
+  stop("Wrong merging file")
+
+
 
 ### Save cluster merging results
+
 
 freq_clust_out <- data.frame(cluster = names(freq_clust), freq = as.numeric(freq_clust))
 write.table(freq_clust_out, file=file.path(hmDir, paste0(merging_prefix, "cluster_counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
@@ -98,6 +103,8 @@ write.table(clust_out, file = file.path(hmDir, paste0(merging_prefix, "clusterin
 
 
 write.table(labels, file = file.path(hmDir, paste0(merging_prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
 
 
 
@@ -120,5 +127,5 @@ sessionInfo()
 
 
 ################################
-### Done!
+### 02_cluster_merging done!
 ################################
