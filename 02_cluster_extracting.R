@@ -61,9 +61,6 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # read metadata
 md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
 
-# read panel, pick which columns to use
-panel <- read.xls("panel.xlsx",stringsAsFactors=FALSE)
-
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
@@ -73,29 +70,6 @@ names(f) <- md$shortname
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
-
-# get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
-
-
-# cols - get fcs columns that are in the panel with transform = 1
-cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
-
-# Antigen - get the antigen name
-m <- match(panel_mass, panel$Isotope)
-
-fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
-
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[,cols] <- asinh( e[,cols] / 5 )
-  exprs(u) <- e
-  u
-})
 
 
 # ------------------------------------------------------------

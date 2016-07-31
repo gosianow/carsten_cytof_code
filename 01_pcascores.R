@@ -3,7 +3,7 @@
 
 # BioC 3.3
 # Created 27 July 2016
-# Updated 
+
 
 ##############################################################################
 Sys.time()
@@ -24,7 +24,8 @@ library(coop)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02'
-
+# pcas_prefix=''
+# path_panel='panel.xlsx'
 
 ##############################################################################
 # Read in the arguments
@@ -57,10 +58,6 @@ pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
 # read metadata
 md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
 
-# read panel, pick which columns to use
-panel <- read.xls("panel.xlsx",stringsAsFactors=FALSE)
-
-
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
 names(f) <- md$shortname
@@ -68,6 +65,10 @@ names(f) <- md$shortname
 
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
+
+
+# read panel, pick which columns to use
+panel <- read.xls(path_panel, stringsAsFactors=FALSE)
 
 
 # get isotope mass of columns in fcs files.. to match against the panel
@@ -120,14 +121,14 @@ o <- order(rmprs, decreasing=TRUE)
 
 prs <- data.frame(mass = rownames(prs), marker = fcs_panel$Antigen[cols], avg_score=rmprs, round(prs,3))[o,]
 
-write.table(prs, file = file.path(pcaDir,"princompscore_by_sample.xls"), sep="\t", row.names=FALSE, quote=FALSE)
+write.table(prs, file = file.path(pcaDir, paste0(pcas_prefix, "princompscore_by_sample.xls")), sep="\t", row.names=FALSE, quote=FALSE)
 
 
 
 
 ### Plot chanel distributions
 
-pdf(file.path(pcaDir,"channel_distributions.pdf"))
+pdf(file.path(pcaDir, paste0(pcas_prefix, "channel_distributions.pdf")))
 
 m <- match(panel_mass[cols], panel$Isotope)
 ttl <- panel$Antigen[m]
@@ -173,7 +174,7 @@ dev.off()
 # ggdf <- data.frame(samp = samp, e)
 # 
 # 
-# pdf(file.path(pcaDir,"channel_distributions.pdf"))
+# pdf(file.path(pcaDir, paste0(pcas_prefix, "channel_distributions.pdf")))
 # for (i in seq(length(ggp)))
 #   print(ggp[[i]])
 # dev.off()

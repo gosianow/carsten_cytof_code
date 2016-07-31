@@ -13,7 +13,7 @@ ROUT=$RWD/Rout
 mkdir -p $ROUT
 
 ### PCA scores
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
 tail $ROUT/01_pcascores.Rout
 
 
@@ -28,7 +28,7 @@ tail $ROUT/02_flowsom.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -58,7 +58,7 @@ tail $ROUT/02_cluster_merging.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_mergingNEW_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_mergingNEW_clustering.xls' path_clustering_labels='pca1_mergingNEW_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_mergingNEW_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_mergingNEW_clustering.xls' path_clustering_labels='pca1_mergingNEW_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -82,7 +82,7 @@ tail $ROUT/02_cluster_merging.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_mergingNEW2_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_mergingNEW2_clustering.xls' path_clustering_labels='pca1_mergingNEW2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_mergingNEW2_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_mergingNEW2_clustering.xls' path_clustering_labels='pca1_mergingNEW2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -130,7 +130,7 @@ do
   mkdir -p $ROUT
 
   ### PCA scores
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
   tail $ROUT/01_pcascores.Rout
 
 done
@@ -159,7 +159,7 @@ do
 
 
   ### Heatmaps
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
@@ -180,6 +180,22 @@ do
 done
 
 
+##########################################
+# Analysis of CK_2016-06-23_01 data using panel2
+##########################################
+
+RWD=$RWD_MAIN/CK_2016-06-23_01
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+
+### PCA scores
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='pnl2_' path_panel='panel2.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+tail $ROUT/01_pcascores.Rout
+
+
+
+
+
 ##############################################################################
 # Analysis of CK_2016-06-23_02 data
 ##############################################################################
@@ -190,7 +206,7 @@ ROUT=$RWD/Rout
 mkdir -p $ROUT
 
 ### PCA scores
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
 tail $ROUT/01_pcascores.Rout
 
 
@@ -205,7 +221,7 @@ tail $ROUT/02_flowsom.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls'  path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls'  path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -236,7 +252,7 @@ tail $ROUT/02_cluster_merging.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging2_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging2_clustering.xls' path_clustering_labels='pca1_merging2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging2_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging2_clustering.xls' path_clustering_labels='pca1_merging2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -283,7 +299,7 @@ do
   mkdir -p $ROUT
 
   ### PCA scores
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
   tail $ROUT/01_pcascores.Rout
 
 done
@@ -312,7 +328,7 @@ do
 
 
   ### Heatmaps
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
@@ -342,7 +358,7 @@ ROUT=$RWD/Rout
 mkdir -p $ROUT
 
 ### PCA scores
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
 tail $ROUT/01_pcascores.Rout
 
 
@@ -357,7 +373,7 @@ tail $ROUT/02_flowsom.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls'  path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls'  path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -390,7 +406,7 @@ tail $ROUT/02_flowsom.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca2_cl20_' path_clustering_observables='pca2_clustering_observables.xls' path_clustering='pca2_cl20_clustering.xls'  path_clustering_labels='pca2_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca2_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca2_clustering_observables.xls' path_clustering='pca2_cl20_clustering.xls'  path_clustering_labels='pca2_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -416,7 +432,7 @@ tail $ROUT/02_cluster_merging.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging2_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging2_clustering.xls' path_clustering_labels='pca1_merging2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging2_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging2_clustering.xls' path_clustering_labels='pca1_merging2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -440,7 +456,7 @@ tail $ROUT/02_cluster_merging.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging3_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging3_clustering.xls' path_clustering_labels='pca1_merging3_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging3_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging3_clustering.xls' path_clustering_labels='pca1_merging3_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -463,7 +479,7 @@ ROUT=$RWD/Rout
 mkdir -p $ROUT
 
 ### PCA scores
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
 tail $ROUT/01_pcascores.Rout
 
 
@@ -478,7 +494,7 @@ tail $ROUT/02_flowsom.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -507,7 +523,7 @@ tail $ROUT/02_cluster_merging.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging2_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging2_clustering.xls' path_clustering_labels='pca1_merging2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging2_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging2_clustering.xls' path_clustering_labels='pca1_merging2_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -553,7 +569,7 @@ do
   mkdir -p $ROUT
 
   ### PCA scores
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
   tail $ROUT/01_pcascores.Rout
 
 done
@@ -582,7 +598,7 @@ do
 
 
   ### Heatmaps
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
@@ -613,7 +629,7 @@ ROUT=$RWD/Rout
 mkdir -p $ROUT
 
 ### PCA scores
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
 tail $ROUT/01_pcascores.Rout
 
 
@@ -627,7 +643,7 @@ R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_
 tail $ROUT/02_flowsom.Rout
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -656,7 +672,7 @@ tail $ROUT/02_cluster_merging.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging_clustering.xls' path_clustering_labels='pca1_merging_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_merging_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_merging_clustering.xls' path_clustering_labels='pca1_merging_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=7" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -703,7 +719,7 @@ do
   mkdir -p $ROUT
 
   ### PCA scores
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
   tail $ROUT/01_pcascores.Rout
 
 done
@@ -732,7 +748,7 @@ do
 
 
   ### Heatmaps
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
@@ -763,7 +779,7 @@ ROUT=$RWD/Rout
 mkdir -p $ROUT
 
 ### PCA scores
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='' path_panel='panel.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
 tail $ROUT/01_pcascores.Rout
 
 
@@ -778,7 +794,7 @@ tail $ROUT/02_flowsom.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1_cl20_' path_panel='panel.xlsx' path_clustering_observables='pca1_clustering_observables.xls' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail $ROUT/02_heatmaps.Rout
 
 
@@ -809,7 +825,7 @@ tail $ROUT/02_flowsom.Rout
 
 
 ### Heatmaps
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1v23_cl20_' path_clustering_observables='${RWD_MAIN}/CK_2016-06-23_03/030_heatmaps/pca1_clustering_observables.xls' path_clustering='pca1v23_cl20_clustering.xls' path_clustering_labels='pca1v23_cl20_clustering_labels.xls' path_pcascore='${RWD_MAIN}/CK_2016-06-23_03/020_pcascores/princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='pca1v23_cl20_' path_panel='panel.xlsx' path_clustering_observables='${RWD_MAIN}/CK_2016-06-23_03/030_heatmaps/pca1_clustering_observables.xls' path_clustering='pca1v23_cl20_clustering.xls' path_clustering_labels='pca1v23_cl20_clustering_labels.xls' path_pcascore='${RWD_MAIN}/CK_2016-06-23_03/020_pcascores/princompscore_by_sample.xls' xspace=2" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
 tail ${ROUT}/02_heatmaps.Rout
 
 

@@ -69,42 +69,12 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # read metadata
 md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
 
-# read panel, pick which columns to use
-panel <- read.xls("panel.xlsx",stringsAsFactors=FALSE)
-
-
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
 names(f) <- md$shortname
 
-
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
-
-
-# get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
-
-
-# cols - get fcs columns that are in the panel with transform = 1
-cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
-
-# Antigen - get the antigen name
-m <- match(panel_mass, panel$Isotope)
-
-fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
-
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[,cols] <- asinh( e[,cols] / 5 )
-  exprs(u) <- e
-  u
-})
-
 
 
 # ------------------------------------------------------------
@@ -117,17 +87,26 @@ if(!grepl("/", path_clustering_observables)){
   clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
 }
 
-
 clust_observ <- clust_observ[, 1]
 
+# -------------------------------------
+
+# selected columns for clustering 
+
+scols <- which(colnames(fcs[[1]]) %in% clust_observ)
+
+# arc-sin-h the columns specific 
+fcsT <- lapply(fcs, function(u) {
+  e <- exprs(u)
+  e[ , scols] <- asinh( e[ , scols] / 5 )
+  exprs(u) <- e
+  u
+})
 
 # -------------------------------------
 # run FlowSOM and make heatmaps
 # -------------------------------------
 
-# selected columns for clustering 
-
-scols <- which(colnames(fcsT[[1]]) %in% clust_observ)
 
 
 # Number of clusters
@@ -163,7 +142,7 @@ write.table(freq_clust_out, file=file.path(hmDir, paste0(flowsom_prefix, "cluste
 clust_out <- data.frame(cluster = clust, stringsAsFactors = FALSE)
 write.table(clust_out, file = file.path(hmDir, paste0(flowsom_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
-
+# make data frame with labels
 labels <- data.frame(cluster = 1:nmetaclusts, label = sprintf("%02d", 1:nmetaclusts))
 write.table(labels, file = file.path(hmDir, paste0(flowsom_prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 

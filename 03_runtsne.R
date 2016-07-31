@@ -30,8 +30,8 @@ library(Rtsne)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# path_clustering_observables='pca1_cl20_clustering_observables.xls'
 # tsne_prefix='pca1_cl20_'
+# path_clustering_observables='pca1_cl20_clustering_observables.xls'
 # tsne_pmin=1500
 
 ##############################################################################
@@ -74,41 +74,12 @@ sneDir <- "040_tsnemaps"; if( !file.exists(sneDir) ) dir.create(sneDir)
 # read metadata
 md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
 
-# read panel, pick which columns to use
-panel <- read.xls("panel.xlsx",stringsAsFactors=FALSE)
-
-
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
 names(f) <- md$shortname
 
-
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
-
-
-# get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
-
-
-# cols - get fcs columns that are in the panel with transform = 1
-cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
-
-# Antigen - get the antigen name
-m <- match(panel_mass, panel$Isotope)
-
-fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
-
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[,cols] <- asinh( e[,cols] / 5 )
-  exprs(u) <- e
-  u
-})
 
 
 # ------------------------------------------------------------
@@ -120,13 +91,22 @@ if(!grepl("/", path_clustering_observables)){
 }else{
   clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
 }
+
 clust_observ <- clust_observ[, 1]
 
-# ------------------------------------------------------------
+# -------------------------------------
 
-### Indeces of observables used for clustering 
+# selected columns for clustering  
 
-scols <- which(fcs_panel$colnames %in% clust_observ)
+scols <- which(colnames(fcs[[1]]) %in% clust_observ)
+
+# arc-sin-h the columns specific 
+fcsT <- lapply(fcs, function(u) {
+  e <- exprs(u)
+  e[ , scols] <- asinh( e[ , scols] / 5 )
+  exprs(u) <- e
+  u
+})
 
 
 # ---------------------------------------
@@ -136,12 +116,10 @@ scols <- which(fcs_panel$colnames %in% clust_observ)
 
 # re-extract the data as list of tables
 es <- lapply(fcsT, function(u) {
-  exprs(u)[,scols]
+  exprs(u)[ , scols]
 })
 
 e <- do.call("rbind",es)
-colnames(e) <- fcs_panel$Antigen[scols]
-
 
 
 # normalize to 0-1

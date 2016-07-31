@@ -29,6 +29,7 @@ library(ggdendro)
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 # heatmap_prefix='pca1_cl20_'
+# path_panel='panel.xlsx'
 # path_clustering_observables='pca1_clustering_observables.xls'
 # path_clustering='pca1_cl20_clustering.xls'
 # path_clustering_labels='pca1_cl20_clustering_labels.xls'
@@ -69,22 +70,19 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # read metadata
 md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
 
-# read panel, pick which columns to use
-panel <- read.xls("panel.xlsx",stringsAsFactors=FALSE)
-
-
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
 names(f) <- md$shortname
-
 
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
 
+# read panel, pick which columns to use
+panel <- read.xls(path_panel,stringsAsFactors=FALSE)
+
 # get isotope mass of columns in fcs files.. to match against the panel
 panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
-
 
 # cols - get fcs columns that are in the panel with transform = 1
 cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
