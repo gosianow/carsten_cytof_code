@@ -3,7 +3,6 @@
 
 # BioC 3.3
 # Created 27 July 2016
-# Updated 
 
 ##############################################################################
 Sys.time()
@@ -46,12 +45,6 @@ print(args)
 setwd(rwd)
 rand_seed <- 1234
 
-
-### Set seed to be reproducible with FlowSOM clustering
-options(myseed = rand_seed)
-set.seed(rand_seed)
-
-getOption("myseed")
 
 # ------------------------------------------------------------
 # define directories
@@ -112,13 +105,28 @@ fcsT <- lapply(fcs, function(u) {
 # Number of clusters
 nmetaclusts <- 20
 
-set.seed(rand_seed)
-
 fs <- as(fcsT,"flowSet")
 
-system.time( fsom <- FlowSOM::ReadInput(fs, transform = FALSE, scale = FALSE) )
-system.time( fsom <- FlowSOM::BuildSOM(fsom, colsToUse = scols) )
-system.time( fsom_mc <- FlowSOM::metaClustering_consensus(fsom$map$codes, k=nmetaclusts) )
+fsom <- FlowSOM::ReadInput(fs, transform = FALSE, scale = FALSE)
+
+# SOM
+set.seed(rand_seed)
+fsom <- FlowSOM::BuildSOM(fsom, colsToUse = scols)
+
+
+# consensus clustering
+# fsom_mc <- FlowSOM::metaClustering_consensus(fsom$map$codes, k=nmetaclusts)
+
+# consensus clustering that is reproducible with seed
+data <- fsom$map$codes
+k <- nmetaclusts
+
+results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
+  maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
+  plot = "pdf", verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed)
+
+fsom_mc <- results[[k]]$consensusClass
+
 
 # get cluster ids
 clust <- fsom_mc[fsom$map$mapping[,1]]
