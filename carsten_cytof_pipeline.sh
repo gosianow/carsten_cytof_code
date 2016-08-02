@@ -99,7 +99,7 @@ tail $ROUT/04_frequencies.Rout
 
 ##########################################
 # Analysis of CK_2016-06-23_01_CD4 data from mergingNEW2
-# and CK_2016-06-23_01_CD8 data from mergingNEW2
+# and CK_2016-06-23_01_CD8 data from mergingNEW2 using panel.xlsx
 ##########################################
 
 data='CK_2016-06-23_01'
@@ -120,6 +120,18 @@ do
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_clustering='pca1_${merging}_clustering.xls' path_clustering_labels='pca1_${merging}_clustering_labels.xls' extract_cluster='${extr_name[$indx]}' extract_dir='${RWD_MAIN}/${data}_${extr_dir[$indx]}_${merging}/010_cleanfcs'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
   tail $ROUT/02_cluster_extracting.Rout
 
+done
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/$data
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
   ### Copy metadata and panel 
   cp ${RWD}/metadata.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
   cp ${RWD}/panel.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
@@ -176,6 +188,56 @@ do
   ### Get cluster frequencies
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='pca1_cl20_' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
+
+done
+
+##########################################
+# Analysis of CK_2016-06-23_01_CD4 data from mergingNEW2
+# and CK_2016-06-23_01_CD8 data from mergingNEW2 using panel_CD4.xlsx and panel_CD8.xlsx
+##########################################
+
+data='CK_2016-06-23_01'
+merging='mergingNEW2'
+extr_name=('CD4' 'CD8')
+extr_dir=('CD4' 'CD8')
+
+# for indx in 0 1
+# do
+  
+#   echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+#   RWD=$RWD_MAIN/$data
+#   ROUT=$RWD/Rout
+#   mkdir -p $ROUT
+
+#   ### Cluster extracting
+#   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_clustering='pca1_${merging}_clustering.xls' path_clustering_labels='pca1_${merging}_clustering_labels.xls' extract_cluster='${extr_name[$indx]}' extract_dir='${RWD_MAIN}/${data}_${extr_dir[$indx]}_${merging}/010_cleanfcs'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
+#   tail $ROUT/02_cluster_extracting.Rout
+
+# done
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/$data
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
+  ### Copy metadata and panel 
+  cp ${RWD}/metadata.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
+  cp ${RWD}/panel_${extr_dir[$indx]}.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
+
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+
+  ### PCA scores
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='pnl${extr_dir[$indx]}_' path_panel='panel_${extr_dir[$indx]}.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+  tail $ROUT/01_pcascores.Rout
 
 done
 
@@ -268,13 +330,14 @@ tail $ROUT/04_frequencies.Rout
 
 ##########################################
 # Analysis of CK_2016-06-23_02_CD4 data from merging2
-# and CK_2016-06-23_02_CD8 data from merging2
+# and CK_2016-06-23_02_CD8 data from merging2 using panel.xlsx
 ##########################################
 
 data='CK_2016-06-23_02'
 merging='merging2'
 extr_name=('CD4' 'CD8')
 extr_dir=('CD4' 'CD8')
+
 
 for indx in 0 1
 do
@@ -289,6 +352,18 @@ do
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_clustering='pca1_${merging}_clustering.xls' path_clustering_labels='pca1_${merging}_clustering_labels.xls' extract_cluster='${extr_name[$indx]}' extract_dir='${RWD_MAIN}/${data}_${extr_dir[$indx]}_${merging}/010_cleanfcs'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
   tail $ROUT/02_cluster_extracting.Rout
 
+done
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/$data
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
   ### Copy metadata and panel 
   cp ${RWD}/metadata.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
   cp ${RWD}/panel.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
@@ -303,6 +378,7 @@ do
   tail $ROUT/01_pcascores.Rout
 
 done
+
 
 
 extr_dir=('CD4' 'CD8')
@@ -345,6 +421,57 @@ do
   ### Get cluster frequencies
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='pca1_cl20_' path_clustering='pca1_cl20_clustering.xls' path_clustering_labels='pca1_cl20_clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
+
+done
+
+##########################################
+# Analysis of CK_2016-06-23_02_CD4 data from merging2
+# and CK_2016-06-23_02_CD8 data from merging2 using panel_CD4.xlsx and panel_CD8.xlsx
+##########################################
+
+data='CK_2016-06-23_02'
+merging='merging2'
+extr_name=('CD4' 'CD8')
+extr_dir=('CD4' 'CD8')
+
+
+# for indx in 0 1
+# do
+  
+#   echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+#   RWD=$RWD_MAIN/$data
+#   ROUT=$RWD/Rout
+#   mkdir -p $ROUT
+
+#   ### Cluster extracting
+#   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_clustering='pca1_${merging}_clustering.xls' path_clustering_labels='pca1_${merging}_clustering_labels.xls' extract_cluster='${extr_name[$indx]}' extract_dir='${RWD_MAIN}/${data}_${extr_dir[$indx]}_${merging}/010_cleanfcs'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
+#   tail $ROUT/02_cluster_extracting.Rout
+
+# done
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/$data
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
+  ### Copy metadata and panel 
+  cp ${RWD}/metadata.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
+  cp ${RWD}/panel_${extr_dir[$indx]}.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
+
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+
+  ### PCA scores
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='pnl${extr_dir[$indx]}_' path_panel='panel_${extr_dir[$indx]}.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+  tail $ROUT/01_pcascores.Rout
 
 done
 
@@ -538,7 +665,7 @@ tail $ROUT/04_frequencies.Rout
 
 ##########################################
 # Analysis of CK_2016-06-29_01_CD4 data from merging2
-# and CK_2016-06-29_01_CD8 data from merging2
+# and CK_2016-06-29_01_CD8 data from merging2 using panel.xlsx
 ##########################################
 
 data='CK_2016-06-29_01'
@@ -559,6 +686,18 @@ do
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_clustering='pca1_${merging}_clustering.xls' path_clustering_labels='pca1_${merging}_clustering_labels.xls' extract_cluster='${extr_name[$indx]}' extract_dir='${RWD_MAIN}/${data}_${extr_dir[$indx]}_${merging}/010_cleanfcs'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
   tail $ROUT/02_cluster_extracting.Rout
 
+done
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/$data
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
   ### Copy metadata and panel 
   cp ${RWD}/metadata.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
   cp ${RWD}/panel.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
@@ -617,6 +756,57 @@ do
   tail $ROUT/04_frequencies.Rout
 
 done
+
+##########################################
+# Analysis of CK_2016-06-29_01_CD4 data from merging2
+# and CK_2016-06-29_01_CD8 data from merging2 using panel_CD4.xlsx and panel_CD8.xlsx
+##########################################
+
+data='CK_2016-06-29_01'
+merging='merging2'
+extr_name=('CD4' 'CD8')
+extr_dir=('CD4' 'CD8')
+
+# for indx in 0 1
+# do
+  
+#   echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+#   RWD=$RWD_MAIN/$data
+#   ROUT=$RWD/Rout
+#   mkdir -p $ROUT
+
+#   ### Cluster extracting
+#   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_clustering='pca1_${merging}_clustering.xls' path_clustering_labels='pca1_${merging}_clustering_labels.xls' extract_cluster='${extr_name[$indx]}' extract_dir='${RWD_MAIN}/${data}_${extr_dir[$indx]}_${merging}/010_cleanfcs'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
+#   tail $ROUT/02_cluster_extracting.Rout
+
+# done
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/$data
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
+  ### Copy metadata and panel 
+  cp ${RWD}/metadata.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
+  cp ${RWD}/panel_${extr_dir[$indx]}.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
+
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+
+  ### PCA scores
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pcas_prefix='pnl${extr_dir[$indx]}_' path_panel='panel_${extr_dir[$indx]}.xlsx'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+  tail $ROUT/01_pcascores.Rout
+
+done
+
 
 
 ##############################################################################
@@ -688,7 +878,7 @@ tail $ROUT/04_frequencies.Rout
 
 ##########################################
 # Analysis of CK_2016-06-29_02_CD4 data from merging
-# and CK_2016-06-29_02_CD8 data from merging
+# and CK_2016-06-29_02_CD8 data from merging using panel.xlsx
 ##########################################
 
 data='CK_2016-06-29_02'
@@ -709,6 +899,18 @@ do
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_clustering='pca1_${merging}_clustering.xls' path_clustering_labels='pca1_${merging}_clustering_labels.xls' extract_cluster='${extr_name[$indx]}' extract_dir='${RWD_MAIN}/${data}_${extr_dir[$indx]}_${merging}/010_cleanfcs'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
   tail $ROUT/02_cluster_extracting.Rout
 
+done
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/$data
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
   ### Copy metadata and panel 
   cp ${RWD}/metadata.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
   cp ${RWD}/panel.xlsx $RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}/
@@ -723,6 +925,7 @@ do
   tail $ROUT/01_pcascores.Rout
 
 done
+
 
 
 extr_dir=('CD4' 'CD8')
