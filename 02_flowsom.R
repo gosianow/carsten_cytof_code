@@ -28,6 +28,8 @@ library(RColorBrewer)
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 # flowsom_prefix=''
 # path_clustering_observables='pca1_clustering_observables.xls'
+# rand_seed_consensus=123
+
 
 ##############################################################################
 # Read in the arguments
@@ -123,7 +125,7 @@ k <- nmetaclusts
 
 results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
   maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
-  plot = "pdf", verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed)
+  plot = "pdf", verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed_consensus)
 
 fsom_mc <- results[[k]]$consensusClass
 
@@ -141,10 +143,6 @@ freq_clust <- table(clust)
 
 save(fsom, file = file.path(hmDir, paste0(flowsom_prefix, "fsom.rda")))
 save(fsom_mc, file = file.path(hmDir, paste0(flowsom_prefix, "fsom_mc.rda")))
-
-
-freq_clust_out <- data.frame(cluster = names(freq_clust), freq = as.numeric(freq_clust))
-write.table(freq_clust_out, file=file.path(hmDir, paste0(flowsom_prefix, "cluster_counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 clust_out <- data.frame(cluster = clust, stringsAsFactors = FALSE)

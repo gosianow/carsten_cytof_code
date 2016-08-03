@@ -74,10 +74,6 @@ levels(clustm) <- cm$new_cluster
 clustm <- as.numeric(as.character(clustm))
 
 
-# get cluster frequencies
-freq_clust <- table(clustm)
-
-
 # new labels
 labels <- unique(cm[,c("new_cluster","label")])
 colnames(labels) <- c("cluster", "label")
@@ -93,10 +89,6 @@ if(sum(duplicated(labels$label)) > 0 | sum(duplicated(labels$cluster)) > 0)
 
 
 ### Save cluster merging results
-
-
-freq_clust_out <- data.frame(cluster = names(freq_clust), freq = as.numeric(freq_clust))
-write.table(freq_clust_out, file=file.path(hmDir, paste0(merging_prefix, "cluster_counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 clust_out <- data.frame(cluster = clustm, stringsAsFactors = FALSE)
 write.table(clust_out, file = file.path(hmDir, paste0(merging_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")

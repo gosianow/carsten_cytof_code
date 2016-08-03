@@ -3,7 +3,6 @@
 
 # BioC 3.3
 # Created 27 July 2016
-# Updated 
 
 ##############################################################################
 Sys.time()
@@ -34,7 +33,6 @@ library(ggdendro)
 # path_clustering='pca1_cl20_clustering.xls'
 # path_clustering_labels='pca1_cl20_clustering_labels.xls'
 # path_pcascore='princompscore_by_sample.xls'
-# xspace=2
 
 ##############################################################################
 # Read in the arguments
@@ -109,7 +107,7 @@ fcsT <- lapply(fcs, function(u) {
 # Load more data
 # ------------------------------------------------------------
 
-
+# pca scores
 if(!grepl("/", path_pcascore)){
   prs <- read.table(file.path(pcaDir, path_pcascore), header = TRUE, sep = "\t", as.is = TRUE)
 }else{
@@ -118,7 +116,7 @@ if(!grepl("/", path_pcascore)){
 
 rownames(prs) <- prs$mass
 
-
+# clustering observables
 if(!grepl("/", path_clustering_observables)){
   clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
 }else{
@@ -127,13 +125,16 @@ if(!grepl("/", path_clustering_observables)){
 
 clust_observ <- clust_observ[, 1]
 
-
+# clustering
 clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
 clust <- clust[, 1]
 
+# clustering labels
 labels <- read.table(file.path(hmDir, path_clustering_labels), header = TRUE, sep = "\t", as.is = TRUE)
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
+rownames(labels) <- labels$cluster
+
 
 # ------------------------------------------------------------
 
@@ -156,25 +157,8 @@ xcols <- xcols[order(prs[fcs_panel$colnames[xcols], "avg_score"], decreasing = T
 
 
 # ------------------------------------------------------------
-# Prepare data
+# Heatmaps
 # ------------------------------------------------------------
-
-
-
-### Calculate cluster frequencies
-
-samp <- rep( names(fcsT), sapply(fcsT,nrow) )
-freq <- table( cluster = clust, samp )
-# Use labels as new cluster names
-mlab <- match(rownames(freq), labels$cluster)
-rownames(freq) <- labels$label[mlab]
-
-prop <- t(t(freq) / colSums(freq))
-# normalize 
-rp <- sweep(prop, 1, STATS=rowMeans(prop), FUN="-")
-
-
-
 
 ### Get marker expression
 
@@ -200,7 +184,7 @@ aX <- aggregate( eX, by=list(clust), FUN=median)
 mlab <- match(a$Group.1, labels$cluster)
 rownames(a) <- rownames(aX) <- labels$label[mlab]
 
-
+colnames(a)[1] <- colnames(aX)[1] <- "cluster"
 
 ### Normalize the data to 01
 
@@ -230,82 +214,106 @@ alX <- aggregate( elX, by=list(clust), FUN=median)
 mlab <- match(al$Group.1, labels$cluster)
 rownames(al) <- rownames(alX) <- labels$label[mlab]
 
-colnames(al)[1] <- "cluster"
-colnames(alX)[1] <- "cluster"
+colnames(al)[1] <- colnames(alX)[1] <- "cluster"
 
 
-### Save the median expression
 
-write.table(al, file.path(hmDir, paste0(prefix, "cluster_medians_in.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-write.table(alX, file.path(hmDir, paste0(prefix, "cluster_medians_ex.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+### Save cluster frequencies and the median expression
 
+# get cluster frequencies
+freq_clust <- table(clust)
 
-# ------------------------------------------------------------
-# Multiheatmaps
-# ------------------------------------------------------------
+clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), al[, -1], alX[, -1])
 
+write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
-### Prepare colors and breaks for the heatmaps
-cL <- NULL
-ncol <- 20
-
-palette <- colorRampPalette(c("green", "black", "red"),space = "Lab")
-br <- seq(-20,20,length=ncol)
-col <- palette(ncol-1)
-cL[[1]] <- list(breaks=br,colors=col)
-
-palette <- colorRampPalette(c("blue", "orange", "red"),space = "Lab")
-col <- palette(ncol-1)
-br <- seq(0,40,length=ncol)
-cL[[2]] <- list(breaks=br,colors=col)
-
-palette <- colorRampPalette(c("darkblue", "yellow", "red"),space = "Lab")
-col <- palette(ncol-1)
-br <- seq(0,1,length=ncol)
-cL[[4]] <- cL[[3]] <- list(breaks=br,colors=col)
-
-
-testD <- list(rp*100, prop*100, al[,-1], alX[,-1])
-
-testD[[1]][testD[[1]]>max(cL[[1]]$breaks)] <- max(cL[[1]]$breaks)
-testD[[1]][testD[[1]]<min(cL[[1]]$breaks)] <- min(cL[[1]]$breaks)
-testD[[2]][testD[[2]]>max(cL[[2]]$breaks)] <- max(cL[[2]]$breaks)
-testD[[2]][testD[[2]]<min(cL[[2]]$breaks)] <- min(cL[[2]]$breaks)
-
-
-### Heatmaps will all the clusters
-pdf(file.path(hmDir, paste0(prefix, "multiheatmap.pdf")), width = 10, height = 6)
-multiHeatmap(testD,cL, xspace = xspace, ystarts=c(.25,.9,.925,.95,.98), clabelcex=.5)
-dev.off()
-
-
-### Heatmaps with larger clusters
-w <- which(rowSums(prop>=.05)>=5)
-testDs <- lapply(testD, function(u) u[w,,drop=FALSE])
-
-pdf(file.path(hmDir, paste0(prefix, "multiheatmap_subset.pdf")), width = 10, height = 6)
-multiHeatmap(testDs,cL, xspace = xspace, ystarts=c(.25,.9,.925,.95,.98), clabelcex=.5)
-dev.off()
 
 
 # ------------------------------------------------------------
 # Plot expression of markers in each cluster
 # ------------------------------------------------------------
 
-df <- data.frame(e, clust = factor(clust), samp)
-dfm <- melt(df, id.vars = c("clust","samp"))
+# Raw expression, included observables
+
+df <- data.frame(e, clust = factor(clust))
+dfm <- melt(df, id.vars = c("clust"))
 
 dfm$clust <- factor(dfm$clust, labels = labels$label)
 
+ggp <- ggplot(dfm, aes(x=value)) + 
+  geom_density(size=1,adjust=5) + 
+  facet_grid(clust~variable, scales = "free") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+pdf(file.path(hmDir, paste0(prefix, "distros_raw_in.pdf")), w = ncol(el), h = nrow(labels))
+print(ggp)
+dev.off()
+
+
+# Raw expression, excluded observables
+
+df <- data.frame(eX, clust = factor(clust))
+dfm <- melt(df, id.vars = c("clust"))
+
+dfm$clust <- factor(dfm$clust, labels = labels$label)
+
+ggp <- ggplot(dfm, aes(x=value)) + 
+  geom_density(size=1,adjust=5) + 
+  facet_grid(clust~variable, scales = "free") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+pdf(file.path(hmDir, paste0(prefix, "distros_raw_ex.pdf")), w = ncol(el), h = nrow(labels))
+print(ggp)
+dev.off()
+
+
+
+
+# Normalized expression, included observables
+
+df <- data.frame(el, clust = factor(clust))
+dfm <- melt(df, id.vars = c("clust"))
+
+dfm$clust <- factor(dfm$clust, labels = labels$label)
 
 ggp <- ggplot(dfm, aes(x=value)) + 
   geom_density(size=1,adjust=5) + 
   facet_grid(clust~variable, scales = "free_y") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-pdf(file.path(hmDir, paste0(prefix, "distros.pdf")), w = ncol(el), h = nrow(labels))
+pdf(file.path(hmDir, paste0(prefix, "distros_norm_in.pdf")), w = ncol(el), h = nrow(labels))
 print(ggp)
 dev.off()
+
+
+# Normalized expression, excluded observables
+
+df <- data.frame(elX, clust = factor(clust))
+dfm <- melt(df, id.vars = c("clust"))
+
+dfm$clust <- factor(dfm$clust, labels = labels$label)
+
+ggp <- ggplot(dfm, aes(x=value)) + 
+  geom_density(size=1,adjust=5) + 
+  facet_grid(clust~variable, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+pdf(file.path(hmDir, paste0(prefix, "distros_norm_ex.pdf")), w = ncol(el), h = nrow(labels))
+print(ggp)
+dev.off()
+
+
+
+
+# ------------------------------------------------------------
+# cluster clustering 
+# ------------------------------------------------------------
+
+### Clustering is based on all markers
+
+expr <- cbind(al[,-1], alX[,-1])
+
+cluster_rows <- hclust(dist(expr), method = "average")
 
 
 
@@ -314,19 +322,13 @@ dev.off()
 # ------------------------------------------------------------
 
 
-expr <- cbind(al[,-1], alX[,-1])
-
 labels_row <- labels$label
 labels_col <- colnames(expr)
-
-
-cluster_rows <- hclust(dist(al[,-1]), method = "average")
-
 
 pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 6, filename = file.path(hmDir, paste0(prefix, "pheatmap_row_clust.pdf")), width = 10, height = 7)
 
 
-pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 6, filename = file.path(hmDir, paste0(prefix, "pheatmap.pdf")), width = 10, height = 7)
+# pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 6, filename = file.path(hmDir, paste0(prefix, "pheatmap.pdf")), width = 10, height = 7)
 
 
 
@@ -335,7 +337,7 @@ pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYl
 # ggplot tile
 # ------------------------------------------------------------
 
-ggdf <- data.frame(cluster = labels$label, cbind(al[,-1], alX[,-1]))
+ggdf <- data.frame(cluster = labels$label, expr)
 
 ggdf$cluster <- factor(ggdf$cluster, levels = rev(levels(labels$label)))
 
@@ -363,8 +365,6 @@ dev.off()
 
 ### Row order from clustering
 
-cluster_rows <- hclust(dist(al[,-1]), method = "average")
-
 ggdfm$cluster <- factor(ggdfm$cluster, levels = rev(levels(labels$label)[cluster_rows$order]))
 
 ggp <- ggplot(ggdfm, aes(x = observable, y = cluster, fill = value)) + 
@@ -390,12 +390,12 @@ dev.off()
 # ------------------------------------------------------------
 
 
-# ggp <- ggdendrogram(cluster_rows, rotate = FALSE, size = 2) 
-# 
-# 
-# pdf(file.path(hmDir, paste0(prefix, "ggdendro_row_clust.pdf")), width = 7, height = 4)
-# print(ggp)
-# dev.off()
+ggp <- ggdendrogram(cluster_rows, rotate = FALSE, size = 2)
+
+
+pdf(file.path(hmDir, paste0(prefix, "ggdendro_row_clust.pdf")), width = 7, height = 3)
+print(ggp)
+dev.off()
 
 
 
@@ -404,10 +404,10 @@ dev.off()
 # ddata <- dendro_data(dhc, type = "rectangle")
 # 
 # 
-# ggp <- ggplot(segment(ddata)) + 
-#   geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) + 
+# ggp <- ggplot(segment(ddata)) +
+#   geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) +
 #   geom_text(data = label(ddata), aes(x=x, y=y, label=label, hjust=0), size=3) +
-#   coord_flip() + 
+#   coord_flip() +
 #   scale_y_reverse(expand=c(0.2, 0)) +
 #   theme_dendro()
 # 
@@ -416,9 +416,9 @@ dev.off()
 # pdf(file.path(hmDir, paste0(prefix, "ggdendro_row_clust.pdf")), width = 2, height = 7)
 # print(ggp)
 # dev.off()
-# 
-# 
-# 
+
+
+
 # geom_segment(data=segment(hcdata), aes(x=x, y=y, xend=xend, yend=yend)) +
 #   geom_text(data=label(hcdata), aes(x=x, y=y, label=label, hjust=0), size=3) +
 #   coord_flip() + 
