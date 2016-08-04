@@ -123,12 +123,16 @@ fsom <- FlowSOM::BuildSOM(fsom, colsToUse = scols)
 data <- fsom$map$codes
 k <- nmetaclusts
 
+pdf(file.path(hmDir, paste0(flowsom_prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 10)
+
 results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
   maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
-  plot = "pdf", verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed_consensus)
+  plot = NULL, verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed_consensus)
+
+dev.off()
+
 
 fsom_mc <- results[[k]]$consensusClass
-
 
 # get cluster ids
 clust <- fsom_mc[fsom$map$mapping[,1]]

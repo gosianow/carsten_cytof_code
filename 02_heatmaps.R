@@ -21,6 +21,7 @@ library(coop)
 library(pheatmap)
 library(RColorBrewer)
 library(ggdendro)
+library(ConsensusClusterPlus)
 
 ##############################################################################
 # Test arguments
@@ -311,93 +312,88 @@ dev.off()
 
 ### Clustering is based on all markers
 
-expr <- cbind(al[,-1], alX[,-1])
+expr <- as.matrix(cbind(al[,-1], alX[,-1]))
 
 cluster_rows <- hclust(dist(expr), method = "average")
-
 
 
 # ------------------------------------------------------------
 # pheatmaps
 # ------------------------------------------------------------
 
-
-labels_row <- labels$label
+rownames(expr) <- labels$label
+labels_row <- as.character(labels$label)
 labels_col <- colnames(expr)
 
-pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 6, filename = file.path(hmDir, paste0(prefix, "pheatmap_row_clust.pdf")), width = 10, height = 7)
+pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_row_clust.pdf")), width = 10, height = 7)
 
 
-# pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 6, filename = file.path(hmDir, paste0(prefix, "pheatmap.pdf")), width = 10, height = 7)
-
-
+pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap.pdf")), width = 10, height = 7)
 
 
 # ------------------------------------------------------------
 # ggplot tile
 # ------------------------------------------------------------
 
-ggdf <- data.frame(cluster = labels$label, expr)
+# ggdf <- data.frame(cluster = labels$label, expr)
 
-ggdf$cluster <- factor(ggdf$cluster, levels = rev(levels(labels$label)))
+# ggdf$cluster <- factor(ggdf$cluster, levels = rev(levels(labels$label)))
 
-ggdfm <- melt(ggdf, id.var = "cluster", variable.name = "observable")
-ggdfm$observable <- factor(ggdfm$observable, levels = colnames(ggdf)[-1])
-
-
-ggp <- ggplot(ggdfm, aes(x = observable, y = cluster, fill = value)) + 
-  geom_tile() + 
-  geom_text(aes(label = round(value, 2)), color = "black", size = 2.5) + 
-  scale_x_discrete(expand = c(0, 0)) + 
-  scale_y_discrete(expand = c(0, 0)) + 
-  xlab("") + 
-  ylab("") + 
-  theme_bw() +
-  scale_fill_gradientn("", colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), limits=c(0, 1)) +
-  theme(panel.background = element_rect(fill = NA, colour = NA), axis.ticks = element_blank(), axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5, hjust = 1), axis.text.y = element_text(size = 14)) 
+# ggdfm <- melt(ggdf, id.var = "cluster", variable.name = "observable")
+# ggdfm$observable <- factor(ggdfm$observable, levels = colnames(ggdf)[-1])
 
 
-pdf(file.path(hmDir, paste0(prefix, "ggtile.pdf")), width = 10, height = 7)
-print(ggp)
-dev.off()
+# ggp <- ggplot(ggdfm, aes(x = observable, y = cluster, fill = value)) + 
+#   geom_tile() + 
+#   geom_text(aes(label = round(value, 2)), color = "black", size = 2.5) + 
+#   scale_x_discrete(expand = c(0, 0)) + 
+#   scale_y_discrete(expand = c(0, 0)) + 
+#   xlab("") + 
+#   ylab("") + 
+#   theme_bw() +
+#   scale_fill_gradientn("", colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), limits=c(0, 1)) +
+#   theme(panel.background = element_rect(fill = NA, colour = NA), axis.ticks = element_blank(), axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5, hjust = 1), axis.text.y = element_text(size = 14)) 
+
+
+# pdf(file.path(hmDir, paste0(prefix, "ggtile.pdf")), width = 10, height = 7)
+# print(ggp)
+# dev.off()
 
 
 
-### Row order from clustering
+# ### Row order from clustering
 
-ggdfm$cluster <- factor(ggdfm$cluster, levels = rev(levels(labels$label)[cluster_rows$order]))
+# ggdfm$cluster <- factor(ggdfm$cluster, levels = rev(levels(labels$label)[cluster_rows$order]))
 
-ggp <- ggplot(ggdfm, aes(x = observable, y = cluster, fill = value)) + 
-  geom_tile() + 
-  geom_text(aes(label = round(value, 2)), color = "black", size = 2.5) + 
-  scale_x_discrete(expand = c(0, 0)) + 
-  scale_y_discrete(expand = c(0, 0)) + 
-  xlab("") + 
-  ylab("") + 
-  theme_bw() +
-  scale_fill_gradientn("", colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), limits=c(0, 1)) +
-  theme(panel.background = element_rect(fill = NA, colour = NA), axis.ticks = element_blank(), axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5, hjust = 1), axis.text.y = element_text(size = 14)) 
+# ggp <- ggplot(ggdfm, aes(x = observable, y = cluster, fill = value)) + 
+#   geom_tile() + 
+#   geom_text(aes(label = round(value, 2)), color = "black", size = 2.5) + 
+#   scale_x_discrete(expand = c(0, 0)) + 
+#   scale_y_discrete(expand = c(0, 0)) + 
+#   xlab("") + 
+#   ylab("") + 
+#   theme_bw() +
+#   scale_fill_gradientn("", colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), limits=c(0, 1)) +
+#   theme(panel.background = element_rect(fill = NA, colour = NA), axis.ticks = element_blank(), axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5, hjust = 1), axis.text.y = element_text(size = 14)) 
 
 
-pdf(file.path(hmDir, paste0(prefix, "ggtile_row_clust.pdf")), width = 10, height = 7)
-print(ggp)
-dev.off()
+# pdf(file.path(hmDir, paste0(prefix, "ggtile_row_clust.pdf")), width = 10, height = 7)
+# print(ggp)
+# dev.off()
 
 
 
 # ------------------------------------------------------------
-# ggplot tile + ggdendogram - not finished yet
+# ggdendogram
 # ------------------------------------------------------------
 
 
-ggp <- ggdendrogram(cluster_rows, rotate = FALSE, size = 2)
+# ggp <- ggdendrogram(cluster_rows, rotate = FALSE, size = 2)
 
 
-pdf(file.path(hmDir, paste0(prefix, "ggdendro_row_clust.pdf")), width = 7, height = 3)
-print(ggp)
-dev.off()
-
-
+# pdf(file.path(hmDir, paste0(prefix, "ggdendro_row_clust.pdf")), width = 7, height = 3)
+# print(ggp)
+# dev.off()
 
 
 # dhc <- as.dendrogram(cluster_rows)
@@ -417,8 +413,6 @@ dev.off()
 # print(ggp)
 # dev.off()
 
-
-
 # geom_segment(data=segment(hcdata), aes(x=x, y=y, xend=xend, yend=yend)) +
 #   geom_text(data=label(hcdata), aes(x=x, y=y, label=label, hjust=0), size=3) +
 #   coord_flip() + 
@@ -428,8 +422,51 @@ dev.off()
 
 
 
+# ------------------------------------------------------------
+# ConsensusClusterPlus
+# ------------------------------------------------------------
+
+# rand_seed <- 1234
+
+# pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 10)
+
+# results <- ConsensusClusterPlus(d = t(as.matrix(expr)), maxK = 10, reps = 100, pItem = 0.9, pFeature = 1, plot = NULL, verbose = FALSE, clusterAlg = "hc", innerLinkage="average", finalLinkage="average", distance = "euclidean", seed = rand_seed)
+
+# dev.off()
 
 
+# pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus_pheatmap.pdf")), width = 10, height = 7)
+
+# for(k in 2:10){
+#   # k <- 5
+
+#   fm <- results[[k]]$ml
+#   cluster_rows_c <- hclust(as.dist( 1 - fm ), method = "average")
+  
+#   pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows_c, labels_col = labels_col, labels_row = labels_row, border_color = NA, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = NA, main = paste0("Consensus cluster number k = ", k))
+
+# }
+
+# dev.off()
+
+
+
+# pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus_ggdendro.pdf")), width = 7, height = 3)
+
+# for(k in 2:10){
+#   # k <- 5
+
+#   fm <- results[[k]]$ml
+#   cluster_rows_c <- hclust(as.dist( 1 - fm ), method = "average")
+  
+#   ggp <- ggdendrogram(cluster_rows_c, rotate = FALSE, size = 2) +
+#   ggtitle(paste0("Consensus cluster number k = ", k))
+  
+#   print(ggp)
+  
+# }
+
+# dev.off()
 
 
 

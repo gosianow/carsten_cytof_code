@@ -184,7 +184,6 @@ do
 done
 
 
-extr_dir=('CD4' 'CD8')
 pca_cutoff=(2 2)
 
 for indx in 0 1
@@ -209,7 +208,7 @@ do
 
 
   ### Heatmaps
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${pca_prefix}cl20_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_clustering_observables='${pca_prefix}clustering_observables.xls' path_clustering='${pca_prefix}cl20_clustering.xls' path_clustering_labels='${pca_prefix}cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${pca_prefix}cl20_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_clustering_observables='${pca_prefix}clustering_observables.xls' path_clustering='${pca_prefix}cl20_clustering.xls' path_clustering_labels='${pca_prefix}cl20_clustering_labels.xls' path_pcascore='pnl${extr_dir[$indx]}_princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
@@ -230,6 +229,95 @@ do
 done
 
 
+##########################################
+# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 and CK_2016-06-23_01_CD8_mergingNEW2
+# for cluster_merging_CD4.xlsx and cluster_merging_CD8.xlsx
+##########################################
+
+data='CK_2016-06-23_01'
+merging='mergingNEW2'
+extr_name=('CD4' 'CD8')
+extr_dir=('CD4' 'CD8')
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_"
+  merging_prefix="merging_${extr_dir[$indx]}"
+  
+  ### Cluster merging
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${pca_prefix}${merging_prefix}_' path_cluster_merging='cluster_${merging_prefix}.xlsx' path_clustering='${pca_prefix}cl20_clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+  tail $ROUT/02_cluster_merging.Rout
+
+
+  ### Heatmaps
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${pca_prefix}${merging_prefix}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_clustering_observables='${pca_prefix}clustering_observables.xls' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' path_pcascore='pnl${extr_dir[$indx]}_princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+
+
+  ### Plot tSNE
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${pca_prefix}${merging_prefix}_'  path_rtsne_out='${pca_prefix}cl20_rtsne_out.rda' path_rtsne_data='${pca_prefix}cl20_rtsne_data.xls' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  tail $ROUT/03_plottsne.Rout
+
+
+  ### Get cluster frequencies
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${pca_prefix}${merging_prefix}_' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  tail $ROUT/04_frequencies.Rout
+
+
+done
+
+##########################################
+# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 and CK_2016-06-23_01_CD8_mergingNEW2
+# cluster_merging_CD4_2.xlsx and cluster_merging_CD8_2.xlsx
+##########################################
+
+data='CK_2016-06-23_01'
+merging='mergingNEW2'
+extr_name=('CD4' 'CD8')
+extr_dir=('CD4' 'CD8')
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_"
+  merging_prefix="merging_${extr_dir[$indx]}_2"
+  
+  ### Cluster merging
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${pca_prefix}${merging_prefix}_' path_cluster_merging='cluster_${merging_prefix}.xlsx' path_clustering='${pca_prefix}cl20_clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+  tail $ROUT/02_cluster_merging.Rout
+
+
+  ### Heatmaps
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${pca_prefix}${merging_prefix}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_clustering_observables='${pca_prefix}clustering_observables.xls' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' path_pcascore='pnl${extr_dir[$indx]}_princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+
+
+  ### Plot tSNE
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${pca_prefix}${merging_prefix}_'  path_rtsne_out='${pca_prefix}cl20_rtsne_out.rda' path_rtsne_data='${pca_prefix}cl20_rtsne_data.xls' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  tail $ROUT/03_plottsne.Rout
+
+
+  ### Get cluster frequencies
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${pca_prefix}${merging_prefix}_' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  tail $ROUT/04_frequencies.Rout
+
+
+done
 
 
 
@@ -432,7 +520,7 @@ do
 
 
   ### Heatmaps
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${pca_prefix}cl20_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_clustering_observables='${pca_prefix}clustering_observables.xls' path_clustering='${pca_prefix}cl20_clustering.xls' path_clustering_labels='${pca_prefix}cl20_clustering_labels.xls' path_pcascore='princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${pca_prefix}cl20_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_clustering_observables='${pca_prefix}clustering_observables.xls' path_clustering='${pca_prefix}cl20_clustering.xls' path_clustering_labels='${pca_prefix}cl20_clustering_labels.xls' path_pcascore='pnl${extr_dir[$indx]}_princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
@@ -449,6 +537,52 @@ do
   ### Get cluster frequencies
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${pca_prefix}cl20_' path_clustering='${pca_prefix}cl20_clustering.xls' path_clustering_labels='${pca_prefix}cl20_clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
+
+done
+
+
+##########################################
+# Analysis of CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
+# for cluster_merging_CD4.xlsx and cluster_merging_CD8.xlsx
+##########################################
+
+data='CK_2016-06-23_02'
+merging='merging2'
+extr_name=('CD4' 'CD8')
+extr_dir=('CD4' 'CD8')
+
+
+for indx in 0 1
+do
+  
+  echo "${data}_${extr_dir[$indx]}_${merging}"
+  
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_"
+  merging_prefix="merging_${extr_dir[$indx]}"
+  
+  ### Cluster merging
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${pca_prefix}${merging_prefix}_' path_cluster_merging='cluster_${merging_prefix}.xlsx' path_clustering='${pca_prefix}cl20_clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+  tail $ROUT/02_cluster_merging.Rout
+
+
+  ### Heatmaps
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${pca_prefix}${merging_prefix}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_clustering_observables='${pca_prefix}clustering_observables.xls' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' path_pcascore='pnl${extr_dir[$indx]}_princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+
+
+  ### Plot tSNE
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${pca_prefix}${merging_prefix}_'  path_rtsne_out='${pca_prefix}cl20_rtsne_out.rda' path_rtsne_data='${pca_prefix}cl20_rtsne_data.xls' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  tail $ROUT/03_plottsne.Rout
+
+
+  ### Get cluster frequencies
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${pca_prefix}${merging_prefix}_' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  tail $ROUT/04_frequencies.Rout
+
 
 done
 
