@@ -158,7 +158,7 @@ xcols <- xcols[order(prs[fcs_panel$colnames[xcols], "avg_score"], decreasing = T
 
 
 # ------------------------------------------------------------
-# Heatmaps
+# Get expression
 # ------------------------------------------------------------
 
 ### Get marker expression
@@ -186,6 +186,9 @@ mlab <- match(a$Group.1, labels$cluster)
 rownames(a) <- rownames(aX) <- labels$label[mlab]
 
 colnames(a)[1] <- colnames(aX)[1] <- "cluster"
+
+
+
 
 ### Normalize the data to 01
 
@@ -234,75 +237,105 @@ write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters.xls")), sep 
 # Plot expression of markers in each cluster
 # ------------------------------------------------------------
 
-# Raw expression, included observables
 
-df <- data.frame(e, clust = factor(clust))
-dfm <- melt(df, id.vars = c("clust"))
+plotting_wrapper <- function(e, suffix){
+  
+  df <- data.frame(e, clust = factor(clust))
+  dfm <- melt(df, id.vars = c("clust"))
+  
+  dfm$clust <- factor(dfm$clust, labels = labels$label)
+  
+  # ggp <- ggplot(dfm, aes(x=value)) + 
+  #   geom_density(adjust=3, fill = "black", alpha = 0.3) + 
+  #   facet_grid(clust ~ variable, scales = "free") +
+  #   theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  # 
+  # pdf(file.path(hmDir, paste0(prefix, "distros_raw_in.pdf")), w = ncol(e), h = nrow(labels))
+  # print(ggp)
+  # dev.off()
+  
+  
+  ## with free scales using facet_wrap 
+  dfm$variable_clust <- interaction(dfm$variable, dfm$clust, lex.order = FALSE)
+  
+  ggp <- ggplot(dfm, aes(x=value)) + 
+    geom_density(adjust=3, fill = "black", alpha = 0.3) +
+    facet_wrap(~ variable_clust, nrow = nlevels(dfm$clust), scales = "free") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 6), strip.text = element_text(size = 9))
+  
+  
+  pdf(file.path(hmDir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
+  print(ggp)
+  dev.off()
+  
+  return(NULL)
+}
 
-dfm$clust <- factor(dfm$clust, labels = labels$label)
 
-ggp <- ggplot(dfm, aes(x=value)) + 
-  geom_density(size=1,adjust=5) + 
-  facet_grid(clust~variable, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+## Raw expression, included observables
 
-pdf(file.path(hmDir, paste0(prefix, "distros_raw_in.pdf")), w = ncol(el), h = nrow(labels))
-print(ggp)
-dev.off()
+plotting_wrapper(e = e, suffix = "_raw_in")
 
 
 # Raw expression, excluded observables
 
-df <- data.frame(eX, clust = factor(clust))
-dfm <- melt(df, id.vars = c("clust"))
-
-dfm$clust <- factor(dfm$clust, labels = labels$label)
-
-ggp <- ggplot(dfm, aes(x=value)) + 
-  geom_density(size=1,adjust=5) + 
-  facet_grid(clust~variable, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-pdf(file.path(hmDir, paste0(prefix, "distros_raw_ex.pdf")), w = ncol(el), h = nrow(labels))
-print(ggp)
-dev.off()
-
+plotting_wrapper(e = eX, suffix = "_raw_ex")
 
 
 
 # Normalized expression, included observables
 
-df <- data.frame(el, clust = factor(clust))
-dfm <- melt(df, id.vars = c("clust"))
-
-dfm$clust <- factor(dfm$clust, labels = labels$label)
-
-ggp <- ggplot(dfm, aes(x=value)) + 
-  geom_density(size=1,adjust=5) + 
-  facet_grid(clust~variable, scales = "free_y") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-pdf(file.path(hmDir, paste0(prefix, "distros_norm_in.pdf")), w = ncol(el), h = nrow(labels))
-print(ggp)
-dev.off()
+plotting_wrapper(e = el, suffix = "_norm_in")
 
 
 # Normalized expression, excluded observables
 
-df <- data.frame(elX, clust = factor(clust))
-dfm <- melt(df, id.vars = c("clust"))
+plotting_wrapper(e = elX, suffix = "_norm_ex")
 
-dfm$clust <- factor(dfm$clust, labels = labels$label)
 
-ggp <- ggplot(dfm, aes(x=value)) + 
-  geom_density(size=1,adjust=5) + 
-  facet_grid(clust~variable, scales = "free_y") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+# ------------------------------------------------------------
+# Plot expression of markers for all data
+# ------------------------------------------------------------
 
-pdf(file.path(hmDir, paste0(prefix, "distros_norm_ex.pdf")), w = ncol(el), h = nrow(labels))
-print(ggp)
-dev.off()
 
+plotting_wrapper2 <- function(e, suffix){
+  
+  df <- data.frame(e)
+  dfm <- melt(df)
+  
+  ggp <- ggplot(dfm, aes(x=value)) + 
+    geom_density(adjust=3, fill = "black", alpha = 0.3) + 
+    facet_wrap(~ variable, nrow = 1, scales = "free") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+  pdf(file.path(hmDir, paste0(prefix, "distrosmer", suffix, ".pdf")), w = ncol(e)*3/2, h = 2)
+  print(ggp)
+  dev.off()
+  
+  return(NULL)
+  
+}
+
+
+## Raw expression, included observables
+
+plotting_wrapper2(e = e, suffix = "_raw_in")
+
+
+# Raw expression, excluded observables
+
+plotting_wrapper2(e = eX, suffix = "_raw_ex")
+
+
+
+# Normalized expression, included observables
+
+plotting_wrapper2(e = el, suffix = "_norm_in")
+
+
+# Normalized expression, excluded observables
+
+plotting_wrapper2(e = elX, suffix = "_norm_ex")
 
 
 
@@ -442,7 +475,7 @@ pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))
 
 #   fm <- results[[k]]$ml
 #   cluster_rows_c <- hclust(as.dist( 1 - fm ), method = "average")
-  
+
 #   pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows_c, labels_col = labels_col, labels_row = labels_row, border_color = NA, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = NA, main = paste0("Consensus cluster number k = ", k))
 
 # }
@@ -458,12 +491,12 @@ pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))
 
 #   fm <- results[[k]]$ml
 #   cluster_rows_c <- hclust(as.dist( 1 - fm ), method = "average")
-  
+
 #   ggp <- ggdendrogram(cluster_rows_c, rotate = FALSE, size = 2) +
 #   ggtitle(paste0("Consensus cluster number k = ", k))
-  
+
 #   print(ggp)
-  
+
 # }
 
 # dev.off()

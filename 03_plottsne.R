@@ -25,11 +25,11 @@ library(coop) # cosine
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# tsnep_prefix='pca1_cl20_'
+# tsnep_prefix='pca1_mergingNEW2_'
 # path_rtsne_out='pca1_cl20_rtsne_out.rda'
 # path_rtsne_data='pca1_cl20_rtsne_data.xls'
-# path_clustering='pca1_cl20_clustering.xls'
-# path_clustering_labels='pca1_cl20_clustering_labels.xls'
+# path_clustering='pca1_mergingNEW2_clustering.xls'
+# path_clustering_labels='pca1_mergingNEW2_clustering_labels.xls'
 # tsne_cmin=1000
 # pdf_width=15
 # pdf_height=10
@@ -123,27 +123,41 @@ ggdf$cluster <- labels$label[mm]
 ggdf$cluster <- factor(ggdf$cluster, levels = levels(labels$label))
 
 
-
-### Skipp drop cluster
+# skipp drop cluster
 
 ggdf <- ggdf[ggdf$cluster != "drop", ]
 ggdf$cluster <- factor(ggdf$cluster)
 
 
+
+
 ### Plot of tsne - all cells, all clusters
 
+## facet per group
 ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   geom_point(size=1) +
   facet_wrap(~ group) +
   labs(x = "tSNE 1", y="tSNE 2")+ 
   theme_bw() +
-  theme(strip.text.x = element_text(size=15, face="bold"),
-    axis.title.x  = element_text(size=15, face="bold"),
-    axis.title.y  = element_text(size=15, face="bold")) +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
   scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
 pdf(file.path(sneDir, paste0(prefix, "tSNE.pdf")), width = pdf_width, height = pdf_height)                 
+print(ggp)
+dev.off()
+
+
+## one plot 
+ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
+  geom_point(size = 1) +
+  labs(x = "tSNE 1", y="tSNE 2")+ 
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
+  scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
+  guides(colour = guide_legend(override.aes = list(size = 5)))
+
+pdf(file.path(sneDir, paste0(prefix, "tSNEone.pdf")), width = 9, height = 7)                 
 print(ggp)
 dev.off()
 
@@ -156,15 +170,13 @@ kk <- names(tc[tc > tsne_cmin])
 ggdf_sub <- ggdf[ggdf$cluster %in% kk,]
 ggdf_sub$cluster <- factor(ggdf_sub$cluster)
 
-
+## facet per group
 ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
   geom_point(size=1) + 
   facet_wrap( ~ group)+ 
   labs(x = "tSNE 1", y="tSNE 2")+ 
   theme_bw() +
-  theme(strip.text.x = element_text(size=15, face="bold"),
-    axis.title.x  = element_text(size=15, face="bold"),
-    axis.title.y  = element_text(size=15, face="bold")) +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
   scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) + 
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
@@ -199,15 +211,13 @@ for(i in 1:length(clust_lev)) {
 ggdf_sub <- ggdf[distse < 0.25, ]
 ggdf_sub$cluster <- factor(ggdf_sub$cluster)
 
-
+## facet per group
 ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   geom_point(size=1) + 
   facet_wrap( ~ group) +
   labs(x = "tSNE 1", y="tSNE 2")+ 
   theme_bw() +
-  theme(strip.text.x = element_text(size=15, face="bold"),
-    axis.title.x  = element_text(size=15, face="bold"),
-    axis.title.y  = element_text(size=15, face="bold"))+
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"))+
   scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
@@ -215,6 +225,25 @@ ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
 pdf(file.path(sneDir, paste0(prefix, "tSNE_filtered.pdf")), width = pdf_width, height = pdf_height)                 
 print(ggp)
 dev.off()
+
+
+
+## one plot
+ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
+  geom_point(size=1) + 
+  labs(x = "tSNE 1", y="tSNE 2")+ 
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"))+
+  scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) +
+  guides(colour = guide_legend(override.aes = list(size = 5)))
+
+
+pdf(file.path(sneDir, paste0(prefix, "tSNEone_filtered.pdf")), width = 9, height = 7)                 
+print(ggp)
+dev.off()
+
+
+
 
 
 
