@@ -20,14 +20,12 @@ library(coop)
 library(RColorBrewer)
 library(UpSetR)
 
-
-
 ##############################################################################
 # Test arguments
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# cytokines_prefix='pnlCD4_pca1_merging_CD4_'
+# cytokines_prefix='pnlCD4_pca1_'
 # path_panel='panel_CD4.xlsx'
 # path_cytokines_cutoffs='panel_CD4_cytokines.xlsx'
 
@@ -152,34 +150,58 @@ epnl[epnl>1] <- 1
 # Plot expression of markers
 # ------------------------------------------------------------
 
+
+samp <- rep(names(fcs), sapply(fcs, nrow))
+
+distros_wrapper <- function(e, suffix){
+  
+  df <- data.frame(samp = samp, e)
+  dfm <- melt(df, id.var = "samp")
+  
+  # add group info
+  mm <- match(dfm$samp, md$shortname)
+  dfm$group <- factor(md$condition[mm])
+  
+  ggp <- ggplot(dfm, aes(x=value)) + 
+    geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
+    facet_wrap(~ variable, nrow = 3, scales = "free") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+  pdf(file.path(cyDir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(epn), h = 10)
+  print(ggp)
+  dev.off()
+  
+  ## create colors per group not per sample
+  mm <- match(levels(dfm$samp), md$shortname)
+  groups <- factor(md$condition[mm])
+  color_values <- colorRampPalette(brewer.pal(12,"Paired"))(12)[c(1,3,5,2,4,6)]
+  color_values <- color_values[as.numeric(groups)]
+  names(color_values) <- levels(dfm$samp)
+  
+  ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
+    geom_density(adjust = 1) + 
+    facet_wrap(~ variable, nrow = 3, scales = "free") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
+    guides(color = guide_legend(nrow = 2)) +
+    scale_color_manual(values = color_values)
+  
+  pdf(file.path(cyDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(epn), h = 10)
+  print(ggp)
+  dev.off()
+
+}
+
+
+
+
 # Raw expression, included observables
 
-df <- data.frame(epn)
-dfm <- melt(df)
-
-ggp <- ggplot(dfm, aes(x=value)) + 
-  geom_density(adjust=3, fill = "black", alpha = 0.3) + 
-  facet_wrap(~ variable, nrow = 3, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-pdf(file.path(cyDir, paste0(prefix, "distrosmer_raw_cyt.pdf")), w = ncol(epn)/2, h = 6)
-print(ggp)
-dev.off()
-
+distros_wrapper(e = epn, suffix = "_raw_cyt")
 
 # Normalized expression, included observables
 
-df <- data.frame(epnl)
-dfm <- melt(df)
+distros_wrapper(e = epnl, suffix = "_norm_cyt")
 
-ggp <- ggplot(dfm, aes(x=value)) + 
-  geom_density(adjust=3, fill = "black", alpha = 0.3) + 
-  facet_wrap(~ variable, nrow = 3, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-pdf(file.path(cyDir, paste0(prefix, "distrosmer_norm_cyt.pdf")), w = ncol(epnl)/2, h = 6)
-print(ggp)
-dev.off()
 
 
 
@@ -211,7 +233,6 @@ bidf <- data.frame(apply(bimatrix, 2, as.numeric), row.names = 1:nrow(bimatrix))
 bidfl <- data.frame(apply(bimatrixl, 2, as.numeric), row.names = 1:nrow(bimatrixl))
 
 
-
 pdf(file.path(cyDir, paste0(prefix, "upsetr_raw.pdf")), w = 16, h = 6)
 upset(bidf, sets = colnames(bidf), nintersects = 50, order.by = "freq")
 dev.off()
@@ -222,68 +243,154 @@ upset(bidfl, sets = colnames(bidf), nintersects = 50, order.by = "freq")
 dev.off()
 
 
+# ------------------------------------------------------------
+# Frequencies of single cytokines
+# ------------------------------------------------------------
+
+## raw data
+cs <- colSums(bimatrix)
+names(cs) <- paste0("any_", names(cs))
+cs <- c("all" = nrow(bimatrix), "none_positive" = sum(rowSums(bimatrix) == 0), "any_positive" = sum(rowSums(bimatrix) > 0), cs)
+
+fc <- data.frame(set = names(cs), counts = cs)
+
+write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize_raw.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+## norm data
+cs <- colSums(bimatrixl)
+names(cs) <- paste0("any_", names(cs))
+cs <- c("all" = nrow(bimatrixl), "none_positive" = sum(rowSums(bimatrixl) == 0), "any_positive" = sum(rowSums(bimatrixl) > 0), cs)
+
+fc <- data.frame(set = names(cs), counts = cs)
+
+write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize_norm.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 # ------------------------------------------------------------
-# Plots of frequencies
+# Save frequencies for all combinations
+# ------------------------------------------------------------
+
+samp <- rep( names(fcs), sapply(fcs, nrow) )
+
+
+saving_wrapper <- function(bimatrix, suffix){
+  # suffix = "_raw"
+  
+  ## freqs based on combination names
+  bivec <- apply(bimatrix, 1, function(x){
+    paste0(colnames(bimatrix)[x], collapse = ".")
+  })
+  
+  ### Freqs per sample
+  
+  tabl2 <- table(bivec, samp)
+  ## skipp the all negative combination ("") for calculating proportions
+  tabl2 <- tabl2[rownames(tabl2) != "", ]
+  
+  ## save counts 
+  
+  freq2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(tabl2), stringsAsFactors = FALSE)
+  
+  write.table(freq2, file=file.path(cyDir,paste0(prefix, "cytokines_counts", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+  ## save proportions
+  
+  prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
+  
+  write.table(prop2, file=file.path(cyDir, paste0(prefix, "cytokines_frequencies", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+
+  ### Freqs for all samples
+  
+  tabl1 <- table(bivec)
+  freq1 <- as.numeric(tabl1)
+  names(freq1) <- names(tabl1)
+  names(freq1)[names(freq1) == ""] <- "none_positive"
+  
+  rs <- c("all" = sum(freq1), freq1)
+  fc <- data.frame(set = names(rs), counts = rs, frequencies = rs/rs[1]*100)
+  
+  write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize2", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+  
+  return(NULL)
+}
+
+
+
+saving_wrapper(bimatrix = bimatrix, suffix = "_raw")
+
+
+saving_wrapper(bimatrix = bimatrixl, suffix = "_norm")
+
+
+
+
+# ------------------------------------------------------------
+# Test for frequency differences between groups
+# ------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------------------
+# Plots of frequencies for combinations of interest
 # ------------------------------------------------------------
 
 samp <- rep( names(fcs), sapply(fcs, nrow) )
 
 
 plotting_wrapper <- function(bimatrix, suffix){
-  
-  
-  bivec01 <- apply(apply(bimatrix, 2, as.numeric), 1, paste0, collapse = "")
-  
-  freq <- table(bivec01)
-  table(freq)
-  
-  
+  # suffix = "_raw"
+
+  ## freqs based on combination names
   bivec <- apply(bimatrix, 1, function(x){
     paste0(colnames(bimatrix)[x], collapse = ".")
   })
   
+
+  tabl2 <- table(bivec, samp)
+  ## skipp the all negative combination ("") for calculating proportions
+  tabl2 <- tabl2[rownames(tabl2) != "", ]
+  
+
+  prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
+  
+  
+  ## take 10 top frequent positive combinations to plot
   tabl1 <- table(bivec)
   freq1 <- as.numeric(tabl1)
   names(freq1) <- names(tabl1)
   
-  tabl2 <- table(bivec, samp)
-  freq2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(tabl2), stringsAsFactors = FALSE)
-  prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))), stringsAsFactors = FALSE)
-  
-  
-  ## save frequencies
-  write.table(prop2, file=file.path(cyDir, paste0(prefix, "cytokines_frequencies", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-  write.table(freq2, file=file.path(cyDir,paste0(prefix, "cytokines_counts", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-  
-  
-  
-  ## take top frequent positive combinations
   topnr <- 11
-  
   top_freq <- names(freq1)[order(freq1, decreasing = TRUE)[1:topnr]]
   
   ## skipp the "" all negative combination
-  top_freq <- top_freq[top_freq != ""]
+  plot_comb <- top_freq[top_freq != ""]
   
   
   
-  ### Plot frequencies
+  ### Prepare data for plotting
   
-  ggdf <- melt(prop2[top_freq,], id.vars = "combination", value.name = "prop", variable.name = "samp")
+  ggdf <- melt(prop2[plot_comb,], id.vars = "combination", value.name = "prop", variable.name = "samp")
   
   # order like in top freq
-  ggdf$combination <- factor(ggdf$combination, levels = top_freq)
+  ggdf$combination <- factor(ggdf$combination, levels = plot_comb)
   
   # add group info
   mm <- match(ggdf$samp, md$shortname)
   ggdf$group <- factor(md$condition[mm])
   
   ## merge base_HD and tx_HD into one level - HD
-  new_levels <- levels(ggdf$group)
-  new_levels[grep("HD", new_levels)] <- "HD"
-  levels(ggdf$group) <- new_levels
+  # new_levels <- levels(ggdf$group)
+  # new_levels[grep("HD", new_levels)] <- "HD"
+  # levels(ggdf$group) <- new_levels
   
   ## replace _ with \n
   levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
@@ -292,6 +399,7 @@ plotting_wrapper <- function(bimatrix, suffix){
   ggds <- ddply(ggdf, .(group, combination), summarise, mean = mean(prop), sd = sd(prop))
   
   
+  ## plot mean frequencies
   ggp <- ggplot(data = ggds, aes(x = group, y = mean, fill = combination)) +
     geom_bar(stat="identity") +
     theme_bw() +
@@ -309,7 +417,7 @@ plotting_wrapper <- function(bimatrix, suffix){
   dev.off()
   
   
-  
+  ## plot freqs per sample
   ggp <- ggplot(data = ggdf, aes(x = group, y = prop, fill = combination)) +
     geom_point(position = position_jitterdodge(jitter.width = 0.05, dodge.width = 0.8), pch = 21, size = 2) +
     geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean, ymax=mean), position = position_dodge(width = 0.8), colour='black', width=0.4) +

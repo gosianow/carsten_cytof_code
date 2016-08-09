@@ -95,12 +95,12 @@ freq <- table( cluster = clust, samp )
 mlab <- match(rownames(freq), labels$cluster)
 rownames(freq) <- labels$label[mlab]
 
-prop <- t(t(freq) / colSums(freq))
+prop <- t(t(freq) / colSums(freq)) * 100
 
 
 
 ### Save the frequencies and proportions
-prop_out <- data.frame(cluster = rownames(prop), as.data.frame.matrix(prop * 100))
+prop_out <- data.frame(cluster = rownames(prop), as.data.frame.matrix(prop))
 freq_out <- data.frame(cluster = rownames(freq), as.data.frame.matrix(freq))
 
 write.table(prop_out, file=file.path(frqDir, paste0(prefix, "frequencies.xls")), row.names=FALSE, quote=FALSE, sep="\t")
@@ -114,17 +114,17 @@ write.table(freq_out, file=file.path(frqDir,paste0(prefix, "counts.xls")), row.n
 
 ggdf <- melt(prop, value.name = "prop")
 
-# use labels as clusters
+## use labels as clusters
 ggdf$cluster <- factor(ggdf$cluster, levels = labels$label)
 
-# add group info
+## add group info
 mm <- match(ggdf$samp, md$shortname)
 ggdf$group <- factor(md$condition[mm])
 
 ## merge base_HD and tx_HD into one level - HD
-new_levels <- levels(ggdf$group)
-new_levels[grep("HD", new_levels)] <- "HD"
-levels(ggdf$group) <- new_levels
+# new_levels <- levels(ggdf$group)
+# new_levels[grep("HD", new_levels)] <- "HD"
+# levels(ggdf$group) <- new_levels
 
 ## replace _ with \n
 levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
@@ -133,7 +133,7 @@ levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
 ggds <- ddply(ggdf, .(group, cluster), summarise, mean = mean(prop), sd = sd(prop))
 
 
-
+## plot each cluster as a separate page in the pdf file
 ggp <- list()
 
 clusters <- levels(ggdf$cluster)
@@ -151,6 +151,7 @@ for(i in 1:nlevels(ggdf$cluster)){
     theme_bw() +
     ylab("Frequency") +
     xlab("") +
+    ylim(c(0, max(df$prop))) +
     theme(axis.text.x = element_text(size=12, face="bold"), 
       axis.title.y = element_text(size=12, face="bold"), 
       panel.grid.major = element_blank(), 

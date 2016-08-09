@@ -258,17 +258,41 @@ plotting_wrapper <- function(e, suffix){
   ## with free scales using facet_wrap 
   dfm$variable_clust <- interaction(dfm$variable, dfm$clust, lex.order = FALSE)
   
-  ggp <- ggplot(dfm, aes(x=value)) + 
-    geom_density(adjust=3, fill = "black", alpha = 0.3) +
-    facet_wrap(~ variable_clust, nrow = nlevels(dfm$clust), scales = "free") +
+  ggp <- ggplot(dfm, aes(x=value)) +
+    geom_density(adjust=1, fill = "black", alpha = 0.3) +
+    facet_wrap(~ variable_clust, nrow = nlevels(dfm$clust), scales = "free_y") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 6), strip.text = element_text(size = 9))
-  
-  
+
   pdf(file.path(hmDir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
   print(ggp)
   dev.off()
   
+  
+  # cl <- levels(dfm$clust)
+  # vl <- levels(dfm$variable)
+  # 
+  # pdf(file.path(hmDir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
+  # par(mfrow=c(nlevels(dfm$clust), nlevels(dfm$variable)), mai = c(0.25, 0.3, 0.25, 0.05)) # c(bottom, left, top, right)
+  # 
+  # for(i in 1:nlevels(dfm$clust)){
+  #   for(j in 1:nlevels(dfm$variable)){
+  #     
+  #     vv <- dfm[dfm$variable == vl[j], "value"]
+  #     xmax <- max(vv)
+  #     xmin <- min(vv)
+  #     
+  #     d <- density(dfm[dfm$clust == cl[i] & dfm$variable == vl[j], "value"])
+  #     plot(d, main = paste0(vl[j], ".", cl[i]), xlab = "", ylab = "", cex.axis = 0.7, lwd = 3, xlim = c(xmin, xmax), col = "blue")
+  #     # polygon(d, col="grey50", border="black")
+  #     
+  #   }
+  # }
+  # 
+  # dev.off()
+  
+  
   return(NULL)
+  
 }
 
 
@@ -304,7 +328,7 @@ plotting_wrapper2 <- function(e, suffix){
   dfm <- melt(df)
   
   ggp <- ggplot(dfm, aes(x=value)) + 
-    geom_density(adjust=3, fill = "black", alpha = 0.3) + 
+    geom_density(adjust=1, fill = "black", alpha = 0.3) + 
     facet_wrap(~ variable, nrow = 1, scales = "free") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   

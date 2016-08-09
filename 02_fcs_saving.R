@@ -23,7 +23,6 @@ library(reshape2)
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
 # save_prefix='pnlCD4_'
-# save_dir='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2/070_dumpfcs'
 # path_panel='panel_CD4.xlsx'
 
 
@@ -41,8 +40,6 @@ print(args)
 ##############################################################################
 
 setwd(rwd)
-
-dir.create(save_dir, recursive = TRUE)
 
 
 # ------------------------------------------------------------
@@ -142,8 +139,8 @@ fcsT01 <- lapply(seq(length(fcsT)), function(i){
 dummy <- lapply(seq(length(fcsT)), function(i){
   # i = 1
   
-  fn <- file.path(save_dir, paste0(save_prefix, "arcsineh_", basename(f[i])))
-  fcs_out <- fcsT[[i]][, cols]
+  fn <- file.path(dmpDir, paste0(save_prefix, "arcsineh_", basename(f[i])))
+  fcs_out <- fcsT[[i]]
   write.FCS(fcs_out, fn)
   
 })
@@ -153,8 +150,9 @@ dummy <- lapply(seq(length(fcsT)), function(i){
 dummy <- lapply(seq(length(fcsT01)), function(i){
   # i = 1
   
-  fn <- file.path(save_dir, paste0(save_prefix, "arcsineh01_", basename(f[i])))
-  fcs_out <- fcsT01[[i]][, cols]
+  fn <- file.path(dmpDir, paste0(save_prefix, "arcsineh01_", basename(f[i])))
+  fcs_out <- fcsT01[[i]]
+  
   write.FCS(fcs_out, fn)
   
 })

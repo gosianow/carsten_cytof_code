@@ -9,14 +9,14 @@ pcascores=false
 select_observables=false
 flowsom=false
 cluster_merging=false
-heatmaps=true
+heatmaps=false
 runtsne=false
-plottsne=true
+plottsne=false
 frequencies=true
 cluster_merging=false
 cluster_extracting=false
-cytokines=true
-
+cytokines=false
+fcs_saving=false
 
 ##############################################################################
 # Analysis of CK_2016-06-23_01 data
@@ -455,6 +455,7 @@ do
 done
 fi
 
+
 if ${pcascores}; then
 for indx in 0 1
 do
@@ -521,6 +522,25 @@ do
 done
 fi
 
+
+if ${fcs_saving}; then
+for indx in 0 1
+do
+  
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+
+  ### Save fcs files with arcsineh and arcsideh+01 normalized expression into 070_dumpfcs/
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' save_prefix='pnl${extr_dir[$indx]}_' path_panel='panel_${extr_dir[$indx]}.xlsx'" $RCODE/02_fcs_saving.R $ROUT/02_fcs_saving.Rout
+  tail $ROUT/02_fcs_saving.Rout
+
+done
+fi
+
+
+
 extr_dir=('CD4' 'CD8')
 pca_cutoff=(0.96 1)
 
@@ -575,6 +595,34 @@ do
 done
 
 
+
+if ${cytokines}; then
+for indx in 0 1
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_"
+  
+  ### Analysis of positive-negative (cytokine) markers
+  
+  ## based on cytokines.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}cyt_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines.xlsx'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+  tail $ROUT/06_cytokines.Rout
+  
+  ## based on cytokines2.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}cyt2_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines2.xlsx'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+  tail $ROUT/06_cytokines.Rout
+  
+
+done
+fi
+
+
+
 ##########################################
 # Analysis of CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
 # for cluster_merging_CD4.xlsx and cluster_merging_CD8.xlsx
@@ -621,12 +669,6 @@ do
   if ${frequencies}; then
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${pca_prefix}${merging_prefix}_' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
-  fi
-  
-  ### Analysis of positive-negative (cytokine) markers
-  if ${cytokines}; then
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines.xlsx'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
-  tail $ROUT/06_cytokines.Rout
   fi
 
 
