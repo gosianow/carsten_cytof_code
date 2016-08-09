@@ -25,10 +25,15 @@ library(UpSetR)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# cytokines_prefix='pnlCD4_pca1_'
+# cytokines_prefix='pnlCD4_pca1_merging_CD4_CM_'
 # path_panel='panel_CD4.xlsx'
-# path_cytokines_cutoffs='panel_CD4_cytokines.xlsx'
-
+# path_cytokines_cutoffs='panel_CD4_cytokines_CM.xlsx'
+# path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
+# path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
+# clusters2analyse='CM'
+# cutoff_colname='positive_cutoff_norm'
+# data2analyse='norm'
+# cytokines_suffix='_norm'
 
 ##############################################################################
 # Read in the arguments
@@ -46,6 +51,10 @@ print(args)
 setwd(rwd)
 
 prefix <- cytokines_prefix
+suffix <- cytokines_suffix
+
+if(!data2analyse %in% c("raw", "norm"))
+  stop("data2analyse must be 'raw' or 'norm'!")
 
 
 # ------------------------------------------------------------
@@ -54,6 +63,7 @@ prefix <- cytokines_prefix
 
 fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
 pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
+hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 cyDir <- "060_cytokines"; if( !file.exists(cyDir) ) dir.create(cyDir)
 
 # ------------------------------------------------------------
@@ -103,21 +113,42 @@ fcsT <- lapply(fcs, function(u) {
 # ------------------------------------------------------------
 
 ## positive cutoffs for cytokines
-
 cytokines_cutoffs <- read.xls(path_cytokines_cutoffs, stringsAsFactors=FALSE)
 
-cytokines_cutoffs <- merge(panel, cytokines_cutoffs[, c("Isotope", "positive_cutoff_raw", "positive_cutoff_norm")], by = "Isotope", all.x = TRUE, sort = FALSE)
+if(!cutoff_colname %in% colnames(cytokines_cutoffs))
+  stop("There are no such column with cutoffs!")
 
+cytokines_cutoffs <- merge(panel, cytokines_cutoffs[, c("Isotope", cutoff_colname)], by = "Isotope", all.x = TRUE, sort = FALSE)
+
+## clustering results
+clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
+clust <- clust[, 1]
+
+## cluster labels
+labels <- read.table(file.path(hmDir, path_clustering_labels), header = TRUE, sep = "\t", as.is = TRUE)
+labels <- labels[order(labels$cluster, decreasing = FALSE), ]
+labels$label <- factor(labels$label, levels = unique(labels$label))
+
+
+if(clusters2analyse == "all"){
+  clusters2analyse <- labels$label
+}else{
+  if(!all(clusters2analyse %in% labels$label))
+    stop("Cluster labels are wrong!")
+}
 
 # ------------------------------------------------------------
 
 ### Indeces of observables used for positive-negative analysis
 
-pncols <- which(fcs_panel$Isotope %in% cytokines_cutoffs[!is.na(cytokines_cutoffs$positive_cutoff_raw), "Isotope"])
+pncols <- which(fcs_panel$Isotope %in% cytokines_cutoffs[!is.na(cytokines_cutoffs[, cutoff_colname]), "Isotope"])
 
 ## Order them in the way as in panel
-mm <- match(cytokines_cutoffs[!is.na(cytokines_cutoffs$positive_cutoff_raw), "Antigen"], fcs_panel$Antigen[pncols])
+mm <- match(cytokines_cutoffs[!is.na(cytokines_cutoffs[, cutoff_colname]), "Antigen"], fcs_panel$Antigen[pncols])
 pncols <- pncols[mm]
+
+if(!all(pncols %in% cols))
+  stop("Cytokine positive cutoffs can be defined only for the transform=1 observables!")
 
 
 # ------------------------------------------------------------
@@ -144,14 +175,28 @@ for(i in 1:ncol(epnl)) {
 epnl[epnl<0] <- 0
 epnl[epnl>1] <- 1
 
+### Keep only the data from the specified clusters
 
+cells2keep <- clust %in% labels[labels$label %in% clusters2analyse, "cluster"]
+
+epn <- epn[cells2keep, ]
+epnl <- epnl[cells2keep, ]
+
+
+# Use raw data
+if(data2analyse == "raw")
+  e <- epn
+
+# Use 01 normalized data
+if(data2analyse == "norm")
+  e <- epnl
+
+samp <- rep(names(fcs), sapply(fcs, nrow))[cells2keep]
 
 # ------------------------------------------------------------
 # Plot expression of markers
 # ------------------------------------------------------------
 
-
-samp <- rep(names(fcs), sapply(fcs, nrow))
 
 distros_wrapper <- function(e, suffix){
   
@@ -188,20 +233,12 @@ distros_wrapper <- function(e, suffix){
   pdf(file.path(cyDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(epn), h = 10)
   print(ggp)
   dev.off()
-
+  
 }
 
 
 
-
-# Raw expression, included observables
-
-distros_wrapper(e = epn, suffix = "_raw_cyt")
-
-# Normalized expression, included observables
-
-distros_wrapper(e = epnl, suffix = "_norm_cyt")
-
+distros_wrapper(e = e, suffix = paste0(suffix, "_cyt"))
 
 
 
@@ -210,19 +247,14 @@ distros_wrapper(e = epnl, suffix = "_norm_cyt")
 # ------------------------------------------------------------
 
 ## get the corresponding cutoffs
-mm <- match(colnames(epnl), cytokines_cutoffs$Antigen)
+mm <- match(colnames(e), cytokines_cutoffs$Antigen)
 
-epn_cut <- cytokines_cutoffs[mm, "positive_cutoff_raw"]
-names(epn_cut) <- colnames(epn)
-
-epnl_cut <- cytokines_cutoffs[mm, "positive_cutoff_norm"]
-names(epnl_cut) <- colnames(epnl)
+e_cut <- cytokines_cutoffs[mm, cutoff_colname]
+names(e_cut) <- colnames(e)
 
 
 ## create the bimatrix
-
-bimatrix <- t(t(epn) > epn_cut)
-bimatrixl <- t(t(epnl) > epnl_cut)
+bimatrix <- t(t(e) > e_cut)
 
 
 # ------------------------------------------------------------
@@ -230,52 +262,32 @@ bimatrixl <- t(t(epnl) > epnl_cut)
 # ------------------------------------------------------------
 
 bidf <- data.frame(apply(bimatrix, 2, as.numeric), row.names = 1:nrow(bimatrix))
-bidfl <- data.frame(apply(bimatrixl, 2, as.numeric), row.names = 1:nrow(bimatrixl))
 
-
-pdf(file.path(cyDir, paste0(prefix, "upsetr_raw.pdf")), w = 16, h = 6)
+pdf(file.path(cyDir, paste0(prefix, "upsetr", suffix, ".pdf")), w = 16, h = 6)
 upset(bidf, sets = colnames(bidf), nintersects = 50, order.by = "freq")
 dev.off()
 
-
-pdf(file.path(cyDir, paste0(prefix, "upsetr_norm.pdf")), w = 16, h = 6)
-upset(bidfl, sets = colnames(bidf), nintersects = 50, order.by = "freq")
-dev.off()
 
 
 # ------------------------------------------------------------
 # Frequencies of single cytokines
 # ------------------------------------------------------------
 
-## raw data
 cs <- colSums(bimatrix)
 names(cs) <- paste0("any_", names(cs))
 cs <- c("all" = nrow(bimatrix), "none_positive" = sum(rowSums(bimatrix) == 0), "any_positive" = sum(rowSums(bimatrix) > 0), cs)
 
 fc <- data.frame(set = names(cs), counts = cs)
 
-write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize_raw.xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
-## norm data
-cs <- colSums(bimatrixl)
-names(cs) <- paste0("any_", names(cs))
-cs <- c("all" = nrow(bimatrixl), "none_positive" = sum(rowSums(bimatrixl) == 0), "any_positive" = sum(rowSums(bimatrixl) > 0), cs)
-
-fc <- data.frame(set = names(cs), counts = cs)
-
-write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize_norm.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 # ------------------------------------------------------------
 # Save frequencies for all combinations
 # ------------------------------------------------------------
 
-samp <- rep( names(fcs), sapply(fcs, nrow) )
-
 
 saving_wrapper <- function(bimatrix, suffix){
-  # suffix = "_raw"
   
   ## freqs based on combination names
   bivec <- apply(bimatrix, 1, function(x){
@@ -300,7 +312,7 @@ saving_wrapper <- function(bimatrix, suffix){
   
   write.table(prop2, file=file.path(cyDir, paste0(prefix, "cytokines_frequencies", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   
-
+  
   ### Freqs for all samples
   
   tabl1 <- table(bivec)
@@ -319,11 +331,7 @@ saving_wrapper <- function(bimatrix, suffix){
 
 
 
-saving_wrapper(bimatrix = bimatrix, suffix = "_raw")
-
-
-saving_wrapper(bimatrix = bimatrixl, suffix = "_norm")
-
+saving_wrapper(bimatrix = bimatrix, suffix = suffix)
 
 
 
@@ -332,7 +340,21 @@ saving_wrapper(bimatrix = bimatrixl, suffix = "_norm")
 # ------------------------------------------------------------
 
 
+## freqs based on combination names
+bivec <- apply(bimatrix, 1, function(x){
+  paste0(colnames(bimatrix)[x], collapse = ".")
+})
 
+### Freqs per sample
+
+tabl2 <- table(bivec, samp)
+## skipp the all negative combination ("") for calculating proportions
+tabl2 <- tabl2[rownames(tabl2) != "", ]
+
+
+freq2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(tabl2), stringsAsFactors = FALSE)
+
+prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
 
 
 
@@ -343,23 +365,21 @@ saving_wrapper(bimatrix = bimatrixl, suffix = "_norm")
 # Plots of frequencies for combinations of interest
 # ------------------------------------------------------------
 
-samp <- rep( names(fcs), sapply(fcs, nrow) )
-
 
 plotting_wrapper <- function(bimatrix, suffix){
   # suffix = "_raw"
-
+  
   ## freqs based on combination names
   bivec <- apply(bimatrix, 1, function(x){
     paste0(colnames(bimatrix)[x], collapse = ".")
   })
   
-
+  
   tabl2 <- table(bivec, samp)
   ## skipp the all negative combination ("") for calculating proportions
   tabl2 <- tabl2[rownames(tabl2) != "", ]
   
-
+  
   prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
   
   
@@ -442,11 +462,7 @@ plotting_wrapper <- function(bimatrix, suffix){
 }
 
 
-plotting_wrapper(bimatrix = bimatrix, suffix = "_raw")
-
-
-plotting_wrapper(bimatrix = bimatrixl, suffix = "_norm")
-
+plotting_wrapper(bimatrix = bimatrix, suffix = suffix)
 
 
 

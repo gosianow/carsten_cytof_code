@@ -595,34 +595,6 @@ do
 done
 
 
-
-if ${cytokines}; then
-for indx in 0 1
-do
-
-  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
-  ROUT=$RWD/Rout
-  mkdir -p $ROUT
-  echo "$RWD"
-  
-  pca_prefix="pnl${extr_dir[$indx]}_pca1_"
-  
-  ### Analysis of positive-negative (cytokine) markers
-  
-  ## based on cytokines.xlsx
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}cyt_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines.xlsx'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
-  tail $ROUT/06_cytokines.Rout
-  
-  ## based on cytokines2.xlsx
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}cyt2_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines2.xlsx'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
-  tail $ROUT/06_cytokines.Rout
-  
-
-done
-fi
-
-
-
 ##########################################
 # Analysis of CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
 # for cluster_merging_CD4.xlsx and cluster_merging_CD8.xlsx
@@ -674,6 +646,61 @@ do
 
 done
 
+
+### Getting CM from cluster_merging_CD4.xlsx
+if ${cytokines}; then
+for indx in 0
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD4_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}" # 'merging_CD4'
+  
+  ### Analysis of positive-negative (cytokine) markers
+  
+  ## based on cytokines_CM.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_norm' data2analyse='norm' cytokines_suffix='_norm'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+  tail $ROUT/06_cytokines.Rout
+  
+  ## based on cytokines_CM_RAW.xlsx
+ R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_raw'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+ tail $ROUT/06_cytokines.Rout
+  
+
+done
+fi
+
+
+### Getting CM from cluster_merging_CD8_2.xlsx
+if ${cytokines}; then
+for indx in 1
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD4_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}_2" # 'merging_CD4_2'
+  
+  ### Analysis of positive-negative (cytokine) markers
+  
+  ## based on cytokines_CM.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_norm' data2analyse='norm' cytokines_suffix='_norm'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+  tail $ROUT/06_cytokines.Rout
+  
+  ## based on cytokines_CM_RAW.xlsx
+ R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_raw'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+ tail $ROUT/06_cytokines.Rout
+  
+
+done
+fi
 
 
 ##############################################################################
