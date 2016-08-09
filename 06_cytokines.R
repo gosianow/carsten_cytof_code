@@ -19,13 +19,15 @@ library(reshape2)
 library(coop)
 library(RColorBrewer)
 library(UpSetR)
+library(limma)
+
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# cytokines_prefix='pnlCD4_pca1_merging_CD4_CM_'
+# cytokines_prefix='pnlCD4_pca1_merging_CD4_cytCM_'
 # path_panel='panel_CD4.xlsx'
 # path_cytokines_cutoffs='panel_CD4_cytokines_CM.xlsx'
 # path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
@@ -357,6 +359,143 @@ freq2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(tabl2), 
 prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
 
 
+# add more info about samples
+cond_split <- strsplit2(md$condition, "_")
+colnames(cond_split) <- c("day", "response")
+
+md[, c("day", "response")] <- cond_split
+md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+
+
+# -----------------------------
+### Run two-way ANOVA
+
+pvs_anova <- t(apply(prop2[, md$shortname], 1, function(y){
+  # y <- prop2[1, md$shortname]
+  
+  ## there must be at least 10 proportions greater than 0
+  if(sum(y > 0) < 10)
+    return(rep(NA, 3))
+  
+  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+  
+  res_tmp <- aov(y ~ day * response, data = data_tmp)
+  sum_tmp <- summary(res_tmp)
+  
+  sum_tmp[[1]][1:3, "Pr(>F)"]
+  
+}))
+
+colnames(pvs_anova) <- paste0("pval_", c("day", "response", "day:response"))
+pvs_anova <- data.frame(pvs_anova)
+
+
+### Plot histograms of p-values
+ggp <- ggplot(pvs_anova, aes(x = pval_day)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_anova_day", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+ggp <- ggplot(pvs_anova, aes(x = pval_response)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_anova_response", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+
+
+## get adjusted p-values
+
+adjp_anova <- data.frame(apply(pvs_anova, 2, p.adjust, method = "BH"))
+colnames(adjp_anova) <- paste0("adjp_", c("day", "response", "day:response"))
+
+## save the results
+pvs_anova_out <- data.frame(combination = rownames(pvs_anova), pvs_anova, adjp_anova)
+
+write.table(pvs_anova_out, file=file.path(cyDir, paste0(prefix, "pvs_anova", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+table(adjp_anova$adjp_response < 0.05)
+table(adjp_anova$adjp_day < 0.05)
+
+
+
+# -----------------------------
+### Fit a GLM
+
+
+pvs_glm <- t(apply(prop2[, md$shortname], 1, function(y){
+  # y <- prop2[1, md$shortname]
+  
+  ## there must be at least 10 proportions greater than 0
+  if(sum(y > 0) < 10)
+    return(rep(NA, 2))
+  
+  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+  
+  model.matrix(y ~ response + day, data = data_tmp)
+  
+  res_tmp <- glm(y ~ response + day, data = data_tmp)
+  
+  sum_tmp <- summary(res_tmp)
+  
+  out <- as.numeric(sum_tmp$coefficients[c("responseR", "daytx"), "Pr(>|t|)"])
+  
+  return(out)
+  
+}))
+
+
+colnames(pvs_glm) <- paste0("pval_", c("responseR", "daytx"))
+pvs_glm <- data.frame(pvs_glm)
+
+
+### Plot histograms of p-values
+ggp <- ggplot(pvs_glm, aes(x = pval_daytx)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_glm_daytx", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+ggp <- ggplot(pvs_glm, aes(x = pval_responseR)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_glm_responseR", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+
+
+## get adjusted p-values
+
+adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
+colnames(adjp_glm) <- paste0("adjp_", c("responseR", "daytx"))
+
+## save the results
+pvs_glm_out <- data.frame(combination = rownames(pvs_glm), pvs_glm, adjp_glm)
+
+write.table(pvs_glm_out, file=file.path(cyDir, paste0(prefix, "pvs_glm", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+table(adjp_glm$adjp_responseR < 0.05)
+table(adjp_glm$adjp_daytx < 0.05)
+
 
 
 
@@ -366,35 +505,19 @@ prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl
 # ------------------------------------------------------------
 
 
-plotting_wrapper <- function(bimatrix, suffix){
-  # suffix = "_raw"
+plotting_wrapper <- function(bimatrix, plot_comb, suffix){
+  # suffix = "_teeest"
   
   ## freqs based on combination names
   bivec <- apply(bimatrix, 1, function(x){
     paste0(colnames(bimatrix)[x], collapse = ".")
   })
   
-  
   tabl2 <- table(bivec, samp)
   ## skipp the all negative combination ("") for calculating proportions
   tabl2 <- tabl2[rownames(tabl2) != "", ]
-  
-  
+
   prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
-  
-  
-  ## take 10 top frequent positive combinations to plot
-  tabl1 <- table(bivec)
-  freq1 <- as.numeric(tabl1)
-  names(freq1) <- names(tabl1)
-  
-  topnr <- 11
-  top_freq <- names(freq1)[order(freq1, decreasing = TRUE)[1:topnr]]
-  
-  ## skipp the "" all negative combination
-  plot_comb <- top_freq[top_freq != ""]
-  
-  
   
   ### Prepare data for plotting
   
@@ -419,7 +542,7 @@ plotting_wrapper <- function(bimatrix, suffix){
   ggds <- ddply(ggdf, .(group, combination), summarise, mean = mean(prop), sd = sd(prop))
   
   
-  ## plot mean frequencies
+  ## plot mean frequencies as a barplot
   ggp <- ggplot(data = ggds, aes(x = group, y = mean, fill = combination)) +
     geom_bar(stat="identity") +
     theme_bw() +
@@ -437,34 +560,82 @@ plotting_wrapper <- function(bimatrix, suffix){
   dev.off()
   
   
-  ## plot freqs per sample
+  # ## plot freqs per sample as points
+  # ggp <- ggplot(data = ggdf, aes(x = group, y = prop, fill = combination)) +
+  #   geom_point(position = position_jitterdodge(jitter.width = 0.05, dodge.width = 0.8), pch = 21, size = 2) +
+  #   geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean, ymax=mean), position = position_dodge(width = 0.8), colour='black', width=0.4) +
+  #   geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), position = position_dodge(width = 0.8), colour='black', width=0.25) +
+  #   geom_vline(xintercept = c(1:(nlevels(ggdf$group)-1) + 0.5), color="grey90") +
+  #   theme_bw() +
+  #   ylab("Frequency") +
+  #   xlab("") +
+  #   theme(axis.text.x = element_text(size=14, face="bold"), 
+  #     axis.title.y = element_text(size=14, face="bold"),
+  #     panel.grid.major=element_blank(),
+  #     legend.key = element_blank(),
+  #     legend.title=element_blank()) +
+  #   guides(fill = guide_legend(override.aes = list(size = 4)))
+  # 
+  # 
+  # pdf(file.path(cyDir, paste0(prefix, "ppoints", suffix ,".pdf")), w = 14, h = 5)
+  # print(ggp)
+  # dev.off()
+  
+  
+  ## plot freqs per sample as points and facet per combination
   ggp <- ggplot(data = ggdf, aes(x = group, y = prop, fill = combination)) +
-    geom_point(position = position_jitterdodge(jitter.width = 0.05, dodge.width = 0.8), pch = 21, size = 2) +
-    geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean, ymax=mean), position = position_dodge(width = 0.8), colour='black', width=0.4) +
-    geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), position = position_dodge(width = 0.8), colour='black', width=0.25) +
-    geom_vline(xintercept = c(1:(nlevels(ggdf$group)-1) + 0.5), color="grey90") +
+    geom_point(position = position_jitter(width = 0.05), pch = 21, size = 2) +
+    geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
+    geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +
     theme_bw() +
     ylab("Frequency") +
     xlab("") +
+    facet_wrap(~ combination, scales = "free_y") +
     theme(axis.text.x = element_text(size=14, face="bold"), 
       axis.title.y = element_text(size=14, face="bold"),
       panel.grid.major=element_blank(),
+      legend.position="none",
       legend.key = element_blank(),
       legend.title=element_blank()) +
     guides(fill = guide_legend(override.aes = list(size = 4)))
   
   
-  pdf(file.path(cyDir, paste0(prefix, "ppoints", suffix ,".pdf")), w = 14, h = 5)
+  pdf(file.path(cyDir, paste0(prefix, "pfacet", suffix ,".pdf")), w = 14, h = 7)
   print(ggp)
   dev.off()
+  
   
   return(NULL)
 }
 
 
-plotting_wrapper(bimatrix = bimatrix, suffix = suffix)
 
 
+
+## plot top 5 combinations with diff freqs
+
+## ANOVA
+
+plot_comb <- pvs_anova_out[order(pvs_anova_out$adjp_response, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_anova_response", suffix))
+
+
+plot_comb <- pvs_anova_out[order(pvs_anova_out$adjp_day, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_anova_day", suffix))
+
+
+## GLM
+
+plot_comb <- pvs_glm_out[order(pvs_glm_out$adjp_responseR, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_glm_responseR", suffix))
+
+
+plot_comb <- pvs_glm_out[order(pvs_glm_out$adjp_daytx, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_glm_daytx", suffix))
 
 
 
