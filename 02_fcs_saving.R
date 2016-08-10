@@ -21,9 +21,9 @@ library(reshape2)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# save_prefix='pnlCD4_'
-# path_panel='panel_CD4.xlsx'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+save_prefix='pnlCD4_'
+path_panel='panel_CD4.xlsx'
 
 
 ##############################################################################

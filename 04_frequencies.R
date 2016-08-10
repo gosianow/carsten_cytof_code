@@ -17,6 +17,8 @@ library(gplots)
 library(ggplot2)
 library(plyr)
 library(reshape2)
+library(limma) # for strsplit2
+
 
 ##############################################################################
 # Test arguments
@@ -83,7 +85,7 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 
 
 # ---------------------------------------
-# plots and analysis of cluster frequencies
+# Calculate the cluster frequencies per sample
 # ---------------------------------------
 
 
@@ -109,8 +111,125 @@ write.table(freq_out, file=file.path(frqDir,paste0(prefix, "counts.xls")), row.n
 
 
 
+# ------------------------------------------------------------
+# Test for frequency differences between groups
+# ------------------------------------------------------------
 
+prop2 <- prop_out
+
+# add more info about samples
+cond_split <- strsplit2(md$condition, "_")
+colnames(cond_split) <- c("day", "response")
+
+md[, c("day", "response")] <- cond_split
+md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+
+
+# -----------------------------
+### Run two-way ANOVA
+
+pvs_anova <- t(apply(prop2[, md$shortname], 1, function(y){
+  # y <- prop2[1, md$shortname]
+  
+  ## there must be at least 10 proportions greater than 0
+  if(sum(y > 0) < 10)
+    return(rep(NA, 3))
+  
+  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+  
+  res_tmp <- aov(y ~ day * response, data = data_tmp)
+  sum_tmp <- summary(res_tmp)
+  
+  sum_tmp[[1]][1:3, "Pr(>F)"]
+  
+}))
+
+movars <- c("day", "response", "day:response")
+colnames(pvs_anova) <- paste0("pval_", movars)
+
+## get adjusted p-values
+
+adjp_anova <- data.frame(apply(pvs_anova, 2, p.adjust, method = "BH"))
+colnames(adjp_anova) <- paste0("adjp_", movars)
+
+## save the results
+pvs_anova_out <- data.frame(cluster = rownames(pvs_anova), pvs_anova, adjp_anova)
+
+write.table(pvs_anova_out, file=file.path(frqDir, paste0(prefix, "pvs_anova.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+table(adjp_anova$adjp_response < 0.05)
+table(adjp_anova$adjp_day < 0.05)
+
+
+
+# -----------------------------
+### Fit a GLM
+
+
+pvs_glm <- t(apply(prop2[, md$shortname], 1, function(y){
+  # y <- prop2[1, md$shortname]
+  
+  ## there must be at least 10 proportions greater than 0
+  if(sum(y > 0) < 10)
+    return(rep(NA, 4))
+  
+  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+  
+  res_tmp <- glm(y ~ response + day, data = data_tmp)
+  
+  sum_tmp <- summary(res_tmp)
+  
+  out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
+  
+  return(out)
+  
+}))
+
+data_tmp <- data.frame(y = as.numeric(prop2[1, md$shortname]), md[, c("day", "response")])
+momat <- model.matrix(y ~ response + day, data = data_tmp)
+movars <- colnames(momat)
+
+colnames(pvs_glm) <- paste0("pval_", movars)
+
+## get adjusted p-values
+
+adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
+colnames(adjp_glm) <- paste0("adjp_", movars)
+
+## save the results
+pvs_glm_out <- data.frame(cluster = rownames(pvs_glm), pvs_glm, adjp_glm)
+
+write.table(pvs_glm_out, file=file.path(frqDir, paste0(prefix, "pvs_glm.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+table(adjp_glm$adjp_responseR < 0.05)
+table(adjp_glm$adjp_daytx < 0.05)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------
 ### Plot frequencies
+# ---------------------------------------
 
 ggdf <- melt(prop, value.name = "prop")
 

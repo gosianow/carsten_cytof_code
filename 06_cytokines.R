@@ -26,16 +26,16 @@ library(limma)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# cytokines_prefix='pnlCD4_pca1_merging_CD4_cytCM_'
-# path_panel='panel_CD4.xlsx'
-# path_cytokines_cutoffs='panel_CD4_cytokines_CM.xlsx'
-# path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
-# path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
-# clusters2analyse='CM'
-# cutoff_colname='positive_cutoff_norm'
-# data2analyse='norm'
-# cytokines_suffix='_norm'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+cytokines_prefix='pnlCD4_pca1_merging_CD4_cytCM_'
+path_panel='panel_CD4.xlsx'
+path_cytokines_cutoffs='panel_CD4_cytokines_CM.xlsx'
+path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
+path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
+clusters2analyse='CM'
+cutoff_colname='positive_cutoff_norm'
+data2analyse='norm'
+cytokines_suffix='_norm'
 
 ##############################################################################
 # Read in the arguments
@@ -386,7 +386,8 @@ pvs_anova <- t(apply(prop2[, md$shortname], 1, function(y){
   
 }))
 
-colnames(pvs_anova) <- paste0("pval_", c("day", "response", "day:response"))
+movars <- c("day", "response", "day:response")
+colnames(pvs_anova) <- paste0("pval_", movars)
 pvs_anova <- data.frame(pvs_anova)
 
 
@@ -416,7 +417,7 @@ dev.off()
 ## get adjusted p-values
 
 adjp_anova <- data.frame(apply(pvs_anova, 2, p.adjust, method = "BH"))
-colnames(adjp_anova) <- paste0("adjp_", c("day", "response", "day:response"))
+colnames(adjp_anova) <- paste0("adjp_", movars)
 
 ## save the results
 pvs_anova_out <- data.frame(combination = rownames(pvs_anova), pvs_anova, adjp_anova)
@@ -438,24 +439,25 @@ pvs_glm <- t(apply(prop2[, md$shortname], 1, function(y){
   
   ## there must be at least 10 proportions greater than 0
   if(sum(y > 0) < 10)
-    return(rep(NA, 2))
+    return(rep(NA, 4))
   
   data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
-  
-  model.matrix(y ~ response + day, data = data_tmp)
   
   res_tmp <- glm(y ~ response + day, data = data_tmp)
   
   sum_tmp <- summary(res_tmp)
   
-  out <- as.numeric(sum_tmp$coefficients[c("responseR", "daytx"), "Pr(>|t|)"])
+  out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
   
   return(out)
   
 }))
 
+data_tmp <- data.frame(y = as.numeric(prop2[1, md$shortname]), md[, c("day", "response")])
+momat <- model.matrix(y ~ response + day, data = data_tmp)
+movars <- colnames(momat)
 
-colnames(pvs_glm) <- paste0("pval_", c("responseR", "daytx"))
+colnames(pvs_glm) <- paste0("pval_", movars)
 pvs_glm <- data.frame(pvs_glm)
 
 
@@ -485,7 +487,7 @@ dev.off()
 ## get adjusted p-values
 
 adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
-colnames(adjp_glm) <- paste0("adjp_", c("responseR", "daytx"))
+colnames(adjp_glm) <- paste0("adjp_", movars)
 
 ## save the results
 pvs_glm_out <- data.frame(combination = rownames(pvs_glm), pvs_glm, adjp_glm)
