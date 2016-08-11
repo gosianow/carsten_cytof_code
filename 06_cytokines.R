@@ -364,6 +364,10 @@ freq2 <- data.frame(cluster = rownames(tabl2), as.data.frame.matrix(tabl2), stri
 
 prop2 <- data.frame(cluster = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
 
+### Save the frequencies and proportions
+write.table(prop2, file=file.path(cyDir, paste0(prefix, "frequencies", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(freq2, file=file.path(cyDir,paste0(prefix, "counts", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
 
 # add more info about samples
 cond_split <- strsplit2(md$condition, "_")

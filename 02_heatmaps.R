@@ -234,7 +234,7 @@ write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters.xls")), sep 
 
 
 # ------------------------------------------------------------
-# Plot expression of markers in each cluster
+# Plot expression of markers in each cluster - distros plots
 # ------------------------------------------------------------
 
 
@@ -318,24 +318,47 @@ plotting_wrapper(e = elX, suffix = "_norm_ex")
 
 
 # ------------------------------------------------------------
-# Plot expression of markers for all data
+# Plot expression of markers for all data and strat. per sample
 # ------------------------------------------------------------
 
 
 plotting_wrapper2 <- function(e, suffix){
   
-  df <- data.frame(e)
-  dfm <- melt(df)
+  df <- data.frame(samp = samp, e)
+  dfm <- melt(df, id.var = "samp")
+  
+  # add group info
+  mm <- match(dfm$samp, md$shortname)
+  dfm$group <- factor(md$condition[mm])
   
   ggp <- ggplot(dfm, aes(x=value)) + 
-    geom_density(adjust=1, fill = "black", alpha = 0.3) + 
-    facet_wrap(~ variable, nrow = 1, scales = "free") +
+    geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
+    facet_wrap(~ variable, nrow = 2, scales = "free") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
-  pdf(file.path(hmDir, paste0(prefix, "distrosmer", suffix, ".pdf")), w = ncol(e)*3/2, h = 2)
+  pdf(file.path(hmDir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e)*3/2, h = 5)
   print(ggp)
   dev.off()
   
+  ## create colors per group not per sample
+  mm <- match(levels(dfm$samp), md$shortname)
+  groups <- factor(md$condition[mm])
+  color_values <- colorRampPalette(brewer.pal(12,"Paired"))(12)[c(1,3,5,2,4,6)]
+  color_values <- color_values[as.numeric(groups)]
+  names(color_values) <- levels(dfm$samp)
+  
+  ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
+    geom_density(adjust = 1) + 
+    facet_wrap(~ variable, nrow = 2, scales = "free") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
+    guides(color = guide_legend(nrow = 2)) +
+    scale_color_manual(values = color_values)
+  
+  pdf(file.path(hmDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e)*3/2, h = 5)
+  print(ggp)
+  dev.off()
+  
+
   return(NULL)
   
 }

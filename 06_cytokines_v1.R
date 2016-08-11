@@ -215,7 +215,7 @@ distros_wrapper <- function(e, suffix){
     facet_wrap(~ variable, nrow = 3, scales = "free") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
-  pdf(file.path(cyDir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(epn), h = 10)
+  pdf(file.path(cyDir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e), h = 10)
   print(ggp)
   dev.off()
   
@@ -233,7 +233,7 @@ distros_wrapper <- function(e, suffix){
     guides(color = guide_legend(nrow = 2)) +
     scale_color_manual(values = color_values)
   
-  pdf(file.path(cyDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(epn), h = 10)
+  pdf(file.path(cyDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e), h = 10)
   print(ggp)
   dev.off()
   

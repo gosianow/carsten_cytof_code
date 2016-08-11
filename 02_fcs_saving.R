@@ -21,9 +21,9 @@ library(reshape2)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-save_prefix='pnlCD4_'
-path_panel='panel_CD4.xlsx'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+# save_prefix='pnlCD4_'
+# path_panel='panel_CD4.xlsx'
 
 
 ##############################################################################
@@ -47,7 +47,7 @@ setwd(rwd)
 # ------------------------------------------------------------
 
 fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-dmpDir <- "070_dumpfcs"; if( !file.exists(dmpDir) ) dir.create(dmpDir)
+dmpDir <- "060_dumpfcs"; if( !file.exists(dmpDir) ) dir.create(dmpDir)
 
 
 # ------------------------------------------------------------

@@ -7,8 +7,8 @@ RCODE=$RWD_MAIN
 ## Define which analysis to re-run
 pcascores=false
 select_observables=false
-flowsom=true
-heatmaps=true
+flowsom=false
+heatmaps=false
 runtsne=false
 plottsne=false
 frequencies=false
@@ -16,6 +16,7 @@ cluster_merging=false
 cluster_extracting=false
 cytokines=false
 fcs_saving=false
+pd1=true
 
 ##############################################################################
 # Analysis of CK_2016-06-23_01 data
@@ -646,9 +647,10 @@ do
 done
 
 
-### Analysis of positive-negative (cytokine) markers
 clusters2analyse="c('CM','EM','TE')"
 cluster_name="Tmem"
+
+### Analysis of positive-negative (cytokine) markers
 nmetaclusts=40
 
 ## Based on cluster_merging_CD4.xlsx
@@ -696,6 +698,53 @@ do
 done
 fi
 
+
+
+### Analysis of PD-1
+nmetaclusts=20
+
+## Based on cluster_merging_CD4.xlsx
+if ${pd1}; then
+for indx in 0
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD4_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}" # 'merging_CD4'
+
+  ## based on cytokines_CM_RAW.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cyt${cluster_name}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+ tail $ROUT/06_cytokines.Rout
+  
+
+done
+fi
+
+
+## Based on cluster_merging_CD8_2.xlsx
+if ${pd1}; then
+for indx in 1
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+  
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD8_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}_2" # 'merging_CD8_2'
+  
+  ## based on cytokines_CM_RAW.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cyt${cluster_name}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+ tail $ROUT/06_cytokines.Rout
+  
+
+done
+fi
 
 ##############################################################################
 # Analysis of CK_2016-06-23_03 data
