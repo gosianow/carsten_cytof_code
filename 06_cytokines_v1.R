@@ -22,27 +22,21 @@ library(RColorBrewer)
 library(UpSetR)
 library(limma)
 library(FlowSOM)
-library(ConsensusClusterPlus)
-library(pheatmap)
-
-
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# cytokines_prefix='pnlCD4_pca1_merging_CD4_cytCM_'
-# path_panel='panel_CD4.xlsx'
-# path_cytokines_cutoffs='panel_CD4_cytokines_CM_RAW.xlsx'
-# path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
-# path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
-# clusters2analyse='CM'
-# cutoff_colname='positive_cutoff_raw'
-# data2analyse='raw'
-# cytokines_suffix='_raw'
-# nmetaclusts=20
-
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+cytokines_prefix='pnlCD4_pca1_merging_CD4_cytCM_'
+path_panel='panel_CD4.xlsx'
+path_cytokines_cutoffs='panel_CD4_cytokines_CM_RAW.xlsx'
+path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
+path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
+clusters2analyse='CM'
+cutoff_colname='positive_cutoff_raw'
+data2analyse='raw'
+cytokines_suffix='_raw'
 
 ##############################################################################
 # Read in the arguments
@@ -247,7 +241,7 @@ distros_wrapper <- function(e, suffix){
 
 
 
-# distros_wrapper(e = e, suffix = paste0(suffix, "_cyt"))
+distros_wrapper(e = e, suffix = paste0(suffix, "_cyt"))
 
 
 
@@ -261,19 +255,16 @@ mm <- match(colnames(e), cytokines_cutoffs$Antigen)
 e_cut <- cytokines_cutoffs[mm, cutoff_colname]
 names(e_cut) <- colnames(e)
 
+
 ## create the bimatrix
 bimatrix <- t(t(e) > e_cut)
-bimatrix <- apply(bimatrix, 2, as.numeric)
 
-## remove cells that are always negative
-bm <- bimatrix[rowSums(bimatrix) > 0, ]
-samp <- samp[rowSums(bimatrix) > 0]
 
 # ------------------------------------------------------------
 # Upsetr plots
 # ------------------------------------------------------------
 
-bidf <- data.frame(bimatrix, row.names = 1:nrow(bimatrix))
+bidf <- data.frame(apply(bimatrix, 2, as.numeric), row.names = 1:nrow(bimatrix))
 
 pdf(file.path(cyDir, paste0(prefix, "upsetr", suffix, ".pdf")), w = 16, h = 6)
 upset(bidf, sets = colnames(bidf), nintersects = 50, order.by = "freq")
@@ -282,74 +273,68 @@ dev.off()
 
 
 # ------------------------------------------------------------
-# Cell clustering with FlowSOM
+# Frequencies of single cytokines
 # ------------------------------------------------------------
 
-# Number of clusters
-rand_seed <- 1234
+cs <- colSums(bimatrix)
+names(cs) <- paste0("any_", names(cs))
+cs <- c("all" = nrow(bimatrix), "none_positive" = sum(rowSums(bimatrix) == 0), "any_positive" = sum(rowSums(bimatrix) > 0), cs)
+
+fc <- data.frame(set = names(cs), counts = cs)
+
+write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+
+# ------------------------------------------------------------
+# Save frequencies for all combinations
+# ------------------------------------------------------------
+
+
+saving_wrapper <- function(bimatrix, suffix){
+  
+  ## freqs based on combination names
+  bivec <- apply(bimatrix, 1, function(x){
+    paste0(colnames(bimatrix)[x], collapse = ".")
+  })
+  
+  ### Freqs per sample
+  
+  tabl2 <- table(bivec, samp)
+  ## skipp the all negative combination ("") for calculating proportions
+  tabl2 <- tabl2[rownames(tabl2) != "", ]
+  
+  ## save counts 
+  
+  freq2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(tabl2), stringsAsFactors = FALSE)
+  
+  write.table(freq2, file=file.path(cyDir,paste0(prefix, "cytokines_counts", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+  ## save proportions
+  
+  prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
+  
+  write.table(prop2, file=file.path(cyDir, paste0(prefix, "cytokines_frequencies", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+  
+  ### Freqs for all samples
+  
+  tabl1 <- table(bivec)
+  freq1 <- as.numeric(tabl1)
+  names(freq1) <- names(tabl1)
+  names(freq1)[names(freq1) == ""] <- "none_positive"
+  
+  rs <- c("all" = sum(freq1), freq1)
+  fc <- data.frame(set = names(rs), counts = rs, frequencies = rs/rs[1]*100)
+  
+  write.table(fc, file=file.path(cyDir, paste0(prefix, "setsize2", suffix ,".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+  
+  return(NULL)
+}
 
 
 
-# SOM
-set.seed(rand_seed)
-fsom <- FlowSOM::SOM(bm)
-
-
-# consensus clustering that is reproducible with seed
-data <- fsom$codes
-k <- nmetaclusts
-
-pdf(file.path(cyDir, paste0(prefix, "ConsensusClusterPlus", suffix, ".pdf")), width = 7, height = 7)
-
-results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
-  maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
-  plot = NULL, verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed)
-
-dev.off()
-
-
-# get cluster ids
-fsom_mc <- results[[k]]$consensusClass
-clust <- fsom_mc[fsom$mapping[,1]]
-
-
-### Save clustering results
-clust_out <- data.frame(cluster = clust, bm, stringsAsFactors = FALSE)
-
-write.table(clust_out, file = file.path(cyDir, paste0(prefix, "clustering", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
-
-### Save cluster frequencies and the median expression
-
-a <- aggregate(bm, by=list(clust), FUN = mean)
-
-# get cluster frequencies
-freq_clust <- table(clust)
-
-clusters_out <- data.frame(cluster = names(freq_clust), label = names(freq_clust), counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust) * 100, a[, -1])
-
-write.table(clusters_out, file.path(cyDir, paste0(prefix, "clusters", suffix, ".xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-
-
-# ----------------------------
-# Plot heatmaps
-# ----------------------------
-
-expr <- a[, -1]
-rownames(expr) <- a[, 1]
-
-cluster_rows <- hclust(dist(expr), method = "average")
-cluster_cols <- hclust(dist(t(expr)), method = "average")
-
-labels_row <- rownames(expr)
-labels_col <- colnames(expr)
-
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = cluster_cols, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7,  fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(cyDir, paste0(prefix, "pheatmap_row_clust", suffix, ".pdf")), width = 10, height = 7)
-
-
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(cyDir, paste0(prefix, "pheatmap", suffix, ".pdf")), width = 10, height = 7)
-
+saving_wrapper(bimatrix = bimatrix, suffix = suffix)
 
 
 
@@ -357,12 +342,22 @@ pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))
 # Test for frequency differences between groups
 # ------------------------------------------------------------
 
-## Freqs per sample
-tabl2 <- table(clust, samp)
 
-freq2 <- data.frame(cluster = rownames(tabl2), as.data.frame.matrix(tabl2), stringsAsFactors = FALSE)
+## freqs based on combination names
+bivec <- apply(bimatrix, 1, function(x){
+  paste0(colnames(bimatrix)[x], collapse = ".")
+})
 
-prop2 <- data.frame(cluster = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
+### Freqs per sample
+
+tabl2 <- table(bivec, samp)
+## skipp the all negative combination ("") for calculating proportions
+tabl2 <- tabl2[rownames(tabl2) != "", ]
+
+
+freq2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(tabl2), stringsAsFactors = FALSE)
+
+prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
 
 
 # add more info about samples
@@ -397,13 +392,36 @@ colnames(pvs_anova) <- paste0("pval_", movars)
 pvs_anova <- data.frame(pvs_anova)
 
 
+### Plot histograms of p-values
+ggp <- ggplot(pvs_anova, aes(x = pval_day)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_anova_day", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+ggp <- ggplot(pvs_anova, aes(x = pval_response)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_anova_response", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+
+
 ## get adjusted p-values
 
 adjp_anova <- data.frame(apply(pvs_anova, 2, p.adjust, method = "BH"))
 colnames(adjp_anova) <- paste0("adjp_", movars)
 
 ## save the results
-pvs_anova_out <- data.frame(cluster = rownames(pvs_anova), pvs_anova, adjp_anova)
+pvs_anova_out <- data.frame(combination = rownames(pvs_anova), pvs_anova, adjp_anova)
 
 write.table(pvs_anova_out, file=file.path(cyDir, paste0(prefix, "pvs_anova", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
@@ -444,13 +462,36 @@ colnames(pvs_glm) <- paste0("pval_", movars)
 pvs_glm <- data.frame(pvs_glm)
 
 
+### Plot histograms of p-values
+ggp <- ggplot(pvs_glm, aes(x = pval_daytx)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_glm_daytx", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+ggp <- ggplot(pvs_glm, aes(x = pval_responseR)) +
+  geom_histogram(breaks = seq(0,1,0.02)) +
+  ggtitle("Histogram of p-values") +
+  xlab("P-value") +
+  ylab("Frequency")
+
+pdf(file.path(cyDir, paste0(prefix, "pvs_glm_responseR", suffix ,".pdf")), w = 7, h = 7)
+print(ggp)
+dev.off()
+
+
+
 ## get adjusted p-values
 
 adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
 colnames(adjp_glm) <- paste0("adjp_", movars)
 
 ## save the results
-pvs_glm_out <- data.frame(cluster = rownames(pvs_glm), pvs_glm, adjp_glm)
+pvs_glm_out <- data.frame(combination = rownames(pvs_glm), pvs_glm, adjp_glm)
 
 write.table(pvs_glm_out, file=file.path(cyDir, paste0(prefix, "pvs_glm", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
@@ -458,120 +499,148 @@ write.table(pvs_glm_out, file=file.path(cyDir, paste0(prefix, "pvs_glm", suffix,
 table(adjp_glm$adjp_responseR < 0.05)
 table(adjp_glm$adjp_daytx < 0.05)
 
-# -----------------------------
-### Fit a GLM with inteactions
-
-
-pvs_glm <- t(apply(prop2[, md$shortname], 1, function(y){
-  # y <- prop2[1, md$shortname]
-  
-  ## there must be at least 10 proportions greater than 0
-  if(sum(y > 0) < 10)
-    return(rep(NA, 4))
-  
-  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
-  
-  res_tmp <- glm(y ~ response + day + response:day, data = data_tmp)
-  
-  sum_tmp <- summary(res_tmp)
-  
-  out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
-  
-  return(out)
-  
-}))
-
-data_tmp <- data.frame(y = as.numeric(prop2[1, md$shortname]), md[, c("day", "response")])
-momat <- model.matrix(y ~ response + day + response:day, data = data_tmp)
-movars <- colnames(momat)
-
-colnames(pvs_glm) <- paste0("pval_", movars)
-pvs_glm <- data.frame(pvs_glm)
-
-
-## get adjusted p-values
-
-adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
-colnames(adjp_glm) <- paste0("adjp_", movars)
-
-## save the results
-pvs_glm_out <- data.frame(cluster = rownames(pvs_glm), pvs_glm, adjp_glm)
-
-write.table(pvs_glm_out, file=file.path(cyDir, paste0(prefix, "pvs_glminter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
-table(adjp_glm$adjp_responseR < 0.05)
-table(adjp_glm$adjp_daytx < 0.05)
 
 
 
 
 # ------------------------------------------------------------
-# Plots of frequencies for clusters
+# Plots of frequencies for combinations of interest
 # ------------------------------------------------------------
 
-cluster <- clust
 
-## Freqs per sample
-tabl2 <- table(cluster, samp)
-
-prop <- t(t(tabl2) / colSums(tabl2)) * 100
-
-
-ggdf <- melt(prop, value.name = "prop")
-
-
-## add group info
-mm <- match(ggdf$samp, md$shortname)
-ggdf$group <- factor(md$condition[mm])
-
-## merge base_HD and tx_HD into one level - HD
-# new_levels <- levels(ggdf$group)
-# new_levels[grep("HD", new_levels)] <- "HD"
-# levels(ggdf$group) <- new_levels
-
-## replace _ with \n
-levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
-
-## calculate mean and sd for the error bars on the plot
-ggds <- ddply(ggdf, .(group, cluster), summarise, mean = mean(prop), sd = sd(prop))
-
-
-## plot each cluster as a separate page in the pdf file
-ggp <- list()
-
-ggdf$cluster <- factor(ggdf$cluster)
-clusters <- levels(ggdf$cluster)
-
-for(i in 1:nlevels(ggdf$cluster)){
+plotting_wrapper <- function(bimatrix, plot_comb, suffix){
+  # suffix = "_teeest"
   
-  df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
-  ds <- ggds[ggds$cluster == clusters[i], , drop = FALSE]
+  ## freqs based on combination names
+  bivec <- apply(bimatrix, 1, function(x){
+    paste0(colnames(bimatrix)[x], collapse = ".")
+  })
   
-  ggp[[i]] <- ggplot(df, aes(x = group, y = prop)) +
-    geom_jitter(size=2.5, shape = 17, width = 0.5) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +
-    ggtitle(clusters[i]) +
+  tabl2 <- table(bivec, samp)
+  ## skipp the all negative combination ("") for calculating proportions
+  tabl2 <- tabl2[rownames(tabl2) != "", ]
+
+  prop2 <- data.frame(combination = rownames(tabl2), as.data.frame.matrix(t(t(tabl2) / colSums(tabl2))) * 100, stringsAsFactors = FALSE)
+  
+  ### Prepare data for plotting
+  
+  ggdf <- melt(prop2[plot_comb,], id.vars = "combination", value.name = "prop", variable.name = "samp")
+  
+  # order like in top freq
+  ggdf$combination <- factor(ggdf$combination, levels = plot_comb)
+  
+  # add group info
+  mm <- match(ggdf$samp, md$shortname)
+  ggdf$group <- factor(md$condition[mm])
+  
+  ## merge base_HD and tx_HD into one level - HD
+  # new_levels <- levels(ggdf$group)
+  # new_levels[grep("HD", new_levels)] <- "HD"
+  # levels(ggdf$group) <- new_levels
+  
+  ## replace _ with \n
+  levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
+  
+  ## calculate mean and sd for the error bars on the plot
+  ggds <- ddply(ggdf, .(group, combination), summarise, mean = mean(prop), sd = sd(prop))
+  
+  
+  ## plot mean frequencies as a barplot
+  ggp <- ggplot(data = ggds, aes(x = group, y = mean, fill = combination)) +
+    geom_bar(stat="identity") +
+    theme_bw() +
+    ylab("Mean frequency") +
+    xlab("") +
+    theme(axis.text.x = element_text(size=14, face="bold"), 
+      axis.title.y = element_text(size=14, face="bold"),
+      panel.grid.major=element_blank(),
+      legend.key = element_blank(),
+      legend.title=element_blank())
+  
+  
+  pdf(file.path(cyDir, paste0(prefix, "pbar", suffix ,".pdf")), w = 9, h = 7)
+  print(ggp)
+  dev.off()
+  
+  
+  # ## plot freqs per sample as points
+  # ggp <- ggplot(data = ggdf, aes(x = group, y = prop, fill = combination)) +
+  #   geom_point(position = position_jitterdodge(jitter.width = 0.05, dodge.width = 0.8), pch = 21, size = 2) +
+  #   geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean, ymax=mean), position = position_dodge(width = 0.8), colour='black', width=0.4) +
+  #   geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), position = position_dodge(width = 0.8), colour='black', width=0.25) +
+  #   geom_vline(xintercept = c(1:(nlevels(ggdf$group)-1) + 0.5), color="grey90") +
+  #   theme_bw() +
+  #   ylab("Frequency") +
+  #   xlab("") +
+  #   theme(axis.text.x = element_text(size=14, face="bold"), 
+  #     axis.title.y = element_text(size=14, face="bold"),
+  #     panel.grid.major=element_blank(),
+  #     legend.key = element_blank(),
+  #     legend.title=element_blank()) +
+  #   guides(fill = guide_legend(override.aes = list(size = 4)))
+  # 
+  # 
+  # pdf(file.path(cyDir, paste0(prefix, "ppoints", suffix ,".pdf")), w = 14, h = 5)
+  # print(ggp)
+  # dev.off()
+  
+  
+  ## plot freqs per sample as points and facet per combination
+  ggp <- ggplot(data = ggdf, aes(x = group, y = prop, fill = combination)) +
+    geom_point(position = position_jitter(width = 0.05), pch = 21, size = 2) +
+    geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
+    geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +
     theme_bw() +
     ylab("Frequency") +
     xlab("") +
-    ylim(c(0, max(df$prop))) +
-    theme(axis.text.x = element_text(size=12, face="bold"), 
-      axis.title.y = element_text(size=12, face="bold"), 
-      panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), 
-      panel.border = element_blank(), 
-      axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
-      axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"))
+    facet_wrap(~ combination, scales = "free_y") +
+    theme(axis.text.x = element_text(size=14, face="bold"), 
+      axis.title.y = element_text(size=14, face="bold"),
+      panel.grid.major=element_blank(),
+      legend.position="none",
+      legend.key = element_blank(),
+      legend.title=element_blank()) +
+    guides(fill = guide_legend(override.aes = list(size = 4)))
   
+  
+  pdf(file.path(cyDir, paste0(prefix, "pfacet", suffix ,".pdf")), w = 14, h = 7)
+  print(ggp)
+  dev.off()
+  
+  
+  return(NULL)
 }
 
 
-pdf(file.path(cyDir, paste0(prefix, "frequencies", suffix, ".pdf")), w=5, h=4, onefile=TRUE)
-for(i in seq(length(ggp)))
-  print(ggp[[i]])
-dev.off()
+
+
+
+## plot top 5 combinations with diff freqs
+
+## ANOVA
+
+plot_comb <- pvs_anova_out[order(pvs_anova_out$adjp_response, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_anova_response", suffix))
+
+
+plot_comb <- pvs_anova_out[order(pvs_anova_out$adjp_day, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_anova_day", suffix))
+
+
+## GLM
+
+plot_comb <- pvs_glm_out[order(pvs_glm_out$adjp_responseR, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_glm_responseR", suffix))
+
+
+plot_comb <- pvs_glm_out[order(pvs_glm_out$adjp_daytx, decreasing = FALSE)[1:5], "combination"]
+
+plotting_wrapper(bimatrix = bimatrix, plot_comb = plot_comb, suffix = paste0("_top5_glm_daytx", suffix))
+
+
 
 
 

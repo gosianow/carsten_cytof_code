@@ -20,6 +20,8 @@ library(reshape2)
 library(coop)
 library(pheatmap)
 library(RColorBrewer)
+library(ConsensusClusterPlus)
+
 
 ##############################################################################
 # Test arguments
@@ -29,7 +31,7 @@ library(RColorBrewer)
 # flowsom_prefix=''
 # path_clustering_observables='pca1_clustering_observables.xls'
 # rand_seed_consensus=123
-
+# nmetaclusts=20
 
 ##############################################################################
 # Read in the arguments
@@ -105,7 +107,7 @@ fcsT <- lapply(fcs, function(u) {
 
 
 # Number of clusters
-nmetaclusts <- 20
+
 
 fs <- as(fcsT,"flowSet")
 
@@ -123,7 +125,7 @@ fsom <- FlowSOM::BuildSOM(fsom, colsToUse = scols)
 data <- fsom$map$codes
 k <- nmetaclusts
 
-pdf(file.path(hmDir, paste0(flowsom_prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 10)
+pdf(file.path(hmDir, paste0(flowsom_prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 7)
 
 results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
   maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),

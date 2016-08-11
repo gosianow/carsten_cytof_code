@@ -7,12 +7,11 @@ RCODE=$RWD_MAIN
 ## Define which analysis to re-run
 pcascores=false
 select_observables=false
-flowsom=false
-cluster_merging=false
-heatmaps=false
+flowsom=true
+heatmaps=true
 runtsne=false
 plottsne=false
-frequencies=true
+frequencies=false
 cluster_merging=false
 cluster_extracting=false
 cytokines=false
@@ -41,7 +40,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' rand_seed_consensus=123" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=123" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
@@ -245,7 +244,7 @@ do
 
   ### FlowSOM clustering
   if ${flowsom}; then
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${pca_prefix}cl20_' path_clustering_observables='${pca_prefix}clustering_observables.xls' rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${pca_prefix}cl20_' path_clustering_observables='${pca_prefix}clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
   tail $ROUT/02_flowsom.Rout
   fi
 
@@ -369,7 +368,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
@@ -564,7 +563,7 @@ do
 
   ### FlowSOM clustering
   if ${flowsom}; then
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${pca_prefix}cl20_' path_clustering_observables='${pca_prefix}clustering_observables.xls' rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${pca_prefix}cl20_' path_clustering_observables='${pca_prefix}clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
   tail $ROUT/02_flowsom.Rout
   fi
 
@@ -647,7 +646,12 @@ do
 done
 
 
-### Getting CM from cluster_merging_CD4.xlsx
+### Analysis of positive-negative (cytokine) markers
+clusters2analyse="c('CM','EM','TE')"
+cluster_name="Tmem"
+nmetaclusts=40
+
+## Based on cluster_merging_CD4.xlsx
 if ${cytokines}; then
 for indx in 0
 do
@@ -659,15 +663,9 @@ do
   
   pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD4_pca1_'
   merging_prefix="merging_${extr_dir[$indx]}" # 'merging_CD4'
-  
-  ### Analysis of positive-negative (cytokine) markers
-  
-  ## based on cytokines_CM.xlsx
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_norm' data2analyse='norm' cytokines_suffix='_norm'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
-  tail $ROUT/06_cytokines.Rout
-  
+
   ## based on cytokines_CM_RAW.xlsx
- R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_raw'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cyt${cluster_name}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
  tail $ROUT/06_cytokines.Rout
   
 
@@ -675,7 +673,9 @@ done
 fi
 
 
-### Getting CM from cluster_merging_CD8_2.xlsx
+nmetaclusts=20
+
+## Based on cluster_merging_CD8_2.xlsx
 if ${cytokines}; then
 for indx in 1
 do
@@ -685,17 +685,11 @@ do
   mkdir -p $ROUT
   echo "$RWD"
   
-  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD4_pca1_'
-  merging_prefix="merging_${extr_dir[$indx]}_2" # 'merging_CD4_2'
-  
-  ### Analysis of positive-negative (cytokine) markers
-  
-  ## based on cytokines_CM.xlsx
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_norm' data2analyse='norm' cytokines_suffix='_norm'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
-  tail $ROUT/06_cytokines.Rout
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD8_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}_2" # 'merging_CD8_2'
   
   ## based on cytokines_CM_RAW.xlsx
- R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cytCM_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse='CM' cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_raw'" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cyt${cluster_name}_' path_panel='panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
  tail $ROUT/06_cytokines.Rout
   
 
@@ -726,7 +720,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
@@ -765,7 +759,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca2_cl20_' path_clustering_observables='pca2_clustering_observables.xls' rand_seed_consensus=123" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca2_cl20_' path_clustering_observables='pca2_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=123" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
@@ -868,7 +862,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
@@ -963,7 +957,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' rand_seed_consensus=123" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=123" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
@@ -1061,7 +1055,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1_cl20_' path_clustering_observables='pca1_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
@@ -1097,7 +1091,7 @@ fi
 
 ### FlowSOM clustering
 if ${flowsom}; then
-R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1v23_cl20_' path_clustering_observables='${RWD_MAIN}/CK_2016-06-23_03/030_heatmaps/pca1_clustering_observables.xls' rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='pca1v23_cl20_' path_clustering_observables='${RWD_MAIN}/CK_2016-06-23_03/030_heatmaps/pca1_clustering_observables.xls' nmetaclusts=20 rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
 tail $ROUT/02_flowsom.Rout
 fi
 
