@@ -438,6 +438,106 @@ Analysis_block_5_cluster_merging_CD4_CD8
 # -------------------------------------------------------------
 
 
+clusters2analyse="c('CM','EM','TE')"
+cluster_name="Tmem"
+
+### Analysis of positive-negative (cytokine) markers
+nmetaclusts=40
+
+## Based on cluster_merging_CD4.xlsx
+if ${cytokines}; then
+for indx in 0
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD4_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}" # 'merging_CD4'
+
+  ## based on cytokines_CM_RAW.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cyt${cluster_name}_' path_panel='${PANELS}/panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='${PANELS}/panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+ tail $ROUT/06_cytokines.Rout
+
+
+done
+fi
+
+
+nmetaclusts=20
+
+## Based on cluster_merging_CD8_2.xlsx
+if ${cytokines}; then
+for indx in 1
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD8_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}_2" # 'merging_CD8_2'
+
+  ## based on cytokines_CM_RAW.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${pca_prefix}${merging_prefix}_cyt${cluster_name}_' path_panel='${PANELS}/panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='${PANELS}/panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines.R $ROUT/06_cytokines.Rout
+ tail $ROUT/06_cytokines.Rout
+
+
+done
+fi
+
+
+
+### Analysis of PD-1
+nmetaclusts=20
+
+## Based on cluster_merging_CD4.xlsx
+if ${pd1}; then
+for indx in 0
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD4_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}" # 'merging_CD4'
+
+  ## based on cytokines_CM_RAW.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pd1_prefix='${pca_prefix}${merging_prefix}_pd1${cluster_name}_' path_panel='${PANELS}/panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='${PANELS}/panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/07_pd1.R $ROUT/07_pd1.Rout
+ tail $ROUT/07_pd1.Rout
+
+
+done
+fi
+
+
+## Based on cluster_merging_CD8_2.xlsx
+if ${pd1}; then
+for indx in 1
+do
+
+  RWD=$RWD_MAIN/${data}_${extr_dir[$indx]}_${merging}
+  ROUT=$RWD/Rout
+  mkdir -p $ROUT
+  echo "$RWD"
+
+  pca_prefix="pnl${extr_dir[$indx]}_pca1_" # 'pnlCD8_pca1_'
+  merging_prefix="merging_${extr_dir[$indx]}_2" # 'merging_CD8_2'
+
+  ## based on cytokines_CM_RAW.xlsx
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pd1_prefix='${pca_prefix}${merging_prefix}_pd1${cluster_name}_' path_panel='${PANELS}/panel_${extr_dir[$indx]}.xlsx' path_cytokines_cutoffs='${PANELS}/panel_${extr_dir[$indx]}_cytokines_CM_RAW.xlsx' path_clustering='${pca_prefix}${merging_prefix}_clustering.xls' path_clustering_labels='${pca_prefix}${merging_prefix}_clustering_labels.xls' clusters2analyse=${clusters2analyse} cutoff_colname='positive_cutoff_raw' data2analyse='raw' cytokines_suffix='_${nmetaclusts}cl_raw' nmetaclusts=${nmetaclusts}" $RCODE/07_pd1.R $ROUT/07_pd1.Rout
+ tail $ROUT/07_pd1.Rout
+
+
+done
+fi
+
+
 ##############################################################################
 # Analysis of CK_2016-06-23_03 data
 # Use Analysis block 1
@@ -483,3 +583,272 @@ file_merging="cluster_merging3.xlsx"
 prefix_merging="merging3_"
 
 Analysis_block_2_cluster_merging
+
+##############################################################################
+# Analysis of CK_2016-06-23_03all data using panel3_v2.xlsx
+# Use Analysis block 1
+##############################################################################
+
+DATA=23
+PANEL=3
+RWD=$RWD_MAIN/CK_2016-06-23_03all
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+echo "$RWD"
+
+file_panel="panel3_v2.xlsx"
+file_metadata="metadata_23_03all.xlsx"
+
+pca_score_cutoff=1
+nmetaclusts=20
+rand_seed_consensus=1234
+
+prefix_data="${DATA}_"
+prefix_panel="03v2_"
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+Analysis_block_1_main
+
+##############################################################################
+# Analysis of CK_2016-06-23_03all data using panel3_v3.xlsx
+# Use Analysis block 1
+##############################################################################
+
+DATA=23
+PANEL=3
+RWD=$RWD_MAIN/CK_2016-06-23_03all
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+echo "$RWD"
+
+file_panel="panel3_v3.xlsx"
+file_metadata="metadata_23_03all.xlsx"
+
+pca_score_cutoff=1
+nmetaclusts=20
+rand_seed_consensus=1234
+
+prefix_data="${DATA}_"
+prefix_panel="03v3_"
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+Analysis_block_1_main
+
+##############################################################################
+# Analysis of CK_2016-06-29_01 data
+# Use Analysis block 1
+##############################################################################
+
+DATA=29
+PANEL=1
+RWD=$RWD_MAIN/CK_2016-06-29_01
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+echo "$RWD"
+
+file_panel="panel1.xlsx"
+file_metadata="metadata_29_01.xlsx"
+
+pca_score_cutoff=3.5
+rand_seed_consensus=1234
+nmetaclusts=20
+
+prefix_data="29_"
+prefix_panel="01_"
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+Analysis_block_1_main
+
+##########################################
+# Analysis of CK_2016-06-29_01 merging2
+# Use Analysis block 2
+##########################################
+
+file_merging="cluster_merging2.xlsx"
+prefix_merging="merging2_"
+
+Analysis_block_2_cluster_merging
+
+##########################################
+# CK_2016-06-29_01 - CD4 and CD8 cluster extracting from merging2
+# Use Analysis block 3
+##########################################
+
+DATA=29
+PANEL=1
+RWD=$RWD_MAIN/CK_2016-06-29_01
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+echo "$RWD"
+
+file_metadata="metadata_29_01.xlsx"
+
+prefix_data="29_"
+prefix_panel="01_"
+prefix_pca="pca1_"
+
+prefix_merging="merging2_"
+
+extract_cluster=('CD4' 'CD8')
+extract_dir=('CK_2016-06-29_01_CD4_merging2' 'CK_2016-06-29_01_CD8_merging2')
+
+Analysis_block_3_cluster_extracting
+
+##########################################
+# Analysis of CK_2016-06-29_01_CD4_merging2 using panel1CD4.xlsx
+# and CK_2016-06-29_01_CD8_merging2 using panel1CD8.xlsx
+# Use Analysis block 4
+##########################################
+
+DATA=29
+PANEL=1
+
+file_metadata="metadata_29_01.xlsx"
+
+rand_seed_consensus=1234
+nmetaclusts=20
+
+prefix_data="29_"
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+data_dir=('CK_2016-06-29_01_CD4_merging2' 'CK_2016-06-29_01_CD8_merging2')
+file_panel=('panel1CD4.xlsx' 'panel1CD8.xlsx')
+prefix_panel=('01CD4_' '01CD8_')
+pca_score_cutoff=(1.9 1.9)
+
+Analysis_block_4_main_CD4_CD8
+
+##############################################################################
+# Analysis of CK_2016-06-29_02 data
+# Use Analysis block 1
+##############################################################################
+
+DATA=29
+PANEL=2
+RWD=$RWD_MAIN/CK_2016-06-29_02
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+echo "$RWD"
+
+file_panel="panel2.xlsx"
+file_metadata="metadata_29_02.xlsx"
+
+pca_score_cutoff=1
+rand_seed_consensus=123
+nmetaclusts=20
+
+prefix_data="29_"
+prefix_panel="02_"
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+Analysis_block_1_main
+
+##########################################
+# Analysis of CK_2016-06-29_02 merging
+# Use Analysis block 2
+##########################################
+
+file_merging="cluster_merging.xlsx"
+prefix_merging="merging_"
+
+Analysis_block_2_cluster_merging
+
+##########################################
+# CK_2016-06-29_02 - CD4 and CD8 cluster extracting from merging
+# Use Analysis block 3
+##########################################
+
+DATA=29
+PANEL=2
+RWD=$RWD_MAIN/CK_2016-06-29_02
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+echo "$RWD"
+
+file_metadata="metadata_29_02.xlsx"
+
+prefix_data="29_"
+prefix_panel="02_"
+prefix_pca="pca1_"
+
+prefix_merging="merging_"
+
+extract_cluster=('CD4' 'CD8')
+extract_dir=('CK_2016-06-29_02_CD4_merging' 'CK_2016-06-29_02_CD8_merging')
+
+Analysis_block_3_cluster_extracting
+
+##########################################
+# Analysis of CK_2016-06-29_02_CD4_merging using panel2CD4.xlsx
+# and CK_2016-06-29_02_CD8_merging using panel2CD8.xlsx
+# Use Analysis block 4
+##########################################
+
+DATA=29
+PANEL=2
+
+file_metadata="metadata_29_02.xlsx"
+
+rand_seed_consensus=1234
+nmetaclusts=20
+
+prefix_data="29_"
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+data_dir=('CK_2016-06-29_02_CD4_merging' 'CK_2016-06-29_02_CD8_merging')
+file_panel=('panel2CD4.xlsx' 'panel2CD8.xlsx')
+prefix_panel=('02CD4_' '02CD8_')
+pca_score_cutoff=(1.2 1)
+
+Analysis_block_4_main_CD4_CD8
+
+##############################################################################
+# Analysis of CK_2016-06-29_03 data
+# Use Analysis block 1
+##############################################################################
+
+DATA=29
+PANEL=3
+RWD=$RWD_MAIN/CK_2016-06-29_03
+ROUT=$RWD/Rout
+mkdir -p $ROUT
+echo "$RWD"
+
+file_panel="panel3.xlsx"
+file_metadata="metadata_29_03.xlsx"
+
+pca_score_cutoff=0.9
+rand_seed_consensus=1234
+nmetaclusts=20
+
+prefix_data="29_"
+prefix_panel="03_"
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+Analysis_block_1_main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
