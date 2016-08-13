@@ -33,6 +33,7 @@ library(coop) # cosine
 # tsne_cmin=1000
 # pdf_width=15
 # pdf_height=10
+# path_metadata
 
 ##############################################################################
 # Read in the arguments
@@ -51,17 +52,6 @@ setwd(rwd)
 
 prefix <- tsnep_prefix
 
-
-### Colors for 20 clusters 
-# ggplot palette
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length=n+1)
-  hcl(h=hues, l=60 , c=100)[1:n]
-}
-
-color_ramp <- c(colorRampPalette(brewer.pal(12,"Paired"))(12)[-c(11)],  gg_color_hue(9) )
-
-
 # ------------------------------------------------------------
 # define directories
 # ------------------------------------------------------------
@@ -77,7 +67,7 @@ sneDir <- "040_tsnemaps"; if( !file.exists(sneDir) ) dir.create(sneDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 
 # ------------------------------------------------------------
@@ -90,6 +80,17 @@ clust <- clust[, 1]
 labels <- read.table(file.path(hmDir, path_clustering_labels), header = TRUE, sep = "\t", as.is = TRUE)
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
+
+
+
+### Colors for 20 clusters 
+# ggplot palette
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length=n+1)
+  hcl(h=hues, l=60 , c=100)[1:n]
+}
+
+color_ramp <- c(colorRampPalette(brewer.pal(12,"Paired"))(12)[-c(11)],  gg_color_hue(max(1, nlevels(labels$label)-11)) )
 
 tsne_colors <- color_ramp[1:nlevels(labels$label)]
 names(tsne_colors) <- levels(labels$label)

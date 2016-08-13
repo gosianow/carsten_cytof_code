@@ -28,7 +28,7 @@ library(limma) # for strsplit2
 # freq_prefix='pnlCD4_pca1_merging_CD4_'
 # path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
 # path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
-
+# path_metadata
 
 ##############################################################################
 # Read in the arguments
@@ -62,7 +62,7 @@ frqDir <- "050_frequencies"; if( !file.exists(frqDir) ) dir.create(frqDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)

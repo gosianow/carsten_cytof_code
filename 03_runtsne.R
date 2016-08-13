@@ -33,6 +33,8 @@ library(Rtsne)
 # tsne_prefix='pca1_cl20_'
 # path_clustering_observables='pca1_cl20_clustering_observables.xls'
 # tsne_pmin=1500
+# path_metadata
+
 
 ##############################################################################
 # Read in the arguments
@@ -72,7 +74,7 @@ sneDir <- "040_tsnemaps"; if( !file.exists(sneDir) ) dir.create(sneDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)

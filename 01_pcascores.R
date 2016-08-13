@@ -18,14 +18,16 @@ library(ggplot2)
 library(plyr)
 library(reshape2)
 library(coop)
+library(RColorBrewer)
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03'
 # pcas_prefix=''
-# path_panel='panel.xlsx'
+# path_panel='CK_panels/panel.xlsx'
+# path_metadata='CK_metadata/metadata.xlsx'
 
 ##############################################################################
 # Read in the arguments
@@ -42,6 +44,7 @@ print(args)
 
 setwd(rwd)
 
+prefix <- pcas_prefix
 
 # ------------------------------------------------------------
 # define directories
@@ -56,7 +59,7 @@ pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
@@ -95,6 +98,9 @@ fcsT <- lapply(fcs, function(u) {
 })
 
 
+### Create sample info
+samp <- rep(names(fcs), sapply(fcs, nrow))
+
 
 # --------------------------------------------------------------------------
 # run Levine et al. 2015 marker scoring,
@@ -117,18 +123,55 @@ es <- lapply(fcsT, function(u) {
 
 prs <- sapply(es, doPRINCOMP)
 rmprs <- rowMeans(prs)
+
+
+prs <- data.frame(mass = rownames(prs), marker = fcs_panel$Antigen[cols], avg_score=rmprs, round(prs,3))
+
+
+### Save ordered PCA scores
 o <- order(rmprs, decreasing=TRUE)
+prs <- prs[o,]
 
-prs <- data.frame(mass = rownames(prs), marker = fcs_panel$Antigen[cols], avg_score=rmprs, round(prs,3))[o,]
+write.table(prs, file = file.path(pcaDir, paste0(prefix, "princompscore_by_sample.xls")), sep="\t", row.names=FALSE, quote=FALSE)
 
-write.table(prs, file = file.path(pcaDir, paste0(pcas_prefix, "princompscore_by_sample.xls")), sep="\t", row.names=FALSE, quote=FALSE)
+
+
+
+## plot PCA scores
+
+ggp1 <- ggplot(prs, aes(x = marker, y = avg_score)) +
+  geom_bar(stat="identity") +
+  theme_bw() +
+  ylab("Average PCA score") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12))
+
+
+## plot PCA scores for ordered markers
+
+prs$marker <- factor(prs$marker, levels = prs$marker)
+
+ggp2 <- ggplot(prs, aes(x = marker, y = avg_score)) +
+  geom_bar(stat="identity") +
+  theme_bw() +
+  ylab("Average PCA score") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12))
+
+
+pdf(file.path(pcaDir, paste0(prefix, "princompscore_average.pdf")), width = 10, height = 7)
+print(ggp1)
+print(ggp2)
+dev.off()
+
+
+
+
 
 
 
 
 ### Plot chanel distributions
 
-pdf(file.path(pcaDir, paste0(pcas_prefix, "channel_distributions.pdf")))
+pdf(file.path(pcaDir, paste0(prefix, "channel_distributions.pdf")))
 
 m <- match(panel_mass[cols], panel$Isotope)
 ttl <- panel$Antigen[m]
@@ -158,27 +201,6 @@ for(i in 1:length(cols)) {
   
 }
 dev.off()
-
-
-
-
-
-### Plot chanel distributions with ggplot - not finished
-
-# samp <- rep( names(fcsT), sapply(fcsT, nrow) )
-# 
-# e <- do.call("rbind",es)
-# colnames(e) <- fcs_panel$Antigen[cols]
-# 
-# 
-# ggdf <- data.frame(samp = samp, e)
-# 
-# 
-# pdf(file.path(pcaDir, paste0(pcas_prefix, "channel_distributions.pdf")))
-# for (i in seq(length(ggp)))
-#   print(ggp[[i]])
-# dev.off()
-
 
 
 

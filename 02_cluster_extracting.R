@@ -27,6 +27,8 @@ library(reshape2)
 # path_clustering_labels='pca1_mergingNEW_clustering_labels.xls'
 # extract_cluster='CD4'
 # extract_dir='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01_CD4/010_cleanfcs'
+# path_metadata
+
 
 ##############################################################################
 # Read in the arguments
@@ -59,7 +61,7 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 
 # define FCS file names

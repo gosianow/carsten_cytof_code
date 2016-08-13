@@ -33,7 +33,8 @@ library(ConsensusClusterPlus)
 # path_clustering_observables='pca1_clustering_observables.xls'
 # path_clustering='pca1_cl20_clustering.xls'
 # path_clustering_labels='pca1_cl20_clustering_labels.xls'
-# path_pcascore='princompscore_by_sample.xls'
+# path_pca_score='princompscore_by_sample.xls'
+# path_metadata
 
 ##############################################################################
 # Read in the arguments
@@ -67,7 +68,7 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
@@ -102,6 +103,8 @@ fcsT <- lapply(fcs, function(u) {
   u
 })
 
+### Create sample info
+samp <- rep(names(fcs), sapply(fcs, nrow))
 
 
 # ------------------------------------------------------------
@@ -109,10 +112,10 @@ fcsT <- lapply(fcs, function(u) {
 # ------------------------------------------------------------
 
 # pca scores
-if(!grepl("/", path_pcascore)){
-  prs <- read.table(file.path(pcaDir, path_pcascore), header = TRUE, sep = "\t", as.is = TRUE)
+if(!grepl("/", path_pca_score)){
+  prs <- read.table(file.path(pcaDir, path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
 }else{
-  prs <- read.table(path_pcascore, header = TRUE, sep = "\t", as.is = TRUE)
+  prs <- read.table(path_pca_score, header = TRUE, sep = "\t", as.is = TRUE)
 }
 
 rownames(prs) <- prs$mass
@@ -333,10 +336,10 @@ plotting_wrapper2 <- function(e, suffix){
   
   ggp <- ggplot(dfm, aes(x=value)) + 
     geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
-    facet_wrap(~ variable, nrow = 2, scales = "free") +
+    facet_wrap(~ variable, nrow = 3, scales = "free") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
-  pdf(file.path(hmDir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e)*3/2, h = 5)
+  pdf(file.path(hmDir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e), h = 10)
   print(ggp)
   dev.off()
   
@@ -349,12 +352,12 @@ plotting_wrapper2 <- function(e, suffix){
   
   ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
     geom_density(adjust = 1) + 
-    facet_wrap(~ variable, nrow = 2, scales = "free") +
+    facet_wrap(~ variable, nrow = 3, scales = "free") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
     guides(color = guide_legend(nrow = 2)) +
     scale_color_manual(values = color_values)
   
-  pdf(file.path(hmDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e)*3/2, h = 5)
+  pdf(file.path(hmDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e), h = 10)
   print(ggp)
   dev.off()
   
@@ -362,6 +365,8 @@ plotting_wrapper2 <- function(e, suffix){
   return(NULL)
   
 }
+
+
 
 
 ## Raw expression, included observables

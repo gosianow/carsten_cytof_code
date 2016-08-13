@@ -42,7 +42,7 @@ library(pheatmap)
 # data2analyse='raw'
 # cytokines_suffix='_raw'
 # nmetaclusts=20
-
+# path_metadata
 
 ##############################################################################
 # Read in the arguments
@@ -80,7 +80,7 @@ cyDir <- "060_cytokines"; if( !file.exists(cyDir) ) dir.create(cyDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
@@ -115,6 +115,8 @@ fcsT <- lapply(fcs, function(u) {
   u
 })
 
+### Create sample info
+samp <- rep(names(fcs), sapply(fcs, nrow))
 
 
 # ------------------------------------------------------------

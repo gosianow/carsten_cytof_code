@@ -32,6 +32,7 @@ library(ConsensusClusterPlus)
 # path_clustering_observables='pca1_clustering_observables.xls'
 # rand_seed_consensus=123
 # nmetaclusts=20
+# path_metadata
 
 ##############################################################################
 # Read in the arguments
@@ -49,6 +50,7 @@ print(args)
 setwd(rwd)
 rand_seed <- 1234
 
+prefix <- flowsom_prefix
 
 # ------------------------------------------------------------
 # define directories
@@ -64,7 +66,7 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
@@ -125,7 +127,7 @@ fsom <- FlowSOM::BuildSOM(fsom, colsToUse = scols)
 data <- fsom$map$codes
 k <- nmetaclusts
 
-pdf(file.path(hmDir, paste0(flowsom_prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 7)
+pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 7)
 
 results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
   maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
@@ -147,16 +149,16 @@ freq_clust <- table(clust)
 
 ### Save clustering results
 
-save(fsom, file = file.path(hmDir, paste0(flowsom_prefix, "fsom.rda")))
-save(fsom_mc, file = file.path(hmDir, paste0(flowsom_prefix, "fsom_mc.rda")))
+save(fsom, file = file.path(hmDir, paste0(prefix, "fsom.rda")))
+save(fsom_mc, file = file.path(hmDir, paste0(prefix, "fsom_mc.rda")))
 
 
 clust_out <- data.frame(cluster = clust, stringsAsFactors = FALSE)
-write.table(clust_out, file = file.path(hmDir, paste0(flowsom_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(clust_out, file = file.path(hmDir, paste0(prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 # make data frame with labels
 labels <- data.frame(cluster = 1:nmetaclusts, label = sprintf("%02d", 1:nmetaclusts))
-write.table(labels, file = file.path(hmDir, paste0(flowsom_prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(labels, file = file.path(hmDir, paste0(prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 sessionInfo()

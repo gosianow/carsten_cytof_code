@@ -19,7 +19,7 @@ Sys.time()
 # observ_prefix='pca1_'
 # pca_score_cutoff=3
 # pca_skip_top=0
-
+# path_pca_score
 
 ##############################################################################
 # Read in the arguments
@@ -57,7 +57,7 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # ------------------------------------------------------------
 
 
-prs <- read.table(file.path(pcaDir,"princompscore_by_sample.xls"), header = TRUE, sep = "\t", as.is = TRUE)
+prs <- read.table(file.path(pcaDir, path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
 prs <- prs[order(prs$avg_score, decreasing = TRUE), ]
 
 

@@ -42,7 +42,7 @@ library(pheatmap)
 # data2analyse='raw'
 # suffix='_20cl_raw'
 # nmetaclusts=20
-
+# path_metadata
 
 ##############################################################################
 # Read in the arguments
@@ -77,7 +77,7 @@ pd1Dir <- "070_pd1"; if( !file.exists(pd1Dir) ) dir.create(pd1Dir)
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
