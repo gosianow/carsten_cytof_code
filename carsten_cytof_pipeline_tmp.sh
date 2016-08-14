@@ -228,258 +228,42 @@ cytokines=false
 fcs_saving=false
 pd1=false
 
-##############################################################################
-# Analysis of CK_2016-06-23_01 data
-# Use Analysis block 1
-##############################################################################
-
-DATA=23
-PANEL=1
-RWD=$RWD_MAIN/CK_2016-06-23_01
-ROUT=$RWD/Rout
-mkdir -p $ROUT
-echo "$RWD"
-
-file_panel="panel1.xlsx"
-file_metadata="metadata_23_01.xlsx"
-
-pca_score_cutoff=3
-rand_seed_consensus=123
-nmetaclusts=20
-
-prefix_data="23_"
-prefix_panel="01_"
-prefix_pca="pca1_"
-prefix_clust="cl20_"
-
-Analysis_block_1_main
-
 ##########################################
-# Analysis of CK_2016-06-23_01 mergingNEW
-# Use Analysis block 2
-##########################################
-
-file_merging="cluster_mergingNEW.xlsx"
-prefix_merging="mergingNEW_"
-
-Analysis_block_2_cluster_merging
-
-##########################################
-# Analysis of CK_2016-06-23_01 mergingNEW2
-# Use Analysis block 2
-##########################################
-
-file_merging="cluster_mergingNEW2.xlsx"
-prefix_merging="mergingNEW2_"
-
-Analysis_block_2_cluster_merging
-
-##########################################
-# CK_2016-06-23_01 - CD4 and CD8 cluster extracting from mergingNEW2
-# Use Analysis block 3
-##########################################
-
-DATA=23
-PANEL=1
-RWD=$RWD_MAIN/CK_2016-06-23_01
-ROUT=$RWD/Rout
-mkdir -p $ROUT
-echo "$RWD"
-
-file_metadata="metadata_23_01.xlsx"
-
-prefix_data="23_"
-prefix_panel="01_"
-prefix_pca="pca1_"
-
-prefix_merging="mergingNEW2_"
-
-extract_cluster=('CD4' 'CD8')
-extract_dir=('CK_2016-06-23_01_CD4_mergingNEW2' 'CK_2016-06-23_01_CD8_mergingNEW2')
-
-
-Analysis_block_3_cluster_extracting
-
-##########################################
-# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 using panel1CD4.xlsx
-# and CK_2016-06-23_01_CD8_mergingNEW2 using panel1CD8.xlsx
+# Analysis of CK_2016-06-29_02_CD4_merging using panel2CD4.xlsx
+# and CK_2016-06-29_02_CD8_merging using panel2CD8.xlsx
 # Use Analysis block 4
 ##########################################
 
-DATA=23
-PANEL=1
+DATA=29
+PANEL=2
 
-file_metadata="metadata_23_01.xlsx"
+file_metadata="metadata_29_02.xlsx"
 
 rand_seed_consensus=1234
 nmetaclusts=20
 
-prefix_data="23_"
+prefix_data="29_"
 prefix_pca="pca1_"
 prefix_clust="cl20_"
 
-data_dir=('CK_2016-06-23_01_CD4_mergingNEW2' 'CK_2016-06-23_01_CD8_mergingNEW2')
-file_panel=('panel1CD4.xlsx' 'panel1CD8.xlsx')
-prefix_panel=('01CD4_' '01CD8_')
-pca_score_cutoff=(2 2)
-
-
-Analysis_block_4_main_CD4_CD8
-
-##########################################
-# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 using panel1CD4.xlsx of merging_CD4_2
-# and CK_2016-06-23_01_CD8_mergingNEW2 using panel1CD8.xlsx of merging_CD8_2
-# Use Analysis block 5
-##########################################
-
-file_merging=('cluster_merging_CD4_2.xlsx' 'cluster_merging_CD8_2.xlsx')
-prefix_merging=('merging_CD4_2' 'merging_CD8_2')
-
-Analysis_block_5_cluster_merging_CD4_CD8
-
-##############################################################################
-# Analysis of CK_2016-06-23_02 data
-# Use Analysis block 1
-##############################################################################
-
-DATA=23
-PANEL=2
-RWD=$RWD_MAIN/CK_2016-06-23_02
-ROUT=$RWD/Rout
-mkdir -p $ROUT
-echo "$RWD"
-
-file_panel="panel2.xlsx"
-file_metadata="metadata_23_02.xlsx"
-
-pca_score_cutoff=1
-rand_seed_consensus=1234
-nmetaclusts=20
-
-prefix_data="23_"
-prefix_panel="02_"
-prefix_pca="pca1_"
-prefix_clust="cl20_"
-
-
-Analysis_block_1_main
-
-##########################################
-# Analysis of CK_2016-06-23_02 merging2
-# Use Analysis block 2
-##########################################
-
-file_merging="cluster_merging2.xlsx"
-prefix_merging="merging2_"
-
-Analysis_block_2_cluster_merging
-
-##########################################
-# CK_2016-06-23_02 - CD4 and CD8 cluster extracting from merging2
-# Use Analysis block 3
-##########################################
-
-DATA=23
-PANEL=2
-RWD=$RWD_MAIN/CK_2016-06-23_02
-ROUT=$RWD/Rout
-mkdir -p $ROUT
-echo "$RWD"
-
-file_metadata="metadata_23_02.xlsx"
-
-prefix_data="23_"
-prefix_panel="02_"
-prefix_pca="pca1_"
-
-prefix_merging="merging2_"
-
-extract_cluster=('CD4' 'CD8')
-extract_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
-
-Analysis_block_3_cluster_extracting
-
-##########################################
-# Analysis of CK_2016-06-23_02_CD4_merging2 using panel2CD4.xlsx
-# and CK_2016-06-23_02_CD8_merging2 using panel2CD8.xlsx
-# Use Analysis block 4
-##########################################
-
-DATA=23
-PANEL=2
-
-file_metadata="metadata_23_02.xlsx"
-
-rand_seed_consensus=1234
-nmetaclusts=20
-
-prefix_data="23_"
-prefix_pca="pca1_"
-prefix_clust="cl20_"
-
-data_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
+data_dir=('CK_2016-06-29_02_CD4_merging' 'CK_2016-06-29_02_CD8_merging')
 file_panel=('panel2CD4.xlsx' 'panel2CD8.xlsx')
 prefix_panel=('02CD4_' '02CD8_')
-pca_score_cutoff=(0.96 1)
+pca_score_cutoff=(1.2 1)
 
-Analysis_block_4_main_CD4_CD8
 
 ##########################################
-# Analysis of CK_2016-06-23_02_CD4_merging2 using panel2CD4.xlsx for cluster_merging_CD4.xlsx
-# and CK_2016-06-23_02_CD8_merging2 using panel2CD8.xlsx for cluster_merging_CD8_2.xlsx
+# Analysis of CK_2016-06-29_02_CD4_merging2 using panel2CD4.xlsx of cluster_merging_29_02_CD4
+# and CK_2016-06-29_02_CD8_merging2 using panel2CD8.xlsx of cluster_merging_29_02_CD8
 # Use Analysis block 5
 ##########################################
 
-file_merging=('cluster_merging_CD4.xlsx' 'cluster_merging_CD8_2.xlsx')
-prefix_merging=('merging_CD4' 'merging_CD8_2')
+file_merging=('cluster_merging_29_02_CD4.xlsx' 'cluster_merging_29_02_CD8.xlsx')
+prefix_merging=('merging_CD4_' 'merging_CD8_')
 
 Analysis_block_5_cluster_merging_CD4_CD8
 
-# -------------------------------------------------------------
 
 
-##############################################################################
-# Analysis of CK_2016-06-23_03 data
-# Use Analysis block 1
-##############################################################################
 
-DATA=23
-PANEL=3
-RWD=$RWD_MAIN/CK_2016-06-23_03
-ROUT=$RWD/Rout
-mkdir -p $ROUT
-echo "$RWD"
-
-file_panel="panel3.xlsx"
-file_metadata="metadata_23_03.xlsx"
-
-pca_score_cutoff=0.9
-rand_seed_consensus=1234
-nmetaclusts=20
-
-prefix_data="23_"
-prefix_panel="03_"
-prefix_pca="pca1_"
-prefix_clust="cl20_"
-
-Analysis_block_1_main
-
-##########################################
-# Analysis of CK_2016-06-23_03 merging2
-# Use Analysis block 2
-##########################################
-
-file_merging="cluster_merging2.xlsx"
-prefix_merging="merging2_"
-
-Analysis_block_2_cluster_merging
-
-##########################################
-# Analysis of CK_2016-06-23_03 merging3
-# USe Analysis block 2
-##########################################
-
-file_merging="cluster_merging3.xlsx"
-prefix_merging="merging3_"
-
-Analysis_block_2_cluster_merging
+#

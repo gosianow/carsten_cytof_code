@@ -333,7 +333,7 @@ Analysis_block_4_main_CD4_CD8
 ##########################################
 
 file_merging=('cluster_merging_CD4_2.xlsx' 'cluster_merging_CD8_2.xlsx')
-prefix_merging=('merging_CD4_2' 'merging_CD8_2')
+prefix_merging=('merging_CD4_2_' 'merging_CD8_2_')
 
 Analysis_block_5_cluster_merging_CD4_CD8
 
@@ -431,7 +431,7 @@ Analysis_block_4_main_CD4_CD8
 ##########################################
 
 file_merging=('cluster_merging_CD4.xlsx' 'cluster_merging_CD8_2.xlsx')
-prefix_merging=('merging_CD4' 'merging_CD8_2')
+prefix_merging=('merging_CD4_' 'merging_CD8_2_')
 
 Analysis_block_5_cluster_merging_CD4_CD8
 
@@ -722,6 +722,19 @@ pca_score_cutoff=(1.9 1.9)
 
 Analysis_block_4_main_CD4_CD8
 
+
+##########################################
+# Analysis of CK_2016-06-29_01_CD4_merging2 using panel1CD4.xlsx of cluster_merging_29_01_CD4
+# and CK_2016-06-29_01_CD8_merging2 using panel1CD8.xlsx of cluster_merging_29_01_CD8
+# Use Analysis block 5
+##########################################
+
+file_merging=('cluster_merging_29_01_CD4.xlsx' 'cluster_merging_29_01_CD8.xlsx')
+prefix_merging=('merging_CD4_' 'merging_CD8_')
+
+Analysis_block_5_cluster_merging_CD4_CD8
+
+
 ##############################################################################
 # Analysis of CK_2016-06-29_02 data
 # Use Analysis block 1
@@ -807,6 +820,20 @@ prefix_panel=('02CD4_' '02CD8_')
 pca_score_cutoff=(1.2 1)
 
 Analysis_block_4_main_CD4_CD8
+
+
+##########################################
+# Analysis of CK_2016-06-29_02_CD4_merging2 using panel2CD4.xlsx of cluster_merging_29_02_CD4
+# and CK_2016-06-29_02_CD8_merging2 using panel2CD8.xlsx of cluster_merging_29_02_CD8
+# Use Analysis block 5
+##########################################
+
+file_merging=('cluster_merging_29_02_CD4.xlsx' 'cluster_merging_29_02_CD8.xlsx')
+prefix_merging=('merging_CD4_' 'merging_CD8_')
+
+Analysis_block_5_cluster_merging_CD4_CD8
+
+
 
 ##############################################################################
 # Analysis of CK_2016-06-29_03 data
