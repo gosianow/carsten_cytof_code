@@ -54,6 +54,10 @@ cm <- read.xls(path_cluster_merging)
 
 cm
 
+if(!all(c("old_cluster", "label", "new_cluster") %in% colnames(cm)))
+  stop("Merging file must contain 'old_cluster', 'label' and 'new_cluster' columns!")
+
+
 # remove spaces in labels bcs they are problematic...
 cm$label <- factor(cm$label, labels = gsub(" ", "_", levels(cm$label))) 
 

@@ -371,23 +371,23 @@ plotting_wrapper2 <- function(e, suffix){
 
 ## Raw expression, included observables
 
-plotting_wrapper2(e = e, suffix = "_raw_in")
-
-
-# Raw expression, excluded observables
-
-plotting_wrapper2(e = eX, suffix = "_raw_ex")
-
-
-
-# Normalized expression, included observables
-
-plotting_wrapper2(e = el, suffix = "_norm_in")
-
-
-# Normalized expression, excluded observables
-
-plotting_wrapper2(e = elX, suffix = "_norm_ex")
+# plotting_wrapper2(e = e, suffix = "_raw_in")
+# 
+# 
+# # Raw expression, excluded observables
+# 
+# plotting_wrapper2(e = eX, suffix = "_raw_ex")
+# 
+# 
+# 
+# # Normalized expression, included observables
+# 
+# plotting_wrapper2(e = el, suffix = "_norm_in")
+# 
+# 
+# # Normalized expression, excluded observables
+# 
+# plotting_wrapper2(e = elX, suffix = "_norm_ex")
 
 
 

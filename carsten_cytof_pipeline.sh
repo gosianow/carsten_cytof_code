@@ -57,11 +57,15 @@ Analysis_block_2_cluster_merging () {
   tail $ROUT/02_cluster_merging.Rout
   fi
 
+  if [ ! -e "$RWD/030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls" ]; then
+    echo "File '$RWD/030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' does NOT exist!"
+    exit
+  fi
 
   ### Heatmaps
   if ${heatmaps}; then
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' heatmap_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}' path_panel='${PANELS}/${file_panel}' path_clustering_observables='${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls'  path_clustering_labels='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' path_pca_score='${prefix_data}${prefix_panel}princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-  tail $ROUT/02_heatmaps.Rout
+      R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' heatmap_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}' path_panel='${PANELS}/${file_panel}' path_clustering_observables='${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls'  path_clustering_labels='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' path_pca_score='${prefix_data}${prefix_panel}princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+      tail $ROUT/02_heatmaps.Rout
   fi
 
   ### Plot tSNE
@@ -109,7 +113,7 @@ Analysis_block_4_main_CD4_CD8 () {
     echo "$RWD"
 
     ### PCA scores
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' pcas_prefix='${prefix_data}${prefix_panel[$i]}' path_panel='${PANELS}/${file_panel[$i]}'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' pcas_prefix='${prefix_data[$i]}${prefix_panel[$i]}' path_panel='${PANELS}/${file_panel[$i]}'" $RCODE/01_pcascores.R $ROUT/01_pcascores.Rout
     tail $ROUT/01_pcascores.Rout
 
   done
@@ -126,37 +130,37 @@ Analysis_block_4_main_CD4_CD8 () {
 
     ### Select observables for clustering
     if ${select_observables}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' observ_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}' path_pca_score='${prefix_data}${prefix_panel[$i]}princompscore_by_sample.xls' pca_score_cutoff=${pca_score_cutoff[$i]} pca_skip_top=0" $RCODE/02_select_observables.R $ROUT/02_select_observables.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' observ_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}' path_pca_score='${prefix_data[$i]}${prefix_panel[$i]}princompscore_by_sample.xls' pca_score_cutoff=${pca_score_cutoff[$i]} pca_skip_top=0" $RCODE/02_select_observables.R $ROUT/02_select_observables.Rout
     tail $ROUT/02_select_observables.Rout
     fi
 
     ### FlowSOM clustering
     if ${flowsom}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' flowsom_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_clustering_observables='${prefix_data}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=${rand_seed_consensus}" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' flowsom_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_clustering_observables='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=${rand_seed_consensus}" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
     tail $ROUT/02_flowsom.Rout
     fi
 
     ### Heatmaps
     if ${heatmaps}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' heatmap_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_panel='${PANELS}/${file_panel[$i]}' path_clustering_observables='${prefix_data}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' path_clustering='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering_labels.xls' path_pca_score='${prefix_data}${prefix_panel[$i]}princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' heatmap_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_panel='${PANELS}/${file_panel[$i]}' path_clustering_observables='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' path_clustering='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering_labels.xls' path_pca_score='${prefix_data[$i]}${prefix_panel[$i]}princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
     tail $ROUT/02_heatmaps.Rout
     fi
 
     ### Run tSNE
     if ${runtsne}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsne_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}' path_clustering_observables='${prefix_data}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' tsne_pmin=1500" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsne_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}' path_clustering_observables='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' tsne_pmin=1500" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
     tail $ROUT/03_runtsne.Rout
     fi
 
     ### Plot tSNE
     if ${plottsne}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsnep_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_rtsne_out='${prefix_data}${prefix_panel[$i]}${prefix_pca}rtsne_out.rda' path_rtsne_data='${prefix_data}${prefix_panel[$i]}${prefix_pca}rtsne_data.xls' path_clustering='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsnep_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_rtsne_out='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}rtsne_out.rda' path_rtsne_data='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}rtsne_data.xls' path_clustering='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
     tail $ROUT/03_plottsne.Rout
     fi
 
     ### Get cluster frequencies
     if ${frequencies}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' freq_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_clustering='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' freq_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}' path_clustering='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
     tail $ROUT/04_frequencies.Rout
     fi
 
@@ -178,25 +182,30 @@ Analysis_block_5_cluster_merging_CD4_CD8 () {
 
     ### Cluster merging
     if ${cluster_merging}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_cluster_merging='${file_merging[$i]}' path_clustering='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_cluster_merging='${file_merging[$i]}' path_clustering='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
     tail $ROUT/02_cluster_merging.Rout
+    fi
+
+    if [ ! -e "$RWD/030_heatmaps/${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls" ]; then
+      echo "File '$RWD/030_heatmaps/${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls' does NOT exist!"
+      exit
     fi
 
     ### Heatmaps
     if ${heatmaps}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' heatmap_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_panel='${PANELS}/${file_panel[$i]}' path_clustering_observables='${prefix_data}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' path_clustering='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls'  path_clustering_labels='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering_labels.xls' path_pca_score='${prefix_data}${prefix_panel[$i]}princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' heatmap_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_panel='${PANELS}/${file_panel[$i]}' path_clustering_observables='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}clustering_observables.xls' path_clustering='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls'  path_clustering_labels='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering_labels.xls' path_pca_score='${prefix_data[$i]}${prefix_panel[$i]}princompscore_by_sample.xls' " $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
     tail $ROUT/02_heatmaps.Rout
     fi
 
     ### Plot tSNE
     if ${plottsne}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsnep_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_rtsne_out='${prefix_data}${prefix_panel[$i]}${prefix_pca}rtsne_out.rda' path_rtsne_data='${prefix_data}${prefix_panel[$i]}${prefix_pca}rtsne_data.xls' path_clustering='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsnep_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_rtsne_out='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}rtsne_out.rda' path_rtsne_data='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}rtsne_data.xls' path_clustering='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls' path_clustering_labels='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
     tail $ROUT/03_plottsne.Rout
     fi
 
     ### Get cluster frequencies
     if ${frequencies}; then
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' freq_prefix='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_clustering='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' freq_prefix='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}' path_clustering='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering.xls' path_clustering_labels='${prefix_data[$i]}${prefix_panel[$i]}${prefix_pca}${prefix_merging[$i]}clustering_labels.xls'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
     tail $ROUT/04_frequencies.Rout
     fi
 
@@ -255,21 +264,11 @@ prefix_clust="cl20_"
 Analysis_block_1_main
 
 ##########################################
-# Analysis of CK_2016-06-23_01 mergingNEW
+# Analysis of CK_2016-06-23_01 merging_23_01_NEW2
 # Use Analysis block 2
 ##########################################
 
-file_merging="cluster_mergingNEW.xlsx"
-prefix_merging="mergingNEW_"
-
-Analysis_block_2_cluster_merging
-
-##########################################
-# Analysis of CK_2016-06-23_01 mergingNEW2
-# Use Analysis block 2
-##########################################
-
-file_merging="cluster_mergingNEW2.xlsx"
+file_merging="${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}cluster_mergingNEW2.xlsx"
 prefix_merging="mergingNEW2_"
 
 Analysis_block_2_cluster_merging
@@ -314,11 +313,11 @@ file_metadata="metadata_23_01.xlsx"
 rand_seed_consensus=1234
 nmetaclusts=20
 
-prefix_data="23_"
 prefix_pca="pca1_"
 prefix_clust="cl20_"
 
 data_dir=('CK_2016-06-23_01_CD4_mergingNEW2' 'CK_2016-06-23_01_CD8_mergingNEW2')
+prefix_data=('23CD4_' '23CD8_')
 file_panel=('panel1CD4.xlsx' 'panel1CD8.xlsx')
 prefix_panel=('01CD4_' '01CD8_')
 pca_score_cutoff=(2 2)
@@ -327,13 +326,13 @@ pca_score_cutoff=(2 2)
 Analysis_block_4_main_CD4_CD8
 
 ##########################################
-# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 using panel1CD4.xlsx of merging_CD4_2
-# and CK_2016-06-23_01_CD8_mergingNEW2 using panel1CD8.xlsx of merging_CD8_2
+# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 using panel1CD4.xlsx of merging2
+# and CK_2016-06-23_01_CD8_mergingNEW2 using panel1CD8.xlsx of merging2
 # Use Analysis block 5
 ##########################################
 
-file_merging=('cluster_merging_CD4_2.xlsx' 'cluster_merging_CD8_2.xlsx')
-prefix_merging=('merging_CD4_2_' 'merging_CD8_2_')
+file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx")
+prefix_merging=('merging2_' 'merging2_')
 
 Analysis_block_5_cluster_merging_CD4_CD8
 
@@ -365,11 +364,11 @@ prefix_clust="cl20_"
 Analysis_block_1_main
 
 ##########################################
-# Analysis of CK_2016-06-23_02 merging2
+# Analysis of CK_2016-06-23_02 merging_23_02_2
 # Use Analysis block 2
 ##########################################
 
-file_merging="cluster_merging2.xlsx"
+file_merging="${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}cluster_merging2.xlsx"
 prefix_merging="merging2_"
 
 Analysis_block_2_cluster_merging
@@ -413,11 +412,11 @@ file_metadata="metadata_23_02.xlsx"
 rand_seed_consensus=1234
 nmetaclusts=20
 
-prefix_data="23_"
 prefix_pca="pca1_"
 prefix_clust="cl20_"
 
 data_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
+prefix_data=('23CD4_' '23CD8_')
 file_panel=('panel2CD4.xlsx' 'panel2CD8.xlsx')
 prefix_panel=('02CD4_' '02CD8_')
 pca_score_cutoff=(0.96 1)
@@ -425,15 +424,17 @@ pca_score_cutoff=(0.96 1)
 Analysis_block_4_main_CD4_CD8
 
 ##########################################
-# Analysis of CK_2016-06-23_02_CD4_merging2 using panel2CD4.xlsx for cluster_merging_CD4.xlsx
-# and CK_2016-06-23_02_CD8_merging2 using panel2CD8.xlsx for cluster_merging_CD8_2.xlsx
+# Analysis of CK_2016-06-23_02_CD4_merging2 using panel2CD4.xlsx for cluster_merging
+# and CK_2016-06-23_02_CD8_merging2 using panel2CD8.xlsx for cluster_merging
 # Use Analysis block 5
 ##########################################
 
-file_merging=('cluster_merging_CD4.xlsx' 'cluster_merging_CD8_2.xlsx')
-prefix_merging=('merging_CD4_' 'merging_CD8_2_')
+file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust}cluster_merging.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust}cluster_merging.xlsx")
+prefix_merging=('merging_' 'merging_')
 
 Analysis_block_5_cluster_merging_CD4_CD8
+
+
 
 # -------------------------------------------------------------
 
@@ -565,24 +566,15 @@ prefix_clust="cl20_"
 Analysis_block_1_main
 
 ##########################################
-# Analysis of CK_2016-06-23_03 merging2
+# Analysis of CK_2016-06-23_03 merging_23_03_2
 # Use Analysis block 2
 ##########################################
 
-file_merging="cluster_merging2.xlsx"
+file_merging="${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}cluster_merging2.xlsx"
 prefix_merging="merging2_"
 
 Analysis_block_2_cluster_merging
 
-##########################################
-# Analysis of CK_2016-06-23_03 merging3
-# USe Analysis block 2
-##########################################
-
-file_merging="cluster_merging3.xlsx"
-prefix_merging="merging3_"
-
-Analysis_block_2_cluster_merging
 
 ##############################################################################
 # Analysis of CK_2016-06-23_03all data using panel3_v2.xlsx
@@ -609,6 +601,17 @@ prefix_pca="pca1_"
 prefix_clust="cl20_"
 
 Analysis_block_1_main
+
+##########################################
+# Analysis of CK_2016-06-23_03all merging3
+# Use Analysis block 2
+##########################################
+
+file_merging="${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}cluster_merging2.xlsx"
+prefix_merging="merging2_"
+
+Analysis_block_2_cluster_merging
+
 
 ##############################################################################
 # Analysis of CK_2016-06-23_03all data using panel3_v3.xlsx
@@ -663,12 +666,12 @@ prefix_clust="cl20_"
 Analysis_block_1_main
 
 ##########################################
-# Analysis of CK_2016-06-29_01 merging2
+# Analysis of CK_2016-06-29_01 merging3
 # Use Analysis block 2
 ##########################################
 
-file_merging="cluster_merging2.xlsx"
-prefix_merging="merging2_"
+file_merging="${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}cluster_merging3.xlsx"
+prefix_merging="merging3_"
 
 Analysis_block_2_cluster_merging
 
@@ -711,11 +714,11 @@ file_metadata="metadata_29_01.xlsx"
 rand_seed_consensus=1234
 nmetaclusts=20
 
-prefix_data="29_"
 prefix_pca="pca1_"
 prefix_clust="cl20_"
 
 data_dir=('CK_2016-06-29_01_CD4_merging2' 'CK_2016-06-29_01_CD8_merging2')
+prefix_data=('29CD4_' '29CD8_')
 file_panel=('panel1CD4.xlsx' 'panel1CD8.xlsx')
 prefix_panel=('01CD4_' '01CD8_')
 pca_score_cutoff=(1.9 1.9)
@@ -724,13 +727,13 @@ Analysis_block_4_main_CD4_CD8
 
 
 ##########################################
-# Analysis of CK_2016-06-29_01_CD4_merging2 using panel1CD4.xlsx of cluster_merging_29_01_CD4
-# and CK_2016-06-29_01_CD8_merging2 using panel1CD8.xlsx of cluster_merging_29_01_CD8
+# Analysis of CK_2016-06-29_01_CD4_merging2 using panel1CD4.xlsx of cluster_merging2
+# and CK_2016-06-29_01_CD8_merging2 using panel1CD8.xlsx of cluster_merging2
 # Use Analysis block 5
 ##########################################
 
-file_merging=('cluster_merging_29_01_CD4.xlsx' 'cluster_merging_29_01_CD8.xlsx')
-prefix_merging=('merging_CD4_' 'merging_CD8_')
+file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx")
+prefix_merging=('merging2_' 'merging2_')
 
 Analysis_block_5_cluster_merging_CD4_CD8
 
@@ -766,7 +769,7 @@ Analysis_block_1_main
 # Use Analysis block 2
 ##########################################
 
-file_merging="cluster_merging.xlsx"
+file_merging="${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}cluster_merging.xlsx"
 prefix_merging="merging_"
 
 Analysis_block_2_cluster_merging
@@ -810,11 +813,11 @@ file_metadata="metadata_29_02.xlsx"
 rand_seed_consensus=1234
 nmetaclusts=20
 
-prefix_data="29_"
 prefix_pca="pca1_"
 prefix_clust="cl20_"
 
 data_dir=('CK_2016-06-29_02_CD4_merging' 'CK_2016-06-29_02_CD8_merging')
+prefix_data=('29CD4_' '29CD8_')
 file_panel=('panel2CD4.xlsx' 'panel2CD8.xlsx')
 prefix_panel=('02CD4_' '02CD8_')
 pca_score_cutoff=(1.2 1)
@@ -823,13 +826,13 @@ Analysis_block_4_main_CD4_CD8
 
 
 ##########################################
-# Analysis of CK_2016-06-29_02_CD4_merging2 using panel2CD4.xlsx of cluster_merging_29_02_CD4
-# and CK_2016-06-29_02_CD8_merging2 using panel2CD8.xlsx of cluster_merging_29_02_CD8
+# Analysis of CK_2016-06-29_02_CD4_merging2 using panel2CD4.xlsx of cluster_merging2
+# and CK_2016-06-29_02_CD8_merging2 using panel2CD8.xlsx of cluster_merging2
 # Use Analysis block 5
 ##########################################
 
-file_merging=('cluster_merging_29_02_CD4.xlsx' 'cluster_merging_29_02_CD8.xlsx')
-prefix_merging=('merging_CD4_' 'merging_CD8_')
+file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx")
+prefix_merging=('merging2_' 'merging2_')
 
 Analysis_block_5_cluster_merging_CD4_CD8
 
@@ -861,6 +864,15 @@ prefix_clust="cl20_"
 
 Analysis_block_1_main
 
+##########################################
+# Analysis of CK_2016-06-29_03 merging
+# Use Analysis block 2
+##########################################
+
+file_merging="${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}cluster_merging4.xlsx"
+prefix_merging="merging4_"
+
+Analysis_block_2_cluster_merging
 
 
 
