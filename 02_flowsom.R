@@ -28,11 +28,12 @@ library(ConsensusClusterPlus)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# flowsom_prefix=''
-# path_clustering_observables='pca1_clustering_observables.xls'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+# flowsom_prefix='23_01_pca1_cl20_'
+# path_clustering_observables='23_01_pca1_clustering_observables.xls'
 # rand_seed_consensus=123
 # nmetaclusts=20
-# path_metadata
+
 
 ##############################################################################
 # Read in the arguments
@@ -51,6 +52,17 @@ setwd(rwd)
 rand_seed <- 1234
 
 prefix <- flowsom_prefix
+
+
+# ### Colors for 20 clusters 
+# # ggplot palette
+# gg_color_hue <- function(n) {
+#   hues = seq(15, 375, length=n+1)
+#   hcl(h=hues, l=60 , c=100)[1:n]
+# }
+# 
+# color_ramp <- c(colorRampPalette(brewer.pal(12,"Paired"))(12)[-c(11)],  gg_color_hue(max(1, nmetaclusts-11)) )
+
 
 # ------------------------------------------------------------
 # define directories
@@ -134,6 +146,16 @@ results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
   plot = NULL, verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed_consensus)
 
 dev.off()
+
+
+
+# ## For plotting tracking plot with my colors
+# pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus_bar.pdf")), width = 14, height = 4)
+# barplot(rep(1, length(results[[k]]$clrs[[1]])), col = results[[k]]$clrs[[1]][results[[k]]$consensusTree$order])
+# dev.off()
+# 
+# results[[k]]$consensusClass[results[[k]]$consensusTree$order]
+
 
 
 fsom_mc <- results[[k]]$consensusClass

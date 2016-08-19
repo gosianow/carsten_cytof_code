@@ -3,6 +3,7 @@
 
 # BioC 3.3
 # Created 27 July 2016
+# Updated 18 Aug 2016
 
 ##############################################################################
 Sys.time()
@@ -28,13 +29,13 @@ library(ConsensusClusterPlus)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# heatmap_prefix='pca1_cl20_'
-# path_panel='panel.xlsx'
-# path_clustering_observables='pca1_clustering_observables.xls'
-# path_clustering='pca1_cl20_clustering.xls'
-# path_clustering_labels='pca1_cl20_clustering_labels.xls'
-# path_pca_score='princompscore_by_sample.xls'
-# path_metadata
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+# heatmap_prefix='23_01_pca1_cl20_'
+# path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
+# path_clustering_observables='23_01_pca1_clustering_observables.xls'
+# path_clustering='23_01_pca1_cl20_clustering.xls'
+# path_clustering_labels='23_01_pca1_cl20_clustering_labels.xls'
+# path_pca_score='23_01_princompscore_by_sample.xls'
 
 ##############################################################################
 # Read in the arguments
@@ -230,10 +231,15 @@ colnames(al)[1] <- colnames(alX)[1] <- "cluster"
 # get cluster frequencies
 freq_clust <- table(clust)
 
+# normalized 
 clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), al[, -1], alX[, -1])
 
-write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
+# raw
+clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), a[, -1], aX[, -1])
+
+write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters_raw.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
 # ------------------------------------------------------------
@@ -392,28 +398,48 @@ plotting_wrapper2 <- function(e, suffix){
 
 
 # ------------------------------------------------------------
-# cluster clustering 
+# pheatmaps for normalized data
 # ------------------------------------------------------------
 
-### Clustering is based on all markers
+### Cluster clustering is based on all markers here
 
 expr <- as.matrix(cbind(al[,-1], alX[,-1]))
+rownames(expr) <- labels$label
 
 cluster_rows <- hclust(dist(expr), method = "average")
 
 
-# ------------------------------------------------------------
-# pheatmaps
-# ------------------------------------------------------------
-
-rownames(expr) <- labels$label
 labels_row <- as.character(labels$label)
 labels_col <- colnames(expr)
 
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_row_clust.pdf")), width = 10, height = 7)
+pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_norm_row_clust.pdf")), width = 10, height = 7)
 
 
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap.pdf")), width = 10, height = 7)
+pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_norm.pdf")), width = 10, height = 7)
+
+
+
+# ------------------------------------------------------------
+# pheatmaps for raw data
+# ------------------------------------------------------------
+
+### Cluster clustering is based on all markers here
+
+expr <- as.matrix(cbind(a[,-1], aX[,-1]))
+rownames(expr) <- labels$label
+
+cluster_rows <- hclust(dist(expr), method = "average")
+
+
+labels_row <- as.character(labels$label)
+labels_col <- colnames(expr)
+
+pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 6, length.out = 101), legend_breaks = seq(from = 0, to = 6, by = 1), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw_row_clust.pdf")), width = 10, height = 7)
+
+
+pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 6, length.out = 101), legend_breaks = seq(from = 0, to = 6, by = 1), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw.pdf")), width = 10, height = 7)
+
+
 
 
 # ------------------------------------------------------------

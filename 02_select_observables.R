@@ -57,7 +57,12 @@ hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 # ------------------------------------------------------------
 
 
-prs <- read.table(file.path(pcaDir, path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
+if(!grepl("/", path_pca_score)){
+  prs <- read.table(file.path(pcaDir, path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
+}else{
+  prs <- read.table(file.path(path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
+}
+
 prs <- prs[order(prs$avg_score, decreasing = TRUE), ]
 
 

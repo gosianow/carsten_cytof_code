@@ -3,7 +3,7 @@
 
 # BioC 3.3
 # Created 11 Aug 2016
-# Updated 11 Aug 2016
+# Updated 18 Aug 2016
 
 ##############################################################################
 Sys.time()
@@ -24,25 +24,27 @@ library(limma)
 library(FlowSOM)
 library(ConsensusClusterPlus)
 library(pheatmap)
-
-
+library(lme4) # for fitting mixed models
+library(multcomp)
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# prefix='pnlCD4_pca1_merging_CD4_pd1Tmem_'
-# path_panel='panel_CD4.xlsx'
-# path_cytokines_cutoffs='panel_CD4_cytokines_CM_RAW.xlsx'
-# path_clustering='pnlCD4_pca1_merging_CD4_clustering.xls'
-# path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
-# clusters2analyse=c('CM','EM','TE')
-# cutoff_colname='positive_cutoff_raw'
-# data2analyse='raw'
-# suffix='_20cl_raw'
-# nmetaclusts=20
-# path_metadata
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx'
+pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_'
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof/00_models.R'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4.xlsx'
+path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM_RAW.xlsx'
+path_clustering='23CD4_02CD4_pca1_merging_clustering.xls'
+path_clustering_labels='23CD4_02CD4_pca1_merging_clustering_labels.xls'
+clusters2analyse=c('CM','EM','TE')
+cutoff_colname='positive_cutoff_raw'
+data2analyse='raw'
+nmetaclusts=20
+pd1_suffix='_raw'
+
 
 ##############################################################################
 # Read in the arguments
@@ -59,8 +61,13 @@ print(args)
 
 setwd(rwd)
 
+prefix <- pd1_prefix
+suffix <- pd1_suffix
+
 if(!data2analyse %in% c("raw", "norm"))
   stop("data2analyse must be 'raw' or 'norm'!")
+
+source(path_fun_models)
 
 
 # ------------------------------------------------------------
@@ -278,8 +285,8 @@ prop1 <- data.frame(cluster = rownames(tabl1), as.data.frame.matrix(t(t(tabl1) /
 
 
 ### Save the frequencies and proportions
-write.table(prop1, file=file.path(pd1Dir, paste0(prefix, "frequencies_pd1pos", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-write.table(freq1, file=file.path(pd1Dir,paste0(prefix, "counts_pd1pos", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(prop1, file=file.path(pd1Dir, paste0(prefix, "pd1_frequencies", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(freq1, file=file.path(pd1Dir,paste0(prefix, "pd1_counts", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 # ------------------------------------------------------------
@@ -335,7 +342,7 @@ for(i in 1:nlevels(ggdf$cluster)){
 }
 
 
-pdf(file.path(pd1Dir, paste0(prefix, "frequencies_pd1pos", suffix, ".pdf")), w=5, h=4, onefile=TRUE)
+pdf(file.path(pd1Dir, paste0(prefix, "pd1_frequencies", suffix, ".pdf")), w=5, h=4, onefile=TRUE)
 for(i in seq(length(ggp)))
   print(ggp[[i]])
 dev.off()
@@ -346,138 +353,138 @@ dev.off()
 # Test for frequency differences between groups
 # ------------------------------------------------------------
 
-data <- prop1
+source(path_fun_models)
+
 
 # -----------------------------
 ### Run two-way ANOVA
 # -----------------------------
 
-pvs_anova <- t(apply(data[, md$shortname], 1, function(y){
-  # y <- data[1, md$shortname]
-  
-  ## there must be at least 10 proportions greater than 0
-  if(sum(y > 0) < 10)
-    return(rep(NA, 3))
-  
-  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
-  
-  res_tmp <- aov(y ~ day * response, data = data_tmp)
-  sum_tmp <- summary(res_tmp)
-  
-  sum_tmp[[1]][1:3, "Pr(>F)"]
-  
-}))
-
-movars <- c("day", "response", "day:response")
-colnames(pvs_anova) <- paste0("pval_", movars)
-pvs_anova <- data.frame(pvs_anova)
-
-
-## get adjusted p-values
-
-adjp_anova <- data.frame(apply(pvs_anova, 2, p.adjust, method = "BH"))
-colnames(adjp_anova) <- paste0("adjp_", movars)
+pvs_anova <- fit_two_way_anova(data = prop1, md = md)
 
 ## save the results
-pvs_anova_out <- data.frame(cluster = rownames(pvs_anova), pvs_anova, adjp_anova)
+write.table(pvs_anova, file=file.path(pd1Dir, paste0(prefix, "pvs_anova", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
-write.table(pvs_anova_out, file=file.path(pd1Dir, paste0(prefix, "pvs_anova", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
-table(adjp_anova$adjp_response < 0.05)
-table(adjp_anova$adjp_day < 0.05)
+table(pvs_anova$adjp_response < 0.05)
+table(pvs_anova$adjp_day < 0.05)
 
 
 
 # -----------------------------
-### Fit a GLM
+### Fit a normal GLM
 # -----------------------------
 
-pvs_glm <- t(apply(data[, md$shortname], 1, function(y){
-  # y <- data[1, md$shortname]
-  
-  ## there must be at least 10 proportions greater than 0
-  if(sum(y > 0) < 10)
-    return(rep(NA, 4))
-  
-  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
-  
-  res_tmp <- glm(y ~ response + day, data = data_tmp)
-  
-  sum_tmp <- summary(res_tmp)
-  
-  out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
-  
-  return(out)
-  
-}))
-
-data_tmp <- data.frame(y = as.numeric(data[1, md$shortname]), md[, c("day", "response")])
-momat <- model.matrix(y ~ response + day, data = data_tmp)
-movars <- colnames(momat)
-
-colnames(pvs_glm) <- paste0("pval_", movars)
-pvs_glm <- data.frame(pvs_glm)
-
-
-## get adjusted p-values
-
-adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
-colnames(adjp_glm) <- paste0("adjp_", movars)
+pvs_glm <- fit_glm_norm(data = prop1, md)
 
 ## save the results
-pvs_glm_out <- data.frame(cluster = rownames(pvs_glm), pvs_glm, adjp_glm)
+write.table(pvs_glm, file=file.path(pd1Dir, paste0(prefix, "pvs_glmn", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
-write.table(pvs_glm_out, file=file.path(pd1Dir, paste0(prefix, "pvs_glm", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+table(pvs_glm$adjp_responseR < 0.05)
+table(pvs_glm$adjp_daytx < 0.05)
 
 
-table(adjp_glm$adjp_responseR < 0.05)
-table(adjp_glm$adjp_daytx < 0.05)
 
 # -----------------------------
-### Fit a GLM with inteactions
+### Fit a normal GLM with inteactions
 # -----------------------------
 
-pvs_glm <- t(apply(data[, md$shortname], 1, function(y){
-  # y <- data[1, md$shortname]
-  
-  ## there must be at least 10 proportions greater than 0
-  if(sum(y > 0) < 10)
-    return(rep(NA, 4))
-  
-  data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
-  
-  res_tmp <- glm(y ~ response + day + response:day, data = data_tmp)
-  
-  sum_tmp <- summary(res_tmp)
-  
-  out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
-  
-  return(out)
-  
-}))
-
-data_tmp <- data.frame(y = as.numeric(data[1, md$shortname]), md[, c("day", "response")])
-momat <- model.matrix(y ~ response + day + response:day, data = data_tmp)
-movars <- colnames(momat)
-
-colnames(pvs_glm) <- paste0("pval_", movars)
-pvs_glm <- data.frame(pvs_glm)
-
-
-## get adjusted p-values
-
-adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
-colnames(adjp_glm) <- paste0("adjp_", movars)
+pvs_glm <- fit_glm_norm_inter(data = prop1, md)
 
 ## save the results
-pvs_glm_out <- data.frame(cluster = rownames(pvs_glm), pvs_glm, adjp_glm)
-
-write.table(pvs_glm_out, file=file.path(pd1Dir, paste0(prefix, "pvs_glminter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(pvs_glm, file=file.path(pd1Dir, paste0(prefix, "pvs_glmninter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
-table(adjp_glm$adjp_responseR < 0.05)
-table(adjp_glm$adjp_daytx < 0.05)
+table(pvs_glm$adjp_responseR < 0.05)
+table(pvs_glm$adjp_daytx < 0.05)
+
+
+
+# -----------------------------
+### Fit a logit GLMM 
+# -----------------------------
+
+data <- freq1
+
+
+fit_glmm_logit <- function(data, md){
+
+  ntot <- colSums(data[, md$shortname, drop = FALSE])
+  
+  pvs <- t(apply(data[, md$shortname], 1, function(y){
+    # y <- data[1, md$shortname]
+    
+    ## there must be at least 10 proportions greater than 0
+    if(sum(y > 0) < 10)
+      return(rep(NA, 4))
+    
+    ## prepare binomial/Bernoulli data
+    data_tmp <- data.frame(y = rep(c(1, 0), times = c(sum(y), sum(ntot) - sum(y))), sample_id = rep(colnames(data), times = y))
+    
+    data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+    
+    res_tmp <- glm(y ~ response + day, data = data_tmp)
+    
+    sum_tmp <- summary(res_tmp)
+    
+    out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
+    
+    return(out)
+    
+  }))
+  
+  data_tmp <- data.frame(y = as.numeric(data[1, md$shortname]), md[, c("day", "response")])
+  momat <- model.matrix(y ~ response + day, data = data_tmp)
+  movars <- colnames(momat)
+  
+  colnames(pvs) <- paste0("pval_", movars)
+  pvs <- data.frame(pvs)
+  
+  
+  ## get adjusted p-values
+  
+  adjp <- data.frame(apply(pvs, 2, p.adjust, method = "BH"))
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  ## save the results
+  pvs_out <- data.frame(group = rownames(pvs), pvs, adjp)
+  
+  return(pvs_out)
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -533,7 +540,7 @@ if(ncol(e) > 1){
   # SOM
   set.seed(rand_seed)
   fsom <- FlowSOM::SOM(bm)
-
+  
   # consensus clustering that is reproducible with seed
   data <- fsom$codes
   k <- nmetaclusts
@@ -549,7 +556,7 @@ if(ncol(e) > 1){
   # get cluster ids
   fsom_mc <- results[[k]]$consensusClass
   clust <- fsom_mc[fsom$mapping[,1]]
-
+  
   ### Save clustering results
   clust_out <- data.frame(cluster = clust, bm, stringsAsFactors = FALSE)
   

@@ -25,15 +25,16 @@ library(coop) # cosine
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# tsnep_prefix='pca1_mergingNEW2_'
-# path_rtsne_out='pca1_cl20_rtsne_out.rda'
-# path_rtsne_data='pca1_cl20_rtsne_data.xls'
-# path_clustering='pca1_mergingNEW2_clustering.xls'
-# path_clustering_labels='pca1_mergingNEW2_clustering_labels.xls'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+# tsnep_prefix='23_01_pca1_cl20_'
+# path_rtsne_out='23_01_pca1_rtsne_out_raw.rda'
+# path_rtsne_data='23_01_pca1_rtsne_data_raw.xls'
+# path_clustering='23_01_pca1_cl20_clustering.xls'
+# path_clustering_labels='23_01_pca1_cl20_clustering_labels.xls'
 # tsne_cmin=1000
 # pdf_width=15
 # pdf_height=10
-# path_metadata
+# tsnep_suffix='_raw'
 
 ##############################################################################
 # Read in the arguments
@@ -51,6 +52,8 @@ print(args)
 setwd(rwd)
 
 prefix <- tsnep_prefix
+suffix <- tsnep_suffix
+
 
 # ------------------------------------------------------------
 # define directories
@@ -144,7 +147,7 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
-pdf(file.path(sneDir, paste0(prefix, "tSNE.pdf")), width = pdf_width, height = pdf_height)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNE", suffix, ".pdf")), width = pdf_width, height = pdf_height)                 
 print(ggp)
 dev.off()
 
@@ -158,7 +161,7 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
-pdf(file.path(sneDir, paste0(prefix, "tSNEone.pdf")), width = 9, height = 7)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNEone", suffix, ".pdf")), width = 9, height = 7)                 
 print(ggp)
 dev.off()
 
@@ -181,7 +184,7 @@ ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
   scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) + 
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
-pdf(file.path(sneDir, paste0(prefix, "tSNE_subset.pdf")), width = pdf_width, height = pdf_height)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNE_subset", suffix, ".pdf")), width = pdf_width, height = pdf_height)                 
 print(ggp)
 dev.off()
 
@@ -223,7 +226,7 @@ ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
 
-pdf(file.path(sneDir, paste0(prefix, "tSNE_filtered.pdf")), width = pdf_width, height = pdf_height)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNE_filtered", suffix, ".pdf")), width = pdf_width, height = pdf_height)                 
 print(ggp)
 dev.off()
 
@@ -239,7 +242,7 @@ ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
 
-pdf(file.path(sneDir, paste0(prefix, "tSNEone_filtered.pdf")), width = 9, height = 7)                 
+pdf(file.path(sneDir, paste0(prefix, "tSNEone_filtered", suffix, ".pdf")), width = 9, height = 7)                 
 print(ggp)
 dev.off()
 

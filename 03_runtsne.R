@@ -30,10 +30,10 @@ library(Rtsne)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# tsne_prefix='pca1_cl20_'
-# path_clustering_observables='pca1_cl20_clustering_observables.xls'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+# tsne_prefix='23_01_pca1_'
+# path_clustering_observables='23_01_pca1_clustering_observables.xls'
 # tsne_pmin=1500
-# path_metadata
 
 
 ##############################################################################
@@ -161,25 +161,48 @@ subs <- mapply(function(u,v) {
 
 inds2keep <- c(unlist(subs))
 
-el_sub <- el[inds2keep, ]
 
 
 
-### Run tSNE
+
+### Run tSNE on normalized data
+
+# el_sub <- el[inds2keep, ]
+# 
+# set.seed(rand_seed)
+# rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
+# 
+# 
+# # Save rtsne results
+# 
+# rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], el_sub)
+# 
+# write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+# 
+# 
+# save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_norm.rda")))
+
+
+
+
+
+
+### Run tSNE on raw data
+
+e_sub <- e[inds2keep, ]
+
 set.seed(rand_seed)
-rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
-
-# load(file.path(sneDir, paste0(prefix, "rtsne_out.rda")))
+rtsne_out <- Rtsne(e_sub, pca = FALSE, verbose = TRUE)
 
 
-### Save rtsne results
+# Save rtsne results
 
-rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], el_sub)
+rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], e_sub)
 
-write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_raw.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
-save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out.rda")))
+save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_raw.rda")))
 
 
 
