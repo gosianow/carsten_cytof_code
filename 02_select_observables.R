@@ -21,6 +21,7 @@ Sys.time()
 # pca_skip_top=0
 # path_pca_score
 
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
@@ -71,22 +72,37 @@ prs <- prs[order(prs$avg_score, decreasing = TRUE), ]
 # -------------------------------------
 
 
+clustering_observables <- prs[, c("mass", "marker", "avg_score")]
+
+clustering_observables$clustering_observable <- prs$avg_score > pca_score_cutoff
+
+
 if(pca_skip_top > 0)
-  prs <- prs[-c(1:pca_skip_top), , drop = FALSE]
+  clustering_observables$clustering_observable[1:pca_skip_top] <- FALSE
 
-
-clustering_observables <- prs[prs$avg_score > pca_score_cutoff, "mass"]
 
 
 ### Save the observables
 
-scols_out <- data.frame(clustering_observables = clustering_observables, stringsAsFactors = FALSE)
-write.table(scols_out, file = file.path(hmDir, paste0(prefix, "clustering_observables.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(clustering_observables, file = file.path(hmDir, paste0(prefix, "clustering_observables.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 
 
 sessionInfo()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

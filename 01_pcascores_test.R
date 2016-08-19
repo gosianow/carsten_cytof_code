@@ -24,10 +24,10 @@ library(RColorBrewer)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# pcas_prefix='23_01_'
-# path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+pcas_prefix='23_01_'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
 ##############################################################################
 # Read in the arguments
@@ -69,29 +69,24 @@ names(f) <- md$shortname
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
-fcs_colnames <- colnames(fcs[[1]])
-
-# ------------------------------------------------------------
-# Load more data
-# ------------------------------------------------------------
 
 # read panel, pick which columns to use
 panel <- read.xls(path_panel, stringsAsFactors=FALSE)
 
-if(!all(c("fcs_colname", "Isotope", "Antigen", "transform") %in% colnames(panel)))
-  stop("Wrong columns in panel!!!")
+
+# get isotope mass of columns in fcs files.. to match against the panel
+panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
 
 
 # cols - get fcs columns that are in the panel with transform = 1
-cols <- which(fcs_colnames %in% panel$fcs_colname[panel$transform==1])
+cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
 
-# get the isotope and antigen for fcs markers
-m <- match(fcs_colnames, panel$fcs_colname)
+# Antigen - get the antigen name
+m <- match(panel_mass, panel$Isotope)
 
-fcs_panel <- data.frame(colnames = fcs_colnames, Isotope = panel$Isotope[m], Antigen = panel$Antigen[m], cols = fcs_colnames %in% panel$fcs_colname[panel$transform==1], stringsAsFactors = FALSE)
+fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
 
 fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
 
 
 # arc-sin-h the columns specific 
@@ -136,7 +131,7 @@ rmprs <- rowMeans(prs)
 
 
 prs <- data.frame(mass = rownames(prs), marker = fcs_panel$Antigen[cols], avg_score=rmprs, round(prs,3))
-colnames(prs) <- c("mass", "marker", "avg_score", names(es))
+
 
 ### Save ordered PCA scores
 o <- order(rmprs, decreasing=TRUE)
@@ -183,7 +178,8 @@ dev.off()
 
 pdf(file.path(pcaDir, paste0(prefix, "channel_distributions.pdf")))
 
-ttl <- fcs_panel$Antigen[cols]
+m <- match(panel_mass[cols], panel$Isotope)
+ttl <- panel$Antigen[m]
 
 colors <- as.numeric(as.factor(md$condition))
 
@@ -192,25 +188,63 @@ for(i in 1:length(cols)) {
   
   ii <- o[i]
   dens <- lapply(es, function(u) density( u[,ii] ))
-  my <- max(sapply(dens, function(u) max(u$y)))
-  
-  maxx <- max(sapply(dens, function(u) max(u$x)))
-  minx <- min(sapply(dens, function(u) min(u$x)))
+  mx <- max(sapply(dens, function(u) max(u$y)))
   
   # for every sample
   k <- prs$marker==ttl[ii]
   for(s in 1:length(es)) {
     if(s==1)
-      plot( dens[[s]], xlim = c(minx, maxx), ylim = c(0, my), xlab="", lwd=3, col=colors[s], 
-        main=paste(fcs_panel$Isotope[cols][ii],"/", as.character(ttl[ii]),"/", round(prs$avg_score[k],2)))
+      plot( dens[[s]], ylim=c(0,mx), xlab="", lwd=3, col=colors[s], 
+        main=paste(panel_mass[cols][ii],"/",
+          as.character(ttl[ii]),"/",
+          round(prs$avg_score[k],2)))
     else
       lines( dens[[s]], lwd=3, col=colors[s])
-    nm <- paste0(names(es)," (", round(prs[k, names(es)], 2) ,")")
+    nm <- paste0(names(es)," (",round(prs[k,names(es)],2),")")
     legend("topright", nm, lwd=1, col = colors, cex = 0.7)
   }
   
 }
 dev.off()
+
+
+
+# --------------------------------------------------------------------------
+# My exploration of PCA
+# --------------------------------------------------------------------------
+
+
+
+
+z = es[[1]]; ncomp=3
+
+## Score by Levine
+pr <- prcomp(z, center = TRUE, scale. = FALSE)  # default is to center but not scale
+
+score <- rowSums (outer( rep(1, ncol(z)), pr$sdev[1:ncomp]^2 ) * abs(pr$rotation[,1:ncomp]) )
+
+
+
+
+## My testing
+pr <- prcomp(z, center = TRUE, scale. = FALSE)  # default is to center but not scale
+colSums(pr$rotation^2) # are all 1 because eigenvectors have length 1
+
+sum(pr$sdev^2) # is equal to the number of variables when scale. = TRUE because all are scaled to have variance of 1
+
+
+rowSums( (outer( rep(1, ncol(z)), pr$sdev) * pr$rotation)^2 ) # all 1 when scale. = TRUE (portion of the variables' variance being explained by components)
+
+
+rowSums( (outer( rep(1, ncol(z)), pr$sdev[1:ncomp]) * pr$rotation[,1:ncomp])^2 )
+
+
+rowSums( outer( rep(1, ncol(z)), pr$sdev^2) * pr$rotation^2 )
+
+
+rowSums( outer( rep(1, ncol(z)), pr$sdev^2) * abs(pr$rotation) )
+
+rowSums (outer( rep(1, ncol(z)), pr$sdev[1:ncomp]^2 ) * abs(pr$rotation[,1:ncomp]) )
 
 
 

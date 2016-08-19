@@ -83,24 +83,25 @@ names(f) <- md$shortname
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
+fcs_colnames <- colnames(fcs[[1]])
 
 # ------------------------------------------------------------
 # Load more data
 # ------------------------------------------------------------
 
 if(!grepl("/", path_clustering_observables)){
-  clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
+  clustering_observables <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
 }else{
-  clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
+  clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
 }
 
-clust_observ <- clust_observ[, 1]
+clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
 
 # -------------------------------------
 
 # selected columns for clustering  
 
-scols <- which(colnames(fcs[[1]]) %in% clust_observ)
+scols <- which(fcs_colnames %in% clust_observ)
 
 # arc-sin-h the columns specific 
 fcsT <- lapply(fcs, function(u) {
@@ -167,20 +168,20 @@ inds2keep <- c(unlist(subs))
 
 ### Run tSNE on normalized data
 
-# el_sub <- el[inds2keep, ]
-# 
-# set.seed(rand_seed)
-# rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
-# 
-# 
-# # Save rtsne results
-# 
-# rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], el_sub)
-# 
-# write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-# 
-# 
-# save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_norm.rda")))
+el_sub <- el[inds2keep, ]
+
+set.seed(rand_seed)
+rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
+
+
+# Save rtsne results
+
+rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], el_sub)
+
+write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+
+save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_norm.rda")))
 
 
 

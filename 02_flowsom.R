@@ -34,6 +34,12 @@ library(ConsensusClusterPlus)
 # rand_seed_consensus=123
 # nmetaclusts=20
 
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data/metadata_facs.xlsx'
+# flowsom_prefix='facs_pca1_cl20_'
+# path_clustering_observables='facs_pca1_clustering_observables.xls'
+# rand_seed_consensus=1234
+# nmetaclusts=20
 
 ##############################################################################
 # Read in the arguments
@@ -87,24 +93,25 @@ names(f) <- md$shortname
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
+fcs_colnames <- colnames(fcs[[1]])
 
 # ------------------------------------------------------------
 # Load more data
 # ------------------------------------------------------------
 
 if(!grepl("/", path_clustering_observables)){
-  clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
+  clustering_observables <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
 }else{
-  clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
+  clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
 }
 
-clust_observ <- clust_observ[, 1]
+clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
 
 # -------------------------------------
 
 # selected columns for clustering 
 
-scols <- which(colnames(fcs[[1]]) %in% clust_observ)
+scols <- which(fcs_colnames %in% clust_observ)
 
 # arc-sin-h the columns specific 
 fcsT <- lapply(fcs, function(u) {
@@ -165,7 +172,7 @@ clust <- fsom_mc[fsom$map$mapping[,1]]
 
 # get cluster frequencies
 freq_clust <- table(clust)
-
+freq_clust
 
 
 
@@ -178,8 +185,9 @@ save(fsom_mc, file = file.path(hmDir, paste0(prefix, "fsom_mc.rda")))
 clust_out <- data.frame(cluster = clust, stringsAsFactors = FALSE)
 write.table(clust_out, file = file.path(hmDir, paste0(prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
+
 # make data frame with labels
-labels <- data.frame(cluster = 1:nmetaclusts, label = sprintf("%02d", 1:nmetaclusts))
+labels <- data.frame(cluster = sort(unique(clust)), label = sort(unique(clust)))
 write.table(labels, file = file.path(hmDir, paste0(prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 

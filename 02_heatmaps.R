@@ -31,11 +31,18 @@ library(ConsensusClusterPlus)
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 # heatmap_prefix='23_01_pca1_cl20_'
-# path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
 # path_clustering_observables='23_01_pca1_clustering_observables.xls'
 # path_clustering='23_01_pca1_cl20_clustering.xls'
 # path_clustering_labels='23_01_pca1_cl20_clustering_labels.xls'
-# path_pca_score='23_01_princompscore_by_sample.xls'
+
+
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data/metadata_facs.xlsx'
+# heatmap_prefix='facs_pca1_cl20_'
+# path_clustering_observables='facs_pca1_clustering_observables.xls'
+# path_clustering='facs_pca1_cl20_clustering.xls'
+# path_clustering_labels='facs_pca1_cl20_clustering_labels.xls'
+
 
 ##############################################################################
 # Read in the arguments
@@ -60,7 +67,6 @@ prefix <- heatmap_prefix
 # ------------------------------------------------------------
 
 fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
 hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
 
 
@@ -78,57 +84,11 @@ names(f) <- md$shortname
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
-
-# read panel, pick which columns to use
-panel <- read.xls(path_panel,stringsAsFactors=FALSE)
-
-# get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
-
-# cols - get fcs columns that are in the panel with transform = 1
-cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
-
-# Antigen - get the antigen name
-m <- match(panel_mass, panel$Isotope)
-
-fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
-
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[,cols] <- asinh( e[,cols] / 5 )
-  exprs(u) <- e
-  u
-})
-
-### Create sample info
-samp <- rep(names(fcs), sapply(fcs, nrow))
-
+fcs_colnames <- colnames(fcs[[1]])
 
 # ------------------------------------------------------------
 # Load more data
 # ------------------------------------------------------------
-
-# pca scores
-if(!grepl("/", path_pca_score)){
-  prs <- read.table(file.path(pcaDir, path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
-}else{
-  prs <- read.table(path_pca_score, header = TRUE, sep = "\t", as.is = TRUE)
-}
-
-rownames(prs) <- prs$mass
-
-# clustering observables
-if(!grepl("/", path_clustering_observables)){
-  clust_observ <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
-}else{
-  clust_observ <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
-}
-
-clust_observ <- clust_observ[, 1]
 
 # clustering
 clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
@@ -141,14 +101,48 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 rownames(labels) <- labels$cluster
 
 
+# clustering_observables
+if(!grepl("/", path_clustering_observables)){
+  clustering_observables <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
+}else{
+  clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
+}
+
+rownames(clustering_observables) <- clustering_observables$mass
+
+clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
+
+
+# -------------------------------------
+# get the isotope and antigen for fcs markers
+
+m <- match(fcs_colnames, clustering_observables$mass)
+
+fcs_panel <- data.frame(colnames = fcs_colnames, Isotope = clustering_observables$mass[m], Antigen = clustering_observables$marker[m], stringsAsFactors = FALSE)
+
+
+# -------------------------------------
+
+cols <- which(fcs_colnames %in% clustering_observables$mass)
+
+# arc-sin-h the columns specific 
+fcsT <- lapply(fcs, function(u) {
+  e <- exprs(u)
+  e[ , cols] <- asinh( e[ , cols] / 5 )
+  exprs(u) <- e
+  u
+})
+
+
+
 # ------------------------------------------------------------
 
 ### Indeces of observables used for clustering 
 
-scols <- which(fcs_panel$colnames %in% clust_observ)
+scols <- which(fcs_colnames %in% clust_observ)
 
 # ordered by decreasing pca score
-scols <- scols[order(prs[fcs_panel$colnames[scols], "avg_score"], decreasing = TRUE)]
+scols <- scols[order(clustering_observables[fcs_colnames[scols], "avg_score"], decreasing = TRUE)]
 
 
 ### Indeces of other observables
@@ -156,7 +150,7 @@ scols <- scols[order(prs[fcs_panel$colnames[scols], "avg_score"], decreasing = T
 xcols <- setdiff(cols, scols)
 
 # ordered by decreasing pca score
-xcols <- xcols[order(prs[fcs_panel$colnames[xcols], "avg_score"], decreasing = TRUE)]
+xcols <- xcols[order(clustering_observables[fcs_colnames[xcols], "avg_score"], decreasing = TRUE)]
 
 
 
@@ -167,34 +161,19 @@ xcols <- xcols[order(prs[fcs_panel$colnames[xcols], "avg_score"], decreasing = T
 
 ### Get marker expression
 
-# re-extract the data as list of tables
 es <- lapply(fcsT, function(u) {
-  exprs(u)[,scols]
-})
-
-esX <- lapply(fcsT, function(u) {
-  exprs(u)[,xcols]
+  exprs(u)[, cols]
 })
 
 e <- do.call("rbind",es)
-eX <- do.call("rbind",esX)
-
-colnames(e) <- fcs_panel$Antigen[scols]
-colnames(eX) <- fcs_panel$Antigen[xcols]
-
+colnames(e) <- fcs_panel$Antigen[cols]
 
 a <- aggregate( e, by=list(clust), FUN=median)
-aX <- aggregate( eX, by=list(clust), FUN=median)
 
 mlab <- match(a$Group.1, labels$cluster)
-rownames(a) <- rownames(aX) <- labels$label[mlab]
+rownames(a) <- labels$label[mlab]
 
-colnames(a)[1] <- colnames(aX)[1] <- "cluster"
-
-
-
-
-### Normalize the data to 01
+colnames(a)[1] <- "cluster"
 
 # normalize to 0-1
 el <- e
@@ -205,25 +184,12 @@ for(i in 1:ncol(el)) {
 el[el<0] <- 0
 el[el>1] <- 1
 
-
-# normalize to 0-1
-elX <- eX
-rng <- apply(elX,2,quantile,p=c(.01,.99))
-for(i in 1:ncol(elX)) {
-  elX[,i] <- (elX[,i]-rng[1,i])/(rng[2,i]-rng[1,i])
-}
-elX[elX<0] <- 0
-elX[elX>1] <- 1
-
-
 al <- aggregate( el, by=list(clust), FUN=median)
-alX <- aggregate( elX, by=list(clust), FUN=median)
 
 mlab <- match(al$Group.1, labels$cluster)
-rownames(al) <- rownames(alX) <- labels$label[mlab]
+rownames(al) <- labels$label[mlab]
 
-colnames(al)[1] <- colnames(alX)[1] <- "cluster"
-
+colnames(al)[1] <- "cluster"
 
 
 ### Save cluster frequencies and the median expression
@@ -231,15 +197,16 @@ colnames(al)[1] <- colnames(alX)[1] <- "cluster"
 # get cluster frequencies
 freq_clust <- table(clust)
 
-# normalized 
-clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), al[, -1], alX[, -1])
-
-write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 # raw
-clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), a[, -1], aX[, -1])
+clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), a[, fcs_panel$Antigen[c(scols, xcols)]])
 
 write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters_raw.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+# normalized 
+clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), al[, fcs_panel$Antigen[c(scols, xcols)]])
+
+write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
 # ------------------------------------------------------------
@@ -263,7 +230,6 @@ plotting_wrapper <- function(e, suffix){
   # print(ggp)
   # dev.off()
   
-  
   ## with free scales using facet_wrap 
   dfm$variable_clust <- interaction(dfm$variable, dfm$clust, lex.order = FALSE)
   
@@ -271,34 +237,10 @@ plotting_wrapper <- function(e, suffix){
     geom_density(adjust=1, fill = "black", alpha = 0.3) +
     facet_wrap(~ variable_clust, nrow = nlevels(dfm$clust), scales = "free_y") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 6), strip.text = element_text(size = 9))
-
+  
   pdf(file.path(hmDir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
   print(ggp)
   dev.off()
-  
-  
-  # cl <- levels(dfm$clust)
-  # vl <- levels(dfm$variable)
-  # 
-  # pdf(file.path(hmDir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
-  # par(mfrow=c(nlevels(dfm$clust), nlevels(dfm$variable)), mai = c(0.25, 0.3, 0.25, 0.05)) # c(bottom, left, top, right)
-  # 
-  # for(i in 1:nlevels(dfm$clust)){
-  #   for(j in 1:nlevels(dfm$variable)){
-  #     
-  #     vv <- dfm[dfm$variable == vl[j], "value"]
-  #     xmax <- max(vv)
-  #     xmin <- min(vv)
-  #     
-  #     d <- density(dfm[dfm$clust == cl[i] & dfm$variable == vl[j], "value"])
-  #     plot(d, main = paste0(vl[j], ".", cl[i]), xlab = "", ylab = "", cex.axis = 0.7, lwd = 3, xlim = c(xmin, xmax), col = "blue")
-  #     # polygon(d, col="grey50", border="black")
-  #     
-  #   }
-  # }
-  # 
-  # dev.off()
-  
   
   return(NULL)
   
@@ -307,23 +249,24 @@ plotting_wrapper <- function(e, suffix){
 
 ## Raw expression, included observables
 
-plotting_wrapper(e = e, suffix = "_raw_in")
-
-
-# Raw expression, excluded observables
-
-plotting_wrapper(e = eX, suffix = "_raw_ex")
-
-
+plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_raw_in")
 
 # Normalized expression, included observables
 
-plotting_wrapper(e = el, suffix = "_norm_in")
+plotting_wrapper(e = el[, fcs_panel$Antigen[scols]], suffix = "_norm_in")
 
 
-# Normalized expression, excluded observables
-
-plotting_wrapper(e = elX, suffix = "_norm_ex")
+if(length(xcols) > 0){
+  
+  # Normalized expression, excluded observables
+  
+  plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_norm_ex")
+  
+  # Raw expression, excluded observables
+  
+  plotting_wrapper(e = el[, fcs_panel$Antigen[xcols]], suffix = "_raw_ex")
+  
+}
 
 
 # ------------------------------------------------------------
@@ -367,7 +310,7 @@ plotting_wrapper2 <- function(e, suffix){
   print(ggp)
   dev.off()
   
-
+  
   return(NULL)
   
 }
@@ -377,23 +320,47 @@ plotting_wrapper2 <- function(e, suffix){
 
 ## Raw expression, included observables
 
-# plotting_wrapper2(e = e, suffix = "_raw_in")
-# 
-# 
-# # Raw expression, excluded observables
-# 
-# plotting_wrapper2(e = eX, suffix = "_raw_ex")
-# 
+# plotting_wrapper2(e = e[, fcs_panel$Antigen[scols]], suffix = "_raw_in")
 # 
 # 
 # # Normalized expression, included observables
 # 
-# plotting_wrapper2(e = el, suffix = "_norm_in")
+# plotting_wrapper2(e = el[, fcs_panel$Antigen[scols]], suffix = "_norm_in")
 # 
 # 
-# # Normalized expression, excluded observables
-# 
-# plotting_wrapper2(e = elX, suffix = "_norm_ex")
+# if(length(xcols) > 0){
+#   
+#   # Raw expression, excluded observables
+#   
+#   plotting_wrapper2(e = e[, fcs_panel$Antigen[xcols]], suffix = "_raw_ex")
+#   
+#   
+#   # Normalized expression, excluded observables
+#   
+#   plotting_wrapper2(e = el[, fcs_panel$Antigen[xcols]], suffix = "_norm_ex")
+#   
+# }
+
+
+# ------------------------------------------------------------
+# pheatmaps for raw data
+# ------------------------------------------------------------
+
+### Cluster clustering is based on all markers here
+
+expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
+rownames(expr) <- labels$label
+
+cluster_rows <- hclust(dist(expr), method = "average")
+
+
+labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
+labels_col <- colnames(expr)
+
+pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw_row_clust.pdf")), width = 10, height = 7)
+
+
+pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw.pdf")), width = 10, height = 7)
 
 
 
@@ -403,13 +370,13 @@ plotting_wrapper2 <- function(e, suffix){
 
 ### Cluster clustering is based on all markers here
 
-expr <- as.matrix(cbind(al[,-1], alX[,-1]))
+expr <- as.matrix(al[, fcs_panel$Antigen[c(scols, xcols)]])
 rownames(expr) <- labels$label
 
 cluster_rows <- hclust(dist(expr), method = "average")
 
 
-labels_row <- as.character(labels$label)
+labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
 labels_col <- colnames(expr)
 
 pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_norm_row_clust.pdf")), width = 10, height = 7)
@@ -417,27 +384,6 @@ pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))
 
 pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_norm.pdf")), width = 10, height = 7)
 
-
-
-# ------------------------------------------------------------
-# pheatmaps for raw data
-# ------------------------------------------------------------
-
-### Cluster clustering is based on all markers here
-
-expr <- as.matrix(cbind(a[,-1], aX[,-1]))
-rownames(expr) <- labels$label
-
-cluster_rows <- hclust(dist(expr), method = "average")
-
-
-labels_row <- as.character(labels$label)
-labels_col <- colnames(expr)
-
-pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 6, length.out = 101), legend_breaks = seq(from = 0, to = 6, by = 1), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw_row_clust.pdf")), width = 10, height = 7)
-
-
-pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 6, length.out = 101), legend_breaks = seq(from = 0, to = 6, by = 1), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw.pdf")), width = 10, height = 7)
 
 
 
