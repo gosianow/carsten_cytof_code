@@ -241,7 +241,7 @@ Analysis_block_5_cluster_merging_CD4_CD8 () {
 ## Define paths to software and reference files
 
 RWD_MAIN=/Users/gosia/Dropbox/UZH/carsten_cytof
-RCODE=$RWD_MAIN
+RCODE=/Users/gosia/Dropbox/UZH/carsten_cytof_code
 METADATA=$RWD_MAIN/CK_metadata
 PANELS=$RWD_MAIN/CK_panels
 

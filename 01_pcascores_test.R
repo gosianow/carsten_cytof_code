@@ -24,10 +24,10 @@ library(RColorBrewer)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-pcas_prefix='23_01_'
-path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03'
+pcas_prefix='update_'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel3.xlsx'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx'
 
 ##############################################################################
 # Read in the arguments
@@ -73,9 +73,14 @@ fcs <- lapply(f, read.FCS)
 # read panel, pick which columns to use
 panel <- read.xls(path_panel, stringsAsFactors=FALSE)
 
+fcs_colnames <- colnames(fcs[[1]])
 
 # get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
+panel_mass <- as.numeric(gsub("[[:alpha:]]", "", fcs_colnames))
+
+mm <- match(panel$Isotope, panel_mass)
+
+panel$fcs_colname <- fcs_colnames[mm]
 
 
 # cols - get fcs columns that are in the panel with transform = 1

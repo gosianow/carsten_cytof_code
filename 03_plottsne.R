@@ -166,6 +166,22 @@ print(ggp)
 dev.off()
 
 
+## facet per sample
+ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
+  geom_point(size=1) +
+  facet_wrap(~ sample) +
+  labs(x = "tSNE 1", y="tSNE 2")+ 
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
+  scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
+  guides(colour = guide_legend(override.aes = list(size = 5)))
+
+pdf(file.path(sneDir, paste0(prefix, "tSNEsample", suffix, ".pdf")), width = pdf_width, height = pdf_height)                 
+print(ggp)
+dev.off()
+
+
+
 
 ### Plot of tsne - large clusters
 tc <- table(ggdf$cluster)
@@ -173,6 +189,8 @@ kk <- names(tc[tc > tsne_cmin])
 
 ggdf_sub <- ggdf[ggdf$cluster %in% kk,]
 ggdf_sub$cluster <- factor(ggdf_sub$cluster)
+
+
 
 ## facet per group
 ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
@@ -214,6 +232,8 @@ for(i in 1:length(clust_lev)) {
 
 ggdf_sub <- ggdf[distse < 0.25, ]
 ggdf_sub$cluster <- factor(ggdf_sub$cluster)
+
+
 
 ## facet per group
 ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +

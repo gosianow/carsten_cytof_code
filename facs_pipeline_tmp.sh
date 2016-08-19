@@ -10,15 +10,15 @@ PANELS=$RWD_MAIN/FACS_data
 
 
 ## Define which analysis to re-run
-pcascores=true
-select_observables=true
+pcascores=false
+select_observables=false
 flowsom=true
 heatmaps=true
-runtsne=true
+runtsne=false
 plottsne=true
 frequencies=true
-cluster_merging=true
-cluster_extracting=true
+cluster_merging=false
+cluster_extracting=false
 cytokines=false
 fcs_saving=false
 pd1=false
@@ -38,13 +38,13 @@ file_metadata="metadata_facs.xlsx"
 
 pca_score_cutoff=0 ## Update!!!
 rand_seed_consensus=1234
-nmetaclusts=20
+nmetaclusts=11
 tsne_pmin=4000
 
 prefix_data="facs_"
 prefix_panel=""
 prefix_pca="pca1_"
-prefix_clust="cl20_"
+prefix_clust="cl11_"
 
 ### PCA scores
 if ${pcascores}; then
