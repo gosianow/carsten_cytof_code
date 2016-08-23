@@ -30,11 +30,11 @@ library(limma) # for strsplit2
 # path_clustering_labels='pnlCD4_pca1_merging_CD4_clustering_labels.xls'
 # path_metadata
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data/metadata_facs.xlsx'
-freq_prefix='facs_pca1_cl20_'
-path_clustering='facs_pca1_cl20_clustering.xls'
-path_clustering_labels='facs_pca1_cl20_clustering_labels.xls'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data/metadata_facs.xlsx'
+# freq_prefix='facs_pca1_cl20_'
+# path_clustering='facs_pca1_cl20_clustering.xls'
+# path_clustering_labels='facs_pca1_cl20_clustering_labels.xls'
 
 
 ##############################################################################
@@ -78,6 +78,7 @@ names(f) <- md$shortname
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
+samp <- rep( names(fcs), sapply(fcs, nrow) )
 
 # ------------------------------------------------------------
 # Load more data
@@ -97,7 +98,7 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 
 
 # calculate frequencies
-samp <- rep( names(fcs), sapply(fcs, nrow) )
+
 freq <- table( cluster = clust, samp )
 
 # use labels as names of clusters
@@ -120,7 +121,6 @@ write.table(freq_out, file=file.path(frqDir,paste0(prefix, "counts.xls")), row.n
 # ---------------------------------------
 ### Plot frequencies
 # ---------------------------------------
-
 ggdf <- melt(prop, value.name = "prop")
 
 ## use labels as clusters
@@ -179,9 +179,8 @@ dev.off()
 
 
 ## plot using facet wrap
-
 # ggp <- ggplot(ggdf, aes(x = group, y = prop)) +
-#   geom_jitter(size=2.5, shape = 17, width = 0.5) +
+#   geom_jitter(size=2.5, shape = 17, width = 0.5, height = 0) +
 #   # geom_point(data = ggds, aes(x=group, y=mean), colour='black', size=2) +
 #   geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
 #   geom_errorbar(data=ggds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +

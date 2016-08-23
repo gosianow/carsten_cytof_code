@@ -30,11 +30,11 @@ library(ConsensusClusterPlus)
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# heatmap_prefix='23_01_pca1_cl20_'
+# heatmap_prefix='23_01_pca1_merging5_'
 # path_clustering_observables='23_01_pca1_clustering_observables.xls'
-# path_clustering='23_01_pca1_cl20_clustering.xls'
-# path_clustering_labels='23_01_pca1_cl20_clustering_labels.xls'
-
+# path_clustering='23_01_pca1_merging5_clustering.xls'
+# path_clustering_labels='23_01_pca1_merging5_clustering_labels.xls'
+# path_marker_selection='23_01_pca1_merging5_marker_selection.txt'
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data/metadata_facs.xlsx'
@@ -111,6 +111,20 @@ if(!grepl("/", path_clustering_observables)){
 rownames(clustering_observables) <- clustering_observables$mass
 
 clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
+
+
+# load marker selection for plotting on the heatmaps
+marker_selection <- NULL
+
+if(file.exists(file.path(path_marker_selection))){
+  
+  marker_selection <- read.table(file.path(path_marker_selection), header = TRUE, sep = "\t", as.is = TRUE)
+  marker_selection <- marker_selection[, 1]
+  
+  if(!all(marker_selection %in% clustering_observables$marker))
+    stop("Marker selection is wrong")
+  
+}
 
 
 # -------------------------------------
@@ -192,11 +206,11 @@ rownames(al) <- labels$label[mlab]
 colnames(al)[1] <- "cluster"
 
 
-### Save cluster frequencies and the median expression
-
 # get cluster frequencies
 freq_clust <- table(clust)
 
+
+### Save cluster frequencies and the median expression
 
 # raw
 clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), a[, fcs_panel$Antigen[c(scols, xcols)]])
@@ -247,26 +261,27 @@ plotting_wrapper <- function(e, suffix){
 }
 
 
+
 ## Raw expression, included observables
 
-plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_raw_in")
-
-# Normalized expression, included observables
-
-plotting_wrapper(e = el[, fcs_panel$Antigen[scols]], suffix = "_norm_in")
-
-
-if(length(xcols) > 0){
-  
-  # Normalized expression, excluded observables
-  
-  plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_norm_ex")
-  
-  # Raw expression, excluded observables
-  
-  plotting_wrapper(e = el[, fcs_panel$Antigen[xcols]], suffix = "_raw_ex")
-  
-}
+# plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_raw_in")
+# 
+# # Normalized expression, included observables
+# 
+# plotting_wrapper(e = el[, fcs_panel$Antigen[scols]], suffix = "_norm_in")
+# 
+# 
+# if(length(xcols) > 0){
+#   
+#   # Normalized expression, excluded observables
+#   
+#   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_norm_ex")
+#   
+#   # Raw expression, excluded observables
+#   
+#   plotting_wrapper(e = el[, fcs_panel$Antigen[xcols]], suffix = "_raw_ex")
+#   
+# }
 
 
 # ------------------------------------------------------------
@@ -357,10 +372,23 @@ cluster_rows <- hclust(dist(expr), method = "average")
 labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
 labels_col <- colnames(expr)
 
-pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw_row_clust.pdf")), width = 10, height = 7)
+pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_raw_row_clust.pdf")), width = 10, height = 7)
 
 
-pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_raw.pdf")), width = 10, height = 7)
+pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_raw.pdf")), width = 10, height = 7)
+
+
+## Plot only the selected markers
+if(!is.null(marker_selection)){
+  expr_sub <- expr[, marker_selection, drop = FALSE]
+  labels_col_sub <- colnames(expr_sub)
+  
+  pheatmap(expr_sub, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_raw_row_clust.pdf")), width = 10, height = 7)
+  
+  
+  pheatmap(expr_sub, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_raw.pdf")), width = 10, height = 7)
+  
+}
 
 
 
@@ -379,151 +407,35 @@ cluster_rows <- hclust(dist(expr), method = "average")
 labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
 labels_col <- colnames(expr)
 
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_norm_row_clust.pdf")), width = 10, height = 7)
+pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_norm_row_clust.pdf")), width = 10, height = 7)
 
 
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_norm.pdf")), width = 10, height = 7)
+pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_norm.pdf")), width = 10, height = 7)
 
 
-
-
-
-# ------------------------------------------------------------
-# ggplot tile
-# ------------------------------------------------------------
-
-# ggdf <- data.frame(cluster = labels$label, expr)
-
-# ggdf$cluster <- factor(ggdf$cluster, levels = rev(levels(labels$label)))
-
-# ggdfm <- melt(ggdf, id.var = "cluster", variable.name = "observable")
-# ggdfm$observable <- factor(ggdfm$observable, levels = colnames(ggdf)[-1])
-
-
-# ggp <- ggplot(ggdfm, aes(x = observable, y = cluster, fill = value)) + 
-#   geom_tile() + 
-#   geom_text(aes(label = round(value, 2)), color = "black", size = 2.5) + 
-#   scale_x_discrete(expand = c(0, 0)) + 
-#   scale_y_discrete(expand = c(0, 0)) + 
-#   xlab("") + 
-#   ylab("") + 
-#   theme_bw() +
-#   scale_fill_gradientn("", colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), limits=c(0, 1)) +
-#   theme(panel.background = element_rect(fill = NA, colour = NA), axis.ticks = element_blank(), axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5, hjust = 1), axis.text.y = element_text(size = 14)) 
-
-
-# pdf(file.path(hmDir, paste0(prefix, "ggtile.pdf")), width = 10, height = 7)
-# print(ggp)
-# dev.off()
-
-
-
-# ### Row order from clustering
-
-# ggdfm$cluster <- factor(ggdfm$cluster, levels = rev(levels(labels$label)[cluster_rows$order]))
-
-# ggp <- ggplot(ggdfm, aes(x = observable, y = cluster, fill = value)) + 
-#   geom_tile() + 
-#   geom_text(aes(label = round(value, 2)), color = "black", size = 2.5) + 
-#   scale_x_discrete(expand = c(0, 0)) + 
-#   scale_y_discrete(expand = c(0, 0)) + 
-#   xlab("") + 
-#   ylab("") + 
-#   theme_bw() +
-#   scale_fill_gradientn("", colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), limits=c(0, 1)) +
-#   theme(panel.background = element_rect(fill = NA, colour = NA), axis.ticks = element_blank(), axis.text.x = element_text(size = 14, angle = 90, vjust = 0.5, hjust = 1), axis.text.y = element_text(size = 14)) 
-
-
-# pdf(file.path(hmDir, paste0(prefix, "ggtile_row_clust.pdf")), width = 10, height = 7)
-# print(ggp)
-# dev.off()
-
-
-
-# ------------------------------------------------------------
-# ggdendogram
-# ------------------------------------------------------------
-
-
-# ggp <- ggdendrogram(cluster_rows, rotate = FALSE, size = 2)
-
-
-# pdf(file.path(hmDir, paste0(prefix, "ggdendro_row_clust.pdf")), width = 7, height = 3)
-# print(ggp)
-# dev.off()
-
-
-# dhc <- as.dendrogram(cluster_rows)
-# ddata <- dendro_data(dhc, type = "rectangle")
-# 
-# 
-# ggp <- ggplot(segment(ddata)) +
-#   geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) +
-#   geom_text(data = label(ddata), aes(x=x, y=y, label=label, hjust=0), size=3) +
-#   coord_flip() +
-#   scale_y_reverse(expand=c(0.2, 0)) +
-#   theme_dendro()
-# 
-# 
-# 
-# pdf(file.path(hmDir, paste0(prefix, "ggdendro_row_clust.pdf")), width = 2, height = 7)
-# print(ggp)
-# dev.off()
-
-# geom_segment(data=segment(hcdata), aes(x=x, y=y, xend=xend, yend=yend)) +
-#   geom_text(data=label(hcdata), aes(x=x, y=y, label=label, hjust=0), size=3) +
-#   coord_flip() + 
-#   scale_y_reverse(expand=c(0.2, 0))
-# 
+## Plot only the selected markers
+if(!is.null(marker_selection)){
+  
+  expr_sub <- expr[, marker_selection, drop = FALSE]
+  labels_col_sub <- colnames(expr_sub)
+  
+  pheatmap(expr_sub, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_norm_row_clust.pdf")), width = 10, height = 7)
+  
+  pheatmap(expr_sub, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_norm.pdf")), width = 10, height = 7)
+  
+}
 
 
 
 
-# ------------------------------------------------------------
-# ConsensusClusterPlus
-# ------------------------------------------------------------
-
-# rand_seed <- 1234
-
-# pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 10)
-
-# results <- ConsensusClusterPlus(d = t(as.matrix(expr)), maxK = 10, reps = 100, pItem = 0.9, pFeature = 1, plot = NULL, verbose = FALSE, clusterAlg = "hc", innerLinkage="average", finalLinkage="average", distance = "euclidean", seed = rand_seed)
-
-# dev.off()
-
-
-# pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus_pheatmap.pdf")), width = 10, height = 7)
-
-# for(k in 2:10){
-#   # k <- 5
-
-#   fm <- results[[k]]$ml
-#   cluster_rows_c <- hclust(as.dist( 1 - fm ), method = "average")
-
-#   pheatmap(mat = expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows_c, labels_col = labels_col, labels_row = labels_row, border_color = NA, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = NA, main = paste0("Consensus cluster number k = ", k))
-
-# }
-
-# dev.off()
 
 
 
-# pdf(file.path(hmDir, paste0(prefix, "ConsensusClusterPlus_ggdendro.pdf")), width = 7, height = 3)
 
-# for(k in 2:10){
-#   # k <- 5
 
-#   fm <- results[[k]]$ml
-#   cluster_rows_c <- hclust(as.dist( 1 - fm ), method = "average")
 
-#   ggp <- ggdendrogram(cluster_rows_c, rotate = FALSE, size = 2) +
-#   ggtitle(paste0("Consensus cluster number k = ", k))
 
-#   print(ggp)
 
-# }
-
-# dev.off()
 
 
 

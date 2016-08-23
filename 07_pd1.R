@@ -3,7 +3,7 @@
 
 # BioC 3.3
 # Created 11 Aug 2016
-# Updated 18 Aug 2016
+# Updated 23 Aug 2016
 
 ##############################################################################
 Sys.time()
@@ -33,17 +33,21 @@ library(multcomp)
 
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
 path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx'
-pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_'
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof/00_models.R'
-path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4.xlsx'
-path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM_RAW.xlsx'
+pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw_'
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
 path_clustering='23CD4_02CD4_pca1_merging_clustering.xls'
 path_clustering_labels='23CD4_02CD4_pca1_merging_clustering_labels.xls'
-clusters2analyse=c('CM','EM','TE')
-cutoff_colname='positive_cutoff_raw'
+clsubset = c('CM','EM','TE')
+cutoff_colname='positive_cutoff_raw_base'
 data2analyse='raw'
 nmetaclusts=20
-pd1_suffix='_raw'
+path_marker_selection='23CD4_02CD4_pca1_merging_Tmem_marker_selection.txt'
+path_rtsne_out='23CD4_02CD4_pca1_rtsne_out_norm.rda'
+path_rtsne_data='23CD4_02CD4_pca1_rtsne_data_norm.xls'
+pdf_width=15
+pdf_height=10
+tsnep_suffix='_norm'
 
 
 ##############################################################################
@@ -62,7 +66,9 @@ print(args)
 setwd(rwd)
 
 prefix <- pd1_prefix
-suffix <- pd1_suffix
+suffix <- ""
+prefix_clust <- paste0("cl", nmetaclusts, "_")
+
 
 if(!data2analyse %in% c("raw", "norm"))
   stop("data2analyse must be 'raw' or 'norm'!")
@@ -77,7 +83,9 @@ source(path_fun_models)
 fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
 pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
 hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
+sneDir <- "040_tsnemaps"; if( !file.exists(sneDir) ) dir.create(sneDir)
 pd1Dir <- "070_pd1"; if( !file.exists(pd1Dir) ) dir.create(pd1Dir)
+
 
 # ------------------------------------------------------------
 # Load data
@@ -93,34 +101,11 @@ names(f) <- md$shortname
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
+fcs_colnames <- colnames(fcs[[1]])
 
-# read panel, pick which columns to use
-panel <- read.xls(path_panel,stringsAsFactors=FALSE)
+### Create sample info
+samp <- rep(names(fcs), sapply(fcs, nrow))
 
-# get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
-
-# cols - get fcs columns that are in the panel with transform = 1
-cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
-
-# Antigen - get the antigen name
-m <- match(panel_mass, panel$Isotope)
-
-fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
-
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[,cols] <- asinh( e[,cols] / 5 )
-  exprs(u) <- e
-  u
-})
-
-
-# ------------------------
 
 # add more info about samples
 cond_split <- strsplit2(md$condition, "_")
@@ -128,6 +113,7 @@ colnames(cond_split) <- c("day", "response")
 
 md[, c("day", "response")] <- cond_split
 md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+
 
 
 # ------------------------------------------------------------
@@ -140,37 +126,24 @@ cytokines_cutoffs <- read.xls(path_cytokines_cutoffs, stringsAsFactors=FALSE)
 if(!cutoff_colname %in% colnames(cytokines_cutoffs))
   stop("There are no such column with cutoffs!")
 
-cytokines_cutoffs <- merge(panel, cytokines_cutoffs[, c("Isotope", cutoff_colname)], by = "Isotope", all.x = TRUE, sort = FALSE)
 
-## clustering results
-clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
-clust <- clust[, 1]
+# -------------------------------------
+# get the isotope and antigen for fcs markers
 
-## cluster labels
-labels <- read.table(file.path(hmDir, path_clustering_labels), header = TRUE, sep = "\t", as.is = TRUE)
-labels <- labels[order(labels$cluster, decreasing = FALSE), ]
-labels$label <- factor(labels$label, levels = unique(labels$label))
+m <- match(fcs_colnames, cytokines_cutoffs$fcs_colname)
+
+fcs_panel <- data.frame(colnames = fcs_colnames, Isotope = cytokines_cutoffs$Isotope[m], Antigen = cytokines_cutoffs$Antigen[m], stringsAsFactors = FALSE)
 
 
-if(any(clusters2analyse == "all")){
-  clusters2analyse <- labels$label
-}else{
-  if(!all(clusters2analyse %in% labels$label))
-    stop("Cluster labels are wrong!")
-}
-
-# ------------------------------------------------------------
+# -------------------------------------
 
 ### Indeces of observables used for positive-negative analysis
 
-pncols <- which(fcs_panel$Isotope %in% cytokines_cutoffs[!is.na(cytokines_cutoffs[, cutoff_colname]), "Isotope"])
+pncols <- which(fcs_panel$colnames %in% cytokines_cutoffs[!is.na(cytokines_cutoffs[, cutoff_colname]), "fcs_colname"])
 
 ## Order them in the way as in panel
 mm <- match(cytokines_cutoffs[!is.na(cytokines_cutoffs[, cutoff_colname]), "Antigen"], fcs_panel$Antigen[pncols])
 pncols <- pncols[mm]
-
-if(!all(pncols %in% cols))
-  stop("Cytokine positive cutoffs can be defined only for the transform=1 observables!")
 
 ### Index of PD-1
 
@@ -181,11 +154,55 @@ if(!pd1col %in% pncols)
 
 
 # ------------------------------------------------------------
+
+## clustering results
+clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
+clust <- clust[, "cluster"]
+
+## cluster labels
+labels <- read.table(file.path(hmDir, path_clustering_labels), header = TRUE, sep = "\t", as.is = TRUE)
+labels <- labels[order(labels$cluster, decreasing = FALSE), ]
+labels$label <- factor(labels$label, levels = unique(labels$label))
+
+
+if(!all(clsubset %in% labels$label))
+  stop("Cluster labels are wrong!")
+
+
+# load marker selection for plotting on the heatmaps
+marker_selection <- NULL
+
+if(file.exists(file.path(path_marker_selection))){
+  
+  marker_selection <- read.table(file.path(path_marker_selection), header = TRUE, sep = "\t", as.is = TRUE)
+  marker_selection <- marker_selection[, 1]
+  
+  if(!all(marker_selection %in% fcs_panel$Antigen[pncols]))
+    stop("Marker selection is wrong")
+  
+}
+
+# ------------------------------------------------------------
+# Load tSNE data
+# ------------------------------------------------------------
+
+load(file.path(sneDir, path_rtsne_out))
+
+rtsne_data <- read.table(file.path(sneDir, path_rtsne_data), header = TRUE, sep = "\t", as.is = TRUE)
+
+# ------------------------------------------------------------
 # Get marker expression
 # ------------------------------------------------------------
 
-### Re-extract the data as list of tables
+# arc-sin-h the columns specific 
+fcsT <- lapply(fcs, function(u) {
+  e <- exprs(u)
+  e[ , pncols] <- asinh( e[ , pncols] / 5 )
+  exprs(u) <- e
+  u
+})
 
+# Re-extract the data as list of tables
 epn <- lapply(fcsT, function(u) {
   exprs(u)[,pncols]
 })
@@ -195,7 +212,6 @@ colnames(epn) <- fcs_panel$Antigen[pncols]
 
 
 ### Normalize the data to 01
-
 epnl <- epn
 rng <- apply(epnl,2,quantile,p=c(.01,.99))
 for(i in 1:ncol(epnl)) {
@@ -205,65 +221,68 @@ epnl[epnl<0] <- 0
 epnl[epnl>1] <- 1
 
 ### Keep only the data from the specified clusters
-
-cells2keep <- clust %in% labels[labels$label %in% clusters2analyse, "cluster"]
-
-epn <- epn[cells2keep, ]
-epnl <- epnl[cells2keep, ]
-
-
-# Use raw data
-if(data2analyse == "raw")
-  e <- epn
-
-# Use 01 normalized data
-if(data2analyse == "norm")
-  e <- epnl
+cells2keep <- clust %in% labels[labels$label %in% clsubset, "cluster"]
 
 samp <- rep(names(fcs), sapply(fcs, nrow))[cells2keep]
 
+# Use raw data
+if(data2analyse == "raw")
+  e <- epn[cells2keep, ]
+
+# Use 01 normalized data
+if(data2analyse == "norm")
+  e <- epnl[cells2keep, ]
 
 
 # ------------------------------------------------------------
-# Plot distribution of observables
+# tSNE plots
 # ------------------------------------------------------------
 
+# get cells that were used in tSNE and belong to the subset 
 
-df <- data.frame(samp = samp, e)
-dfm <- melt(df, id.var = "samp")
+which_cells_kept <- seq(length(cells2keep))[cells2keep]
+
+e_tsne <- epnl[rtsne_data$cell_index[rtsne_data$cell_index %in% which_cells_kept], ]
+
+ggdf <- data.frame(tSNE1 = rtsne_out$Y[rtsne_data$cell_index %in% which_cells_kept, 1], tSNE2 = rtsne_out$Y[rtsne_data$cell_index %in% which_cells_kept, 2], sample = rtsne_data$sample_name[rtsne_data$cell_index %in% which_cells_kept], e_tsne)
+
 
 # add group info
-mm <- match(dfm$samp, md$shortname)
-dfm$group <- factor(md$condition[mm])
+mm <- match(ggdf$sample, md$shortname)
+ggdf$group <- factor(md$condition[mm])
 
-ggp <- ggplot(dfm, aes(x=value)) + 
-  geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
-  facet_wrap(~ variable, nrow = 3, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-pdf(file.path(pd1Dir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e), h = 10)
+### Plot of tsne - PD.1 expression
+
+## facet per group
+ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = PD.1)) +
+  geom_point(size=1) +
+  facet_wrap(~ group) +
+  labs(x = "tSNE 1", y="tSNE 2") + 
+  xlim(range(rtsne_out$Y[, 1])) +
+  ylim(range(rtsne_out$Y[, 2])) +
+  scale_colour_gradientn(colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100)) +
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) 
+
+pdf(file.path(pd1Dir, paste0(prefix, "tSNE_PD1", tsnep_suffix, ".pdf")), width = pdf_width, height = pdf_height)      
 print(ggp)
 dev.off()
 
 
-## create colors per group not per sample
-mm <- match(levels(dfm$samp), md$shortname)
-groups <- factor(md$condition[mm])
-color_values <- colorRampPalette(brewer.pal(12,"Paired"))(12)[c(1,3,5,2,4,6)]
-color_values <- color_values[as.numeric(groups)]
-names(color_values) <- levels(dfm$samp)
+## one plot 
+ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = PD.1)) +
+  geom_point(size = 1) +
+  labs(x = "tSNE 1", y="tSNE 2")+ 
+  xlim(range(rtsne_out$Y[, 1])) +
+  ylim(range(rtsne_out$Y[, 2])) +
+  scale_colour_gradientn(colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100)) +
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) 
 
-ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
-  geom_density(adjust = 1) + 
-  facet_wrap(~ variable, nrow = 3, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
-  guides(color = guide_legend(nrow = 3, byrow = TRUE)) +
-  scale_color_manual(values = color_values)
-
-pdf(file.path(pd1Dir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e), h = 10)
+pdf(file.path(pd1Dir, paste0(prefix, "tSNEone_PD1", tsnep_suffix, ".pdf")), width = 9, height = 7)                 
 print(ggp)
 dev.off()
-
 
 
 # ------------------------------------------------------------
@@ -273,6 +292,7 @@ dev.off()
 epd1 <- e[, "PD-1"]
 
 pd1cut <- cytokines_cutoffs[cytokines_cutoffs$Antigen == "PD-1", cutoff_colname]
+pd1cut
 
 bivec <- epd1 > pd1cut
 
@@ -290,7 +310,7 @@ write.table(freq1, file=file.path(pd1Dir,paste0(prefix, "pd1_counts", suffix, ".
 
 
 # ------------------------------------------------------------
-# Plot PD-1 pos frequencies
+# Plot PD-1+ frequencies
 # ------------------------------------------------------------
 
 ggdf <- melt(prop1, value.name = "prop", variable.name = "samp", id.vars = "cluster")
@@ -298,11 +318,6 @@ ggdf <- melt(prop1, value.name = "prop", variable.name = "samp", id.vars = "clus
 ## add group info
 mm <- match(ggdf$samp, md$shortname)
 ggdf$group <- factor(md$condition[mm])
-
-## merge base_HD and tx_HD into one level - HD
-# new_levels <- levels(ggdf$group)
-# new_levels[grep("HD", new_levels)] <- "HD"
-# levels(ggdf$group) <- new_levels
 
 ## replace _ with \n
 levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
@@ -323,7 +338,7 @@ for(i in 1:nlevels(ggdf$cluster)){
   ds <- ggds[ggds$cluster == clusters[i], , drop = FALSE]
   
   ggp[[i]] <- ggplot(df, aes(x = group, y = prop)) +
-    geom_jitter(size=2.5, shape = 17, width = 0.5) +
+    geom_jitter(size=2.5, shape = 17, width = 0.5, height = 0) +
     geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
     geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +
     ggtitle(clusters[i]) +
