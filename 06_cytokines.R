@@ -30,22 +30,22 @@ library(pheatmap)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# cytokines_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw_'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx'
-# path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
-# path_clustering='23CD4_02CD4_pca1_merging_clustering.xls'
-# path_clustering_labels='23CD4_02CD4_pca1_merging_clustering_labels.xls'
-# clsubset = c('CM','EM','TE')
-# cutoff_colname='positive_cutoff_raw_base'
-# data2analyse='raw'
-# nmetaclusts=40
-# path_marker_selection='23CD4_02CD4_pca1_merging_Tmem_marker_selection.txt'
-# path_rtsne_out='23CD4_02CD4_pca1_rtsne_out_norm.rda'
-# path_rtsne_data='23CD4_02CD4_pca1_rtsne_data_norm.xls'
-# pdf_width=15
-# pdf_height=10
-# tsnep_suffix='_norm'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+cytokines_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw_'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx'
+path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
+path_clustering='23CD4_02CD4_pca1_merging_clustering.xls'
+path_clustering_labels='23CD4_02CD4_pca1_merging_clustering_labels.xls'
+clsubset = c('CM','EM','TE')
+cutoff_colname='positive_cutoff_raw_base'
+data2analyse='raw'
+nmetaclusts=40
+path_marker_selection='23CD4_02CD4_pca1_merging_Tmem_marker_selection.txt'
+path_rtsne_out='23CD4_02CD4_pca1_rtsne_out_norm.rda'
+path_rtsne_data='23CD4_02CD4_pca1_rtsne_data_norm.xls'
+pdf_width=15
+pdf_height=10
+tsnep_suffix='_norm'
 
 ##############################################################################
 # Read in the arguments

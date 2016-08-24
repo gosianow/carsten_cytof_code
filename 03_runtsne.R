@@ -160,7 +160,7 @@ subs <- mapply(function(u,v) {
 }, inds, names(inds))
 
 
-inds2keep <- c(unlist(subs))
+cells2keep <- c(unlist(subs))
 
 
 
@@ -168,20 +168,20 @@ inds2keep <- c(unlist(subs))
 
 ### Run tSNE on normalized data
 
-el_sub <- el[inds2keep, ]
-
-set.seed(rand_seed)
-rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
-
-
-# Save rtsne results
-
-rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], el_sub)
-
-write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-
-
-save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_norm.rda")))
+# el_sub <- el[cells2keep, ]
+# 
+# set.seed(rand_seed)
+# rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
+# 
+# 
+# # Save rtsne results
+# 
+# rtsne_data <- data.frame(cell_index = cells2keep, sample_name = samp[cells2keep], el_sub)
+# 
+# write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+# 
+# 
+# save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_norm.rda")))
 
 
 
@@ -190,7 +190,7 @@ save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_norm.rda")))
 
 ### Run tSNE on raw data
 
-e_sub <- e[inds2keep, ]
+e_sub <- e[cells2keep, ]
 
 set.seed(rand_seed)
 rtsne_out <- Rtsne(e_sub, pca = FALSE, verbose = TRUE)
@@ -198,7 +198,7 @@ rtsne_out <- Rtsne(e_sub, pca = FALSE, verbose = TRUE)
 
 # Save rtsne results
 
-rtsne_data <- data.frame(cell_index = inds2keep, sample_name = samp[inds2keep], e_sub)
+rtsne_data <- data.frame(cell_index = cells2keep, sample_name = samp[cells2keep], e_sub)
 
 write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_raw.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 

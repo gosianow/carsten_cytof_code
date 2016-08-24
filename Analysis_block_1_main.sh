@@ -148,9 +148,18 @@ fi
 ### Plot tSNE
 if ${plottsne}; then
   echo "03_plottsne"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' path_rtsne_out='${prefix_data}${prefix_panel}${prefix_pca}rtsne_out_norm.rda' path_rtsne_data='${prefix_data}${prefix_panel}${prefix_pca}rtsne_data_norm.xls' path_clustering='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10 tsnep_suffix='_norm'" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+
+  ### Based on 0-1 normalized data
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}norm_' path_rtsne_out='${prefix_data}${prefix_panel}${prefix_pca}rtsne_out_norm.rda' path_rtsne_data='${prefix_data}${prefix_panel}${prefix_pca}rtsne_data_norm.xls' path_clustering='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10 tsnep_suffix=''" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
   tail $ROUT/03_plottsne.Rout
+
+
+  ### Based on raw data
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' path_rtsne_out='${prefix_data}${prefix_panel}${prefix_pca}rtsne_out_raw.rda' path_rtsne_data='${prefix_data}${prefix_panel}${prefix_pca}rtsne_data_raw.xls' path_clustering='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  tsne_cmin=1000 pdf_width=15 pdf_height=10 tsnep_suffix=''" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  tail $ROUT/03_plottsne.Rout
+
 fi
+
 
 ### Get cluster frequencies
 if ${frequencies}; then
