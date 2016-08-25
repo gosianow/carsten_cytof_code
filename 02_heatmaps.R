@@ -3,14 +3,13 @@
 
 # BioC 3.3
 # Created 27 July 2016
-# Updated 18 Aug 2016
+# Updated 24 Aug 2016
 
 ##############################################################################
 Sys.time()
 ##############################################################################
 
 # Load packages
-library(flowCore)
 library(gdata)
 library(FlowSOM)
 library(Repitools)
@@ -29,19 +28,18 @@ library(ConsensusClusterPlus)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+# heatmap_prefix='23_01_pca1_cl20_raw_'
+# heatmap_outdir='030_heatmaps'
+# path_data='010_data/23_01_expr_raw.rds'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# heatmap_prefix='23_01_pca1_merging5_'
-# path_clustering_observables='23_01_pca1_clustering_observables.xls'
-# path_clustering='23_01_pca1_merging5_clustering.xls'
-# path_clustering_labels='23_01_pca1_merging5_clustering_labels.xls'
-# path_marker_selection='23_01_pca1_merging5_marker_selection.txt'
-
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_data/metadata_facs.xlsx'
-# heatmap_prefix='facs_pca1_cl20_'
-# path_clustering_observables='facs_pca1_clustering_observables.xls'
-# path_clustering='facs_pca1_cl20_clustering.xls'
-# path_clustering_labels='facs_pca1_cl20_clustering_labels.xls'
+# path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
+# path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
+# path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
+# path_marker_selection='030_heatmaps/23_01_pca1_cl20_marker_selection.txt'
+# aggregate_fun='median'
+# pheatmap_palette='YlGnBu' # RdYlBu
+# pheatmap_palette_rev=FALSE
+# pheatmap_scale=TRUE
 
 
 ##############################################################################
@@ -60,54 +58,52 @@ print(args)
 setwd(rwd)
 
 prefix <- heatmap_prefix
+outdir <- heatmap_outdir
 
-
-# ------------------------------------------------------------
-# define directories
-# ------------------------------------------------------------
-
-fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
-
+if(!file.exists(outdir)) 
+  dir.create(outdir)
 
 # ------------------------------------------------------------
 # Load data
 # ------------------------------------------------------------
 
-# read metadata
-md <- read.xls(path_metadata, stringsAsFactors=FALSE)
+# read expression data
+if(grepl(".txt", path_data)){
+  expr <- read.table(path_data, header = TRUE, sep = "\t", as.is = TRUE)
+}
+if(grepl(".rds", path_data)){
+  expr <- readRDS(path_data)
+}
 
-# define FCS file names
-f <- file.path(fcsDir, md$filename)
-names(f) <- md$shortname
-
-# read raw FCS files in
-fcs <- lapply(f, read.FCS)
-
-fcs_colnames <- colnames(fcs[[1]])
+cell_id <- expr[, "cell_id"]
+samp <- expr[, "sample_id"]
+fcs_colnames <- colnames(expr)[!grepl("cell_id|sample_id", colnames(expr))]
+e <- expr[, fcs_colnames]
 
 # ------------------------------------------------------------
-# Load more data
+# Load metadata
+# ------------------------------------------------------------
+
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
+
+# ------------------------------------------------------------
+# Load clustering data
 # ------------------------------------------------------------
 
 # clustering
-clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
-clust <- clust[, 1]
+clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
+
+clust <- clustering[, "cluster"]
+names(clust) <- clustering[, "cell_id"]
 
 # clustering labels
-labels <- read.table(file.path(hmDir, path_clustering_labels), header = TRUE, sep = "\t", as.is = TRUE)
+labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
 rownames(labels) <- labels$cluster
 
 
-# clustering_observables
-if(!grepl("/", path_clustering_observables)){
-  clustering_observables <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
-}else{
-  clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
-}
-
+clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
 rownames(clustering_observables) <- clustering_observables$mass
 
 clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
@@ -127,7 +123,7 @@ if(file.exists(file.path(path_marker_selection))){
 }
 
 
-# -------------------------------------
+# ------------------------------------------------------------
 # get the isotope and antigen for fcs markers
 
 m <- match(fcs_colnames, clustering_observables$mass)
@@ -135,75 +131,34 @@ m <- match(fcs_colnames, clustering_observables$mass)
 fcs_panel <- data.frame(colnames = fcs_colnames, Isotope = clustering_observables$mass[m], Antigen = clustering_observables$marker[m], stringsAsFactors = FALSE)
 
 
-# -------------------------------------
-
-cols <- which(fcs_colnames %in% clustering_observables$mass)
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[ , cols] <- asinh( e[ , cols] / 5 )
-  exprs(u) <- e
-  u
-})
-
-
-
 # ------------------------------------------------------------
 
-### Indeces of observables used for clustering 
-
+# Indeces of observables used for clustering 
 scols <- which(fcs_colnames %in% clust_observ)
 
-# ordered by decreasing pca score
-scols <- scols[order(clustering_observables[fcs_colnames[scols], "avg_score"], decreasing = TRUE)]
+# Indeces of other observables
+xcols <- which(!fcs_colnames %in% clust_observ)
 
-
-### Indeces of other observables
-
-xcols <- setdiff(cols, scols)
 
 # ordered by decreasing pca score
-xcols <- xcols[order(clustering_observables[fcs_colnames[xcols], "avg_score"], decreasing = TRUE)]
-
-
+if("avg_score" %in% colnames(clustering_observables)){
+  scols <- scols[order(clustering_observables[fcs_colnames[scols], "avg_score"], decreasing = TRUE)]
+  xcols <- xcols[order(clustering_observables[fcs_colnames[xcols], "avg_score"], decreasing = TRUE)]
+}
 
 
 # ------------------------------------------------------------
-# Get expression
+# Get the median expression
 # ------------------------------------------------------------
 
-### Get marker expression
+colnames(e) <- fcs_panel$Antigen
 
-es <- lapply(fcsT, function(u) {
-  exprs(u)[, cols]
-})
-
-e <- do.call("rbind",es)
-colnames(e) <- fcs_panel$Antigen[cols]
-
-a <- aggregate( e, by=list(clust), FUN=median)
+a <- aggregate(e, by = list(clust), FUN = aggregate_fun)
 
 mlab <- match(a$Group.1, labels$cluster)
 rownames(a) <- labels$label[mlab]
 
 colnames(a)[1] <- "cluster"
-
-# normalize to 0-1
-el <- e
-rng <- apply(el,2,quantile,p=c(.01,.99))
-for(i in 1:ncol(el)) {
-  el[,i] <- (el[,i]-rng[1,i])/(rng[2,i]-rng[1,i])
-}
-el[el<0] <- 0
-el[el>1] <- 1
-
-al <- aggregate( el, by=list(clust), FUN=median)
-
-mlab <- match(al$Group.1, labels$cluster)
-rownames(al) <- labels$label[mlab]
-
-colnames(al)[1] <- "cluster"
 
 
 # get cluster frequencies
@@ -212,15 +167,92 @@ freq_clust <- table(clust)
 
 ### Save cluster frequencies and the median expression
 
-# raw
 clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), a[, fcs_panel$Antigen[c(scols, xcols)]])
 
-write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters_raw.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(clusters_out, file.path(outdir, paste0(prefix, "clusters.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
-# normalized 
-clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), al[, fcs_panel$Antigen[c(scols, xcols)]])
 
-write.table(clusters_out, file.path(hmDir, paste0(prefix, "clusters_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+
+# ------------------------------------------------------------
+# pheatmaps of median expression
+# ------------------------------------------------------------
+
+### Cluster clustering is based on all markers here
+expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
+rownames(expr) <- labels$label
+
+cluster_rows <- hclust(dist(expr), method = "average")
+
+labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
+labels_col <- colnames(expr)
+
+if(pheatmap_palette_rev){
+  color <- colorRampPalette(rev(brewer.pal(n = 8, name = pheatmap_palette)))(100)
+}else{
+  color <- colorRampPalette(brewer.pal(n = 8, name = pheatmap_palette))(100)
+}
+
+
+pheatmap(expr, color = color, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust.pdf")), width = 10, height = 7)
+
+pheatmap(expr, color = color, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_all.pdf")), width = 10, height = 7)
+
+
+## Plot only the selected markers
+if(!is.null(marker_selection)){
+  expr_sub <- expr[, marker_selection, drop = FALSE]
+  labels_col_sub <- colnames(expr_sub)
+  
+  pheatmap(expr_sub, color = color, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust.pdf")), width = 10, height = 7)
+  
+  pheatmap(expr_sub, color = color, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_s1.pdf")), width = 10, height = 7)
+  
+}
+
+
+
+# ------------------------------------------------------------
+# pheatmaps of median expression scalled by marker (column)
+# ------------------------------------------------------------
+
+if(pheatmap_scale){
+  
+  ### Cluster clustering is based on all markers here
+  expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
+  rownames(expr) <- labels$label
+  
+  
+  expr_scaled <- apply(expr, 2, function(x){
+    (x-min(x))/(max(x)-min(x))
+  })
+  
+  cluster_rows <- hclust(dist(expr_scaled), method = "average")
+  
+  labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
+  labels_col <- colnames(expr_scaled)
+  
+  color <- colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlGn")))(100)
+  
+  pheatmap(expr_scaled, color = color, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust_scale.pdf")), width = 10, height = 7)
+  
+  pheatmap(expr_scaled, color = color, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_all_scale.pdf")), width = 10, height = 7)
+  
+  
+  ## Plot only the selected markers
+  if(!is.null(marker_selection)){
+    expr_sub <- expr_scaled[, marker_selection, drop = FALSE]
+    labels_col_sub <- colnames(expr_sub)
+    
+    pheatmap(expr_sub, color = color, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust_scale.pdf")), width = 10, height = 7)
+    
+    pheatmap(expr_sub, color = color, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_scale.pdf")), width = 10, height = 7)
+    
+  }
+  
+  
+}
+
 
 
 # ------------------------------------------------------------
@@ -240,7 +272,7 @@ plotting_wrapper <- function(e, suffix){
   #   facet_grid(clust ~ variable, scales = "free") +
   #   theme(axis.text.x = element_text(angle = 90, hjust = 1))
   # 
-  # pdf(file.path(hmDir, paste0(prefix, "distros_raw_in.pdf")), w = ncol(e), h = nrow(labels))
+  # pdf(file.path(outdir, paste0(prefix, "distros_raw_in.pdf")), w = ncol(e), h = nrow(labels))
   # print(ggp)
   # dev.off()
   
@@ -252,7 +284,7 @@ plotting_wrapper <- function(e, suffix){
     facet_wrap(~ variable_clust, nrow = nlevels(dfm$clust), scales = "free_y") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 6), strip.text = element_text(size = 9))
   
-  pdf(file.path(hmDir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
+  pdf(file.path(outdir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
   print(ggp)
   dev.off()
   
@@ -262,25 +294,17 @@ plotting_wrapper <- function(e, suffix){
 
 
 
-## Raw expression, included observables
-
-# plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_raw_in")
+# ## Expression, included observables
 # 
-# # Normalized expression, included observables
-# 
-# plotting_wrapper(e = el[, fcs_panel$Antigen[scols]], suffix = "_norm_in")
+# plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
 # 
 # 
 # if(length(xcols) > 0){
-#   
-#   # Normalized expression, excluded observables
-#   
-#   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_norm_ex")
-#   
-#   # Raw expression, excluded observables
-#   
-#   plotting_wrapper(e = el[, fcs_panel$Antigen[xcols]], suffix = "_raw_ex")
-#   
+# 
+#   # Expression, excluded observables
+# 
+#   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
+# 
 # }
 
 
@@ -303,11 +327,13 @@ plotting_wrapper2 <- function(e, suffix){
     facet_wrap(~ variable, nrow = 3, scales = "free") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
-  pdf(file.path(hmDir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e), h = 10)
+  pdf(file.path(outdir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e), h = 10)
   print(ggp)
   dev.off()
   
   ## create colors per group not per sample
+  colors <- unique(md[, c("condition", "color")])
+  
   mm <- match(levels(dfm$samp), md$shortname)
   groups <- factor(md$condition[mm])
   color_values <- colorRampPalette(brewer.pal(12,"Paired"))(12)[c(1,3,5,2,4,6)]
@@ -321,7 +347,7 @@ plotting_wrapper2 <- function(e, suffix){
     guides(color = guide_legend(nrow = 2)) +
     scale_color_manual(values = color_values)
   
-  pdf(file.path(hmDir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e), h = 10)
+  pdf(file.path(outdir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e), h = 10)
   print(ggp)
   dev.off()
   
@@ -333,103 +359,17 @@ plotting_wrapper2 <- function(e, suffix){
 
 
 
-## Raw expression, included observables
-
-# plotting_wrapper2(e = e[, fcs_panel$Antigen[scols]], suffix = "_raw_in")
+# ## Expression, included observables
 # 
-# 
-# # Normalized expression, included observables
-# 
-# plotting_wrapper2(e = el[, fcs_panel$Antigen[scols]], suffix = "_norm_in")
-# 
+# plotting_wrapper2(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
 # 
 # if(length(xcols) > 0){
-#   
-#   # Raw expression, excluded observables
-#   
-#   plotting_wrapper2(e = e[, fcs_panel$Antigen[xcols]], suffix = "_raw_ex")
-#   
-#   
-#   # Normalized expression, excluded observables
-#   
-#   plotting_wrapper2(e = el[, fcs_panel$Antigen[xcols]], suffix = "_norm_ex")
-#   
+# 
+#   # Expression, excluded observables
+# 
+#   plotting_wrapper2(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
+# 
 # }
-
-
-# ------------------------------------------------------------
-# pheatmaps for raw data
-# ------------------------------------------------------------
-
-### Cluster clustering is based on all markers here
-
-expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
-rownames(expr) <- labels$label
-
-cluster_rows <- hclust(dist(expr), method = "average")
-
-
-labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
-labels_col <- colnames(expr)
-
-pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_raw_row_clust.pdf")), width = 10, height = 7)
-
-
-pheatmap(expr, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_raw.pdf")), width = 10, height = 7)
-
-
-## Plot only the selected markers
-if(!is.null(marker_selection)){
-  expr_sub <- expr[, marker_selection, drop = FALSE]
-  labels_col_sub <- colnames(expr_sub)
-  
-  pheatmap(expr_sub, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_raw_row_clust.pdf")), width = 10, height = 7)
-  
-  
-  pheatmap(expr_sub, color = colorRampPalette(brewer.pal(n = 8, name = "YlGnBu"))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_raw.pdf")), width = 10, height = 7)
-  
-}
-
-
-
-# ------------------------------------------------------------
-# pheatmaps for normalized data
-# ------------------------------------------------------------
-
-### Cluster clustering is based on all markers here
-
-expr <- as.matrix(al[, fcs_panel$Antigen[c(scols, xcols)]])
-rownames(expr) <- labels$label
-
-cluster_rows <- hclust(dist(expr), method = "average")
-
-
-labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
-labels_col <- colnames(expr)
-
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_norm_row_clust.pdf")), width = 10, height = 7)
-
-
-pheatmap(expr, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), display_numbers = TRUE, number_color = "black", fontsize_number = 7, gaps_col = length(scols), fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_all_norm.pdf")), width = 10, height = 7)
-
-
-## Plot only the selected markers
-if(!is.null(marker_selection)){
-  
-  expr_sub <- expr[, marker_selection, drop = FALSE]
-  labels_col_sub <- colnames(expr_sub)
-  
-  pheatmap(expr_sub, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_norm_row_clust.pdf")), width = 10, height = 7)
-  
-  pheatmap(expr_sub, color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, breaks = seq(from = 0, to = 1, length.out = 101), legend_breaks = seq(from = 0, to = 1, by = 0.2), fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(hmDir, paste0(prefix, "pheatmap_s1_norm.pdf")), width = 10, height = 7)
-  
-}
-
-
-
-
-
-
 
 
 

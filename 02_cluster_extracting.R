@@ -3,7 +3,7 @@
 
 # BioC 3.3
 # Created 28 July 2016
-# Updated 
+# Updated 25 Aug 2016
 
 ##############################################################################
 Sys.time()
@@ -23,11 +23,11 @@ library(reshape2)
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# path_clustering='pca1_mergingNEW_clustering.xls'
-# path_clustering_labels='pca1_mergingNEW_clustering_labels.xls'
+# extract_outdir='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01_CD4/010_cleanfcs'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+# path_clustering='030_heatmaps/23_01_pca1_mergingNEW2_clustering.xls'
+# path_clustering_labels='030_heatmaps/23_01_pca1_mergingNEW2_clustering_labels.xls'
 # extract_cluster='CD4'
-# extract_dir='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01_CD4/010_cleanfcs'
-# path_metadata
 
 
 ##############################################################################
@@ -45,16 +45,12 @@ print(args)
 
 setwd(rwd)
 
-dir.create(extract_dir, recursive = TRUE)
+outdir <- extract_outdir
 
+if(!file.exists(outdir)) 
+  dir.create(outdir)
 
-# ------------------------------------------------------------
-# define directories
-# ------------------------------------------------------------
-
-fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
-hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
+fcsDir <- "010_cleanfcs"
 
 # ------------------------------------------------------------
 # Load data
@@ -78,10 +74,10 @@ fcs <- lapply(f, read.FCS)
 # Load clustering data
 # ------------------------------------------------------------
 
-clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
-clust <- clust[, 1]
+clust <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
+clust <- clust[, "cluster"]
 
-labels <- read.table(file.path(hmDir, path_clustering_labels), header = TRUE, sep = "\t", as.is = TRUE)
+labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
 
@@ -110,7 +106,7 @@ writeOutCluster <- function(u,v,z, keep="CD4", outdir) {
 m <- match(names(fcs), names(clustList))
 clustList <- clustList[m]
 
-dummy <- mapply(writeOutCluster, u = clustList, v = fcs, z = f, keep = extract_cluster, outdir = extract_dir)
+dummy <- mapply(writeOutCluster, u = clustList, v = fcs, z = f, keep = extract_cluster, outdir = outdir)
 
 
 

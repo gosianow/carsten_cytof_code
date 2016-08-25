@@ -17,8 +17,9 @@ library(gdata)
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 # merging_prefix='pca1_mergingNEW_'
+# merging_outdir='030_heatmaps'
 # path_cluster_merging='cluster_mergingNEW.xlsx'
-# path_clustering='pca1_cl20_clustering.xls'
+# path_clustering='030_heatmaps/pca1_cl20_clustering.xls'
 
 ##############################################################################
 # Read in the arguments
@@ -35,14 +36,11 @@ print(args)
 
 setwd(rwd)
 
+prefix <- merging_prefix
+outdir <- merging_outdir
 
-# ------------------------------------------------------------
-# define directories
-# ------------------------------------------------------------
-
-fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
-hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
+if( !file.exists(outdir) ) 
+  dir.create(outdir)
 
 
 # ------------------------------------------------------------
@@ -63,8 +61,8 @@ cm$label <- factor(cm$label, labels = gsub(" ", "_", levels(cm$label)))
 
 
 # read original clustering
-clust <- read.table(file.path(hmDir, path_clustering), header = TRUE, sep = "\t", as.is = TRUE)
-clust <- clust[, 1]
+clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
+clust <- clustering[, "cluster"]
 
 
 
@@ -94,11 +92,11 @@ if(sum(duplicated(labels$label)) > 0 | sum(duplicated(labels$cluster)) > 0)
 
 ### Save cluster merging results
 
-clust_out <- data.frame(cluster = clustm, stringsAsFactors = FALSE)
-write.table(clust_out, file = file.path(hmDir, paste0(merging_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+clust_out <- data.frame(cluster = clustm, cell_id = clustering$cell_id, sample_id = clustering$sample_id, stringsAsFactors = FALSE)
+write.table(clust_out, file = file.path(outdir, paste0(merging_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
-write.table(labels, file = file.path(hmDir, paste0(merging_prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(labels, file = file.path(outdir, paste0(merging_prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 

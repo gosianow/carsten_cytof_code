@@ -16,11 +16,11 @@ Sys.time()
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# observ_prefix='pca1_'
+# observ_prefix='23_01_pca1_'
+# observ_outdir='030_heatmaps'
+# path_pca_score='020_pcascores/23_01_princompscore_by_sample.xls'
 # pca_score_cutoff=3
 # pca_skip_top=0
-# path_pca_score
-
 
 ##############################################################################
 # Read in the arguments
@@ -43,26 +43,13 @@ prefix <- observ_prefix
 # define directories
 # ------------------------------------------------------------
 
-fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
-hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
-
+if( !file.exists(observ_outdir) ) dir.create(observ_outdir)
 
 # ------------------------------------------------------------
-# Load data
+# Load PCA scores
 # ------------------------------------------------------------
 
-
-# ------------------------------------------------------------
-# Load more data
-# ------------------------------------------------------------
-
-
-if(!grepl("/", path_pca_score)){
-  prs <- read.table(file.path(pcaDir, path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
-}else{
-  prs <- read.table(file.path(path_pca_score), header = TRUE, sep = "\t", as.is = TRUE)
-}
+prs <- read.table(path_pca_score, header = TRUE, sep = "\t", as.is = TRUE)
 
 prs <- prs[order(prs$avg_score, decreasing = TRUE), ]
 
@@ -84,7 +71,7 @@ if(pca_skip_top > 0)
 
 ### Save the observables
 
-write.table(clustering_observables, file = file.path(hmDir, paste0(prefix, "clustering_observables.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(clustering_observables, file = file.path(observ_outdir, paste0(prefix, "clustering_observables.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 

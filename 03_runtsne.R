@@ -3,38 +3,31 @@
 
 # BioC 3.3
 # Created 28 July 2016
-# Updated 
+# Updated 24 Aug 2016
 
 ##############################################################################
 Sys.time()
 ##############################################################################
 
 # Load packages
-library(flowCore)
 library(gdata)
-library(FlowSOM)
-library(Repitools)
 library(gplots)
 library(ggplot2)
 library(plyr)
 library(reshape2)
-library(coop)
-library(pheatmap)
-library(RColorBrewer)
-library(ggdendro)
 library(Rtsne)
-
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+# tsne_prefix='23_01_pca1_raw_'
+# tsne_outdir='040_tsnemaps'
+# path_data='010_data/23_01_expr_raw.rds'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# tsne_prefix='23_01_pca1_'
-# path_clustering_observables='23_01_pca1_clustering_observables.xls'
+# path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
 # tsne_pmin=1500
-
 
 ##############################################################################
 # Read in the arguments
@@ -46,10 +39,6 @@ for (i in 1:length(args)) {
 }
 
 print(args)
-print(rwd)
-print(path_clustering_observables)
-print(tsne_prefix)
-print(tsne_pmin)
 
 ##############################################################################
 
@@ -57,100 +46,68 @@ setwd(rwd)
 rand_seed <- 1234
 
 prefix <- tsne_prefix
+outdir <- tsne_outdir
 
-
-# ------------------------------------------------------------
-# define directories
-# ------------------------------------------------------------
-
-fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
-hmDir <- "030_heatmaps"; if( !file.exists(hmDir) ) dir.create(hmDir)
-sneDir <- "040_tsnemaps"; if( !file.exists(sneDir) ) dir.create(sneDir)
+if(!file.exists(outdir)) 
+  dir.create(outdir)
 
 
 # ------------------------------------------------------------
 # Load data
 # ------------------------------------------------------------
 
-# read metadata
+# read expression data
+if(grepl(".txt", path_data)){
+  expr <- read.table(path_data, header = TRUE, sep = "\t", as.is = TRUE)
+}
+if(grepl(".rds", path_data)){
+  expr <- readRDS(path_data)
+}
+
+cell_id <- expr[, "cell_id"]
+samp <- expr[, "sample_id"]
+fcs_colnames <- colnames(expr)[!grepl("cell_id|sample_id", colnames(expr))]
+e <- expr[, fcs_colnames]
+
+
+# ------------------------------------------------------------
+# Load metadata
+# ------------------------------------------------------------
+
 md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
-# define FCS file names
-f <- file.path(fcsDir, md$filename)
-names(f) <- md$shortname
-
-# read raw FCS files in
-fcs <- lapply(f, read.FCS)
-
-fcs_colnames <- colnames(fcs[[1]])
-
 # ------------------------------------------------------------
-# Load more data
+# Load clustering_observables
 # ------------------------------------------------------------
 
-if(!grepl("/", path_clustering_observables)){
-  clustering_observables <- read.table(file.path(hmDir, path_clustering_observables), header = TRUE, sep = "\t", as.is = TRUE)
-}else{
-  clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
-}
+clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
 
 clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
 
 # -------------------------------------
 
-# selected columns for clustering  
-
+# Indeces of observables used for clustering 
 scols <- which(fcs_colnames %in% clust_observ)
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[ , scols] <- asinh( e[ , scols] / 5 )
-  exprs(u) <- e
-  u
-})
 
 
 # ---------------------------------------
 # tSNE analyses
 # ---------------------------------------
 
+et <- e[, scols]
 
-# re-extract the data as list of tables
-es <- lapply(fcsT, function(u) {
-  exprs(u)[ , scols]
-})
-
-e <- do.call("rbind",es)
-
-
-# normalize to 0-1
-el <- e
-rng <- apply(el,2,quantile,p=c(.01,.99))
-for(i in 1:ncol(el)) {
-  el[,i] <- (el[,i]-rng[1,i])/(rng[2,i]-rng[1,i])
-}
-el[el<0] <- 0
-el[el>1] <- 1
-
-
-
-# find duplicates
-dups <- duplicated(el)  
+### find duplicates
+dups <- duplicated(et)  
 w <- which(!dups)
 
 
 ### Data subsampling
-samp <- rep( names(fcsT), sapply(fcsT,nrow) )
-
 # create indices by sample
-inds <- split(1:nrow(el), samp) 
+inds <- split(1:length(samp), samp) 
 
 # per-sample, how many cells to downsample
 ts <- table(samp)
 ns <- pmin(ts, tsne_pmin)  
-
 
 # get subsampled indices
 subs <- mapply(function(u,v) {
@@ -164,46 +121,22 @@ cells2keep <- c(unlist(subs))
 
 
 
+### Run tSNE
 
-
-### Run tSNE on normalized data
-
-# el_sub <- el[cells2keep, ]
-# 
-# set.seed(rand_seed)
-# rtsne_out <- Rtsne(el_sub, pca = FALSE, verbose = TRUE)
-# 
-# 
-# # Save rtsne results
-# 
-# rtsne_data <- data.frame(cell_index = cells2keep, sample_name = samp[cells2keep], el_sub)
-# 
-# write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_norm.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-# 
-# 
-# save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_norm.rda")))
-
-
-
-
-
-
-### Run tSNE on raw data
-
-e_sub <- e[cells2keep, ]
+et_sub <- et[cells2keep, ]
 
 set.seed(rand_seed)
-rtsne_out <- Rtsne(e_sub, pca = FALSE, verbose = TRUE)
+rtsne_out <- Rtsne(et_sub, pca = FALSE, verbose = TRUE)
 
 
 # Save rtsne results
 
-rtsne_data <- data.frame(cell_index = cells2keep, sample_name = samp[cells2keep], e_sub)
+rtsne_data <- data.frame(cell_index = cells2keep, sample_name = samp[cells2keep], et_sub)
 
-write.table(rtsne_data, file.path(sneDir, paste0(prefix, "rtsne_data_raw.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(rtsne_data, file.path(outdir, paste0(prefix, "rtsne_data.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
-save(rtsne_out, file = file.path(sneDir, paste0(prefix, "rtsne_out_raw.rda")))
+save(rtsne_out, file = file.path(outdir, paste0(prefix, "rtsne_out.rda")))
 
 
 

@@ -3,16 +3,14 @@
 
 # BioC 3.3
 # Created 27 July 2016
-
+# Updated 24 Aug 2016
 
 ##############################################################################
 Sys.time()
 ##############################################################################
 
 # Load packages
-library(flowCore)
 library(gdata)
-library(Repitools)
 library(gplots)
 library(ggplot2)
 library(plyr)
@@ -26,6 +24,8 @@ library(RColorBrewer)
 
 # rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 # pcas_prefix='23_01_'
+# pcas_outdir='020_pcascores'
+# path_data='010_data/23_01_expr_raw.rds'
 # path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
@@ -50,29 +50,32 @@ prefix <- pcas_prefix
 # define directories
 # ------------------------------------------------------------
 
-fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-pcaDir <- "020_pcascores"; if( !file.exists(pcaDir) ) dir.create(pcaDir)
-
+pcaDir <- pcas_outdir
+if( !file.exists(pcaDir) ) dir.create(pcaDir)
 
 # ------------------------------------------------------------
 # Load data
 # ------------------------------------------------------------
 
+# read expression data
+if(grepl(".txt", path_data)){
+  expr <- read.table(path_data, header = TRUE, sep = "\t", as.is = TRUE)
+}
+if(grepl(".rds", path_data)){
+  expr <- readRDS(path_data)
+}
+
+samp <- expr[, "sample_id"]
+fcs_colnames <- colnames(expr)[!grepl("cell_id|sample_id", colnames(expr))]
+e <- expr[, fcs_colnames]
+
+
 # read metadata
 md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
-# define FCS file names
-f <- file.path(fcsDir, md$filename)
-names(f) <- md$shortname
-
-
-# read raw FCS files in
-fcs <- lapply(f, read.FCS)
-
-fcs_colnames <- colnames(fcs[[1]])
 
 # ------------------------------------------------------------
-# Load more data
+# Load panel
 # ------------------------------------------------------------
 
 # read panel, pick which columns to use
@@ -82,29 +85,10 @@ if(!all(c("fcs_colname", "Isotope", "Antigen", "transform") %in% colnames(panel)
   stop("Wrong columns in panel!!!")
 
 
-# cols - get fcs columns that are in the panel with transform = 1
-cols <- which(fcs_colnames %in% panel$fcs_colname[panel$transform==1])
-
 # get the isotope and antigen for fcs markers
 m <- match(fcs_colnames, panel$fcs_colname)
 
-fcs_panel <- data.frame(colnames = fcs_colnames, Isotope = panel$Isotope[m], Antigen = panel$Antigen[m], cols = fcs_colnames %in% panel$fcs_colname[panel$transform==1], stringsAsFactors = FALSE)
-
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
-
-
-
-# arc-sin-h the columns specific 
-fcsT <- lapply(fcs, function(u) {
-  e <- exprs(u)
-  e[,cols] <- asinh( e[,cols] / 5 )
-  exprs(u) <- e
-  u
-})
-
-
-### Create sample info
-samp <- rep(names(fcs), sapply(fcs, nrow))
+fcs_panel <- data.frame(fcs_colname = fcs_colnames, Isotope = panel$Isotope[m], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
 
 
 # --------------------------------------------------------------------------
@@ -121,22 +105,17 @@ doPRINCOMP <- function(z, ncomp=3) {
   score <- rowSums (outer( rep(1, ncol(z)), pr$sdev[1:ncomp]^2 ) * abs(pr$rotation[,1:ncomp]) )
   
   return(score)
-
+  
 }
 
 
-# extract columns of interest to list of tables
-es <- lapply(fcsT, function(u) {
-  exprs(u)[,cols]
-})
-
+# split expression per sample
+es <- split(e, samp)
 
 prs <- sapply(es, doPRINCOMP)
 rmprs <- rowMeans(prs)
 
-
-prs <- data.frame(mass = rownames(prs), marker = fcs_panel$Antigen[cols], avg_score=rmprs, round(prs,3))
-colnames(prs) <- c("mass", "marker", "avg_score", names(es))
+prs <- data.frame(mass = fcs_panel$fcs_colname, marker = fcs_panel$Antigen, avg_score = rmprs, round(prs, 4))
 
 ### Save ordered PCA scores
 o <- order(rmprs, decreasing=TRUE)
@@ -183,12 +162,12 @@ dev.off()
 
 pdf(file.path(pcaDir, paste0(prefix, "channel_distributions.pdf")))
 
-ttl <- fcs_panel$Antigen[cols]
+ttl <- fcs_panel$Antigen
 
 colors <- as.numeric(as.factor(md$condition))
 
 # for every channel
-for(i in 1:length(cols)) {
+for(i in 1:nrow(fcs_panel)){
   
   ii <- o[i]
   dens <- lapply(es, function(u) density( u[,ii] ))
@@ -202,7 +181,7 @@ for(i in 1:length(cols)) {
   for(s in 1:length(es)) {
     if(s==1)
       plot( dens[[s]], xlim = c(minx, maxx), ylim = c(0, my), xlab="", lwd=3, col=colors[s], 
-        main=paste(fcs_panel$Isotope[cols][ii],"/", as.character(ttl[ii]),"/", round(prs$avg_score[k],2)))
+        main=paste(fcs_panel$Isotope[ii],"/", as.character(ttl[ii]),"/", round(prs$avg_score[k],2)))
     else
       lines( dens[[s]], lwd=3, col=colors[s])
     nm <- paste0(names(es)," (", round(prs[k, names(es)], 2) ,")")
@@ -210,6 +189,7 @@ for(i in 1:length(cols)) {
   }
   
 }
+
 dev.off()
 
 
