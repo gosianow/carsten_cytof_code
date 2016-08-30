@@ -128,7 +128,7 @@ if(file.exists(file.path(path_marker_selection))){
 
 m <- match(fcs_colnames, clustering_observables$mass)
 
-fcs_panel <- data.frame(colnames = fcs_colnames, Isotope = clustering_observables$mass[m], Antigen = clustering_observables$marker[m], stringsAsFactors = FALSE)
+fcs_panel <- data.frame(fcs_colname = fcs_colnames, Isotope = clustering_observables$mass[m], Antigen = clustering_observables$marker[m], stringsAsFactors = FALSE)
 
 
 # ------------------------------------------------------------
