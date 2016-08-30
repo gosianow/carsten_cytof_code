@@ -102,13 +102,13 @@ labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
 rownames(labels) <- labels$cluster
 
-
+# clustering observables
 clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
 rownames(clustering_observables) <- clustering_observables$mass
 
 clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
 
-
+# ------------------------------------------------------------
 # load marker selection for plotting on the heatmaps
 marker_selection <- NULL
 
@@ -145,6 +145,17 @@ if("avg_score" %in% colnames(clustering_observables)){
   scols <- scols[order(clustering_observables[fcs_colnames[scols], "avg_score"], decreasing = TRUE)]
   xcols <- xcols[order(clustering_observables[fcs_colnames[xcols], "avg_score"], decreasing = TRUE)]
 }
+
+
+# ------------------------------------------------------------
+# Keep expression and clustering results for the cells that are common in both
+# ------------------------------------------------------------
+
+common_cells <- intersect(clustering[, "cell_id"], expr[, "cell_id"])
+
+samp <- expr[expr[, "cell_id"] %in% common_cells, "sample_id"]
+e <- expr[expr[, "cell_id"] %in% common_cells, fcs_colnames]
+clust <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
 
 
 # ------------------------------------------------------------

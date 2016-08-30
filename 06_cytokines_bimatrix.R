@@ -29,6 +29,7 @@ library(limma)
 # cytokines_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw2_'
 # cytokines_outdir='060_cytokines'
 # path_data='010_data/23CD4_02CD4_expr_raw.rds'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx'
 # path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
 # path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging_clustering.xls'
 # path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging_clustering_labels.xls'
@@ -73,6 +74,12 @@ cell_id <- expr[, "cell_id"]
 samp <- expr[, "sample_id"]
 fcs_colnames <- colnames(expr)[!grepl("cell_id|sample_id", colnames(expr))]
 e <- expr[, fcs_colnames]
+
+# ------------------------------------------------------------
+# Load metadata
+# ------------------------------------------------------------
+
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
 # ------------------------------------------------------------
 # Load clustering results
@@ -210,6 +217,45 @@ dev.off()
 clustering_observables <- data.frame(mass = fcs_panel$fcs_colname[pncols], marker = fcs_panel$Antigen[pncols], clustering_observable = TRUE, stringsAsFactors = FALSE)
 
 write.table(clustering_observables, file.path(outdir, paste0(prefix, "clustering_observables.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+
+# ------------------------------------------------------------
+# Save the subsets of bimatrix for diff. conditions separately (needed for plotting the heatmaps per condition) 
+# ------------------------------------------------------------
+
+mm <- match(bimatrix_out$sample_id, md$shortname)
+
+split_condition <- factor(md$condition[mm])
+bimatrix_split <- split(bimatrix_out, split_condition)
+
+split_levels <- levels(split_condition)
+
+dummy <- lapply(1:length(split_levels), function(i){
+  # i = 1
+  
+  bimatrix_split_out <- bimatrix_split[[split_levels[i]]]
+  
+  write.table(bimatrix_split_out, file.path(outdir, paste0(prefix, "bimatrix_", split_levels[i], suffix, ".txt")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+  
+  return(NULL)
+  
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
