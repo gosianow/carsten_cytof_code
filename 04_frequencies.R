@@ -52,6 +52,8 @@ outdir <- freq_outdir
 if(!file.exists(outdir)) 
   dir.create(outdir)
 
+source(path_fun_models)
+
 # ------------------------------------------------------------
 # Load metadata
 # ------------------------------------------------------------
@@ -65,6 +67,14 @@ colnames(cond_split) <- c("day", "response")
 md[, c("day", "response")] <- cond_split
 md$response <- factor(md$response, levels = c("NR", "R", "HD"))
 
+### Colors 
+colors <- unique(md[, c("condition", "color")])
+colors$condition <- factor(colors$condition)
+## replace _ with \n
+levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
+
+color_values <- colors$color
+names(color_values) <- colors$condition
 
 # ------------------------------------------------------------
 # Load cluster data
@@ -129,7 +139,6 @@ ggds <- ddply(ggdf, .(group, cluster), summarise, mean = mean(prop), sd = sd(pro
 
 clusters <- levels(ggdf$cluster)
 
-
 # ------------------------------------
 ### plot each cluster as a separate page in the pdf file
 ggp <- list()
@@ -140,10 +149,10 @@ for(i in 1:nlevels(ggdf$cluster)){
   df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
   ds <- ggds[ggds$cluster == clusters[i], , drop = FALSE]
   
-  ggp[[i]] <- ggplot(df, aes(x = group, y = prop)) +
+  ggp[[i]] <- ggplot(df, aes(x = group, y = prop, color = group)) +
     geom_jitter(size=2.5, shape = 17, width = 0.5, height = 0) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +
+    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), color='black', width=0.4) +
+    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), color='black', width=0.25) +
     ggtitle(clusters[i]) +
     theme_bw() +
     ylab("Frequency") +
@@ -154,7 +163,9 @@ for(i in 1:nlevels(ggdf$cluster)){
       panel.grid.minor = element_blank(), 
       panel.border = element_blank(), 
       axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
-      axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"))
+      axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
+      legend.position = "none") +
+    scale_color_manual(values = color_values)
   
 }
 
@@ -164,33 +175,69 @@ for(i in seq(length(ggp)))
 dev.off()
 
 
-# # ------------------------------------
-# ### plot each cluster as a separate page in the pdf file + boxplots
+# ------------------------------------
+# plot all clusters in one pdf; colors per group; points
+
+# add more info about samples
+ggdf$day <- strsplit2(ggdf$group, "\n")[, 1]
+ggds$day <- strsplit2(ggds$group, "\n")[, 1]
+
+
+ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group)) +
+  geom_jitter(size=2, shape = 16, width = 0.6, height = 0) +
+  geom_errorbar(data=ggds, aes(x=cluster, y=mean, ymin=mean, ymax=mean), width=0.4) +
+  geom_errorbar(data=ggds, aes(x=cluster, y=mean, ymin=mean-sd, ymax=mean+sd), width=0.25) +
+  theme_bw() +
+  ylab("Frequency") +
+  xlab("") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
+    axis.title.y = element_text(size=12, face="bold"), 
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(), 
+    axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
+    axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
+    legend.title = element_blank(), legend.position = "bottom") +
+  guides(color = guide_legend(nrow = 1)) +
+  scale_color_manual(values = color_values) +
+  facet_wrap(~ day, nrow = 1, scales = "free_x")
+
+
+pdf(file.path(outdir, paste0(prefix, "frequencies_colors.pdf")), w=12, h=5)
+print(ggp)
+dev.off()
+
+
+# ------------------------------------
+# plot each cluster as a separate page in the pdf file; colors per group; barplot ordered by proportion
+
 # ggp <- list()
 # 
 # for(i in 1:nlevels(ggdf$cluster)){
 #   # i = 1
 #   
 #   df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
+#   df$samp <- factor(df$samp, levels = df$samp[order(df$prop, decreasing = TRUE)])
 #   
-#   ggp[[i]] <- ggplot(df, aes(x = group, y = prop)) +
-#     geom_boxplot(outlier.size = NA, width = 0.6) +
-#     geom_jitter(size=2.5, shape = 17, width = 0.5, height = 0) +
+#   ggp[[i]] <- ggplot(df, aes(x = samp, y = prop, fill = group)) +
+#     geom_bar(stat="identity") +
 #     ggtitle(clusters[i]) +
 #     theme_bw() +
 #     ylab("Frequency") +
 #     xlab("") +
-#     theme(axis.text.x = element_text(size=12, face="bold"), 
+#     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
 #       axis.title.y = element_text(size=12, face="bold"), 
 #       panel.grid.major = element_blank(), 
 #       panel.grid.minor = element_blank(), 
 #       panel.border = element_blank(), 
 #       axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
-#       axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"))
+#       axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
+#       legend.position = "none") +
+#     scale_fill_manual(values = color_values)
 #   
 # }
 # 
-# pdf(file.path(outdir, paste0(prefix, "frequencies_boxplot.pdf")), w=5, h=4, onefile=TRUE)
+# pdf(file.path(outdir, paste0(prefix, "frequencies_bar.pdf")), w=10, h=5, onefile=TRUE)
 # for(i in seq(length(ggp)))
 #   print(ggp[[i]])
 # dev.off()
@@ -198,35 +245,41 @@ dev.off()
 
 
 # ------------------------------------
-# plot all clusters in one pdf and colors per group
+# plot each cluster as a separate page in the pdf file; colors per group; barplot ordered by proportion; facet per day
 
-colors <- unique(md[, c("condition", "color")])
-colors$condition <- factor(colors$condition)
-## replace _ with \n
-levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
+# add more info about samples
+ggdf$day <- strsplit2(ggdf$group, "\n")[, 1]
 
-color_values <- colors$color
-names(color_values) <- colors$condition
+ggp <- list()
 
-ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group)) +
-  geom_jitter(size=2, shape = 16, width = 0.6, height = 0) +
-  theme_bw() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(axis.text.x = element_text(size=12, face="bold"), 
-    axis.title.y = element_text(size=12, face="bold"), 
-    panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), 
-    panel.border = element_blank(), 
-    axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
-    axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
-    legend.title = element_blank(), legend.position = "bottom") +
-  guides(color = guide_legend(nrow = 1)) +
-  scale_color_manual(values = color_values)
+for(i in 1:nlevels(ggdf$cluster)){
+  # i = 1
+  
+  df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
+  df$samp <- factor(df$samp, levels = df$samp[order(df$prop, decreasing = TRUE)])
+  
+  ggp[[i]] <- ggplot(df, aes(x = samp, y = prop, fill = group)) +
+    geom_bar(stat="identity") +
+    ggtitle(clusters[i]) +
+    theme_bw() +
+    ylab("Frequency") +
+    xlab("") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
+      axis.title.y = element_text(size=12, face="bold"), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_blank(), 
+      axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
+      axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
+      legend.position = "none") +
+    scale_fill_manual(values = color_values) +
+    facet_wrap(~ day, nrow = 1, scales = "free_x")
+  
+}
 
-
-pdf(file.path(outdir, paste0(prefix, "frequencies_colors.pdf")), w=12, h=5)
-print(ggp)
+pdf(file.path(outdir, paste0(prefix, "frequencies_bar_facet.pdf")), w=10, h=5, onefile=TRUE)
+for(i in seq(length(ggp)))
+  print(ggp[[i]])
 dev.off()
 
 
@@ -236,28 +289,32 @@ dev.off()
 
 source(path_fun_models)
 
+
 # -----------------------------
-### Fit a normal GLM
+### Fit a logit GLM
 # -----------------------------
 
-pvs_glm_norm <- fit_glm_norm(data = prop_out, md)
+pvs_glm_logit <- fit_glm_logit(data = freq_out, md)
+
+out <- data.frame(cluster = rownames(freq_out), pvs_glm_logit)
 
 ## save the results
-write.table(pvs_glm_norm, file=file.path(outdir, paste0(prefix, "pvs_glm_norm", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(out, file=file.path(outdir, paste0(prefix, "frequencies_pvs_glm_logit", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
-table(pvs_glm_norm$adjp_responseR < 0.05)
-table(pvs_glm_norm$adjp_daytx < 0.05)
+table(pvs_glm_logit$adjp_responseR < 0.05)
+table(pvs_glm_logit$adjp_daytx < 0.05)
 
 
 # -----------------------------
 ### Fit a logit GLMM 
 # -----------------------------
 
-
 # pvs_glmm_logit <- fit_glmm_logit(data = freq_out, md)
 # 
+# out <- data.frame(cluster = rownames(freq_out), pvs_glmm_logit)
+# 
 # ## save the results
-# write.table(pvs_glmm_logit, file=file.path(outdir, paste0(prefix, "pvs_glmm_logit", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+# write.table(out, file=file.path(outdir, paste0(prefix, "frequencies_pvs_glmm_logit", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 # 
 # table(pvs_glmm_logit$adjp_responseR < 0.05)
 # table(pvs_glmm_logit$adjp_daytx < 0.05)

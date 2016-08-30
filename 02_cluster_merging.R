@@ -82,8 +82,12 @@ colnames(labels) <- c("cluster", "label")
 
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
-labels
 
+# get cluster frequencies
+freq_clust <- table(clustm)
+labels$counts <- as.numeric(freq_clust)
+
+labels
 
 if(sum(duplicated(labels$label)) > 0 | sum(duplicated(labels$cluster)) > 0)
   stop("Wrong merging file")

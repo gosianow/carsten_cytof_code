@@ -134,8 +134,11 @@ clust_out <- data.frame(cluster = clust, cell_id = cell_id, sample_id = samp, st
 write.table(clust_out, file = file.path(outdir, paste0(prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
+# get cluster frequencies
+freq_clust <- table(clust)
+
 # make data frame with labels
-labels <- data.frame(cluster = sort(unique(clust)), label = sort(unique(clust)))
+labels <- data.frame(cluster = sort(unique(clust)), label = sort(unique(clust)), counts = as.numeric(freq_clust))
 write.table(labels, file = file.path(outdir, paste0(prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 

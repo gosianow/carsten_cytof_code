@@ -96,15 +96,9 @@ if ${pd1}; then
 
   echo "07_pd1"
 
-  ### Use only one cutoff and raw data - raw1
-
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}'  pd1_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}${prefix_cytokines_cutoffs}raw1_'  path_cytokines_cutoffs='${PANELS}/${path_cytokines_cutoffs}' path_clustering='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname='positive_cutoff_raw_base' data2analyse='raw' nmetaclusts=${nmetaclusts} path_fun_models='$RCODE/00_models.R'  path_marker_selection='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}marker_selection.txt' path_rtsne_out='${prefix_data}${prefix_panel}${prefix_pca}rtsne_out_norm.rda' path_rtsne_data='${prefix_data}${prefix_panel}${prefix_pca}rtsne_data_norm.xls' pdf_width=15 pdf_height=10 tsnep_suffix='_norm'" $RCODE/07_pd1.R $ROUT/07_pd1.Rout
-  tail $ROUT/07_pd1.Rout
-
   ### Use different cutoffs for base and tx and raw data - raw2
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' path_metadata='${METADATA}/${file_metadata}'  pd1_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_'  path_cytokines_cutoffs='${PANELS}/${path_cytokines_cutoffs}' path_clustering='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx') data2analyse='raw' nmetaclusts=${nmetaclusts} path_fun_models='$RCODE/00_models.R'  path_marker_selection='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}marker_selection.txt' path_rtsne_out='${prefix_data}${prefix_panel}${prefix_pca}rtsne_out_norm.rda' path_rtsne_data='${prefix_data}${prefix_panel}${prefix_pca}rtsne_data_norm.xls' pdf_width=15 pdf_height=10 tsnep_suffix='_norm'" $RCODE/07_pd1.R $ROUT/07_pd1.Rout
-  tail $ROUT/07_pd1.Rout
+
 
 fi
 

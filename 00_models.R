@@ -1,5 +1,5 @@
 library(lme4) # for fitting mixed models
-library(multcomp)
+library(multcomp) # for contrasts glht()
 
 
 # -----------------------------
@@ -11,20 +11,22 @@ fit_two_way_anova <- function(data, md){
   pvs_anova <- t(apply(data[, md$shortname], 1, function(y){
     # y <- data[1, md$shortname]
     
+    NAs <- is.na(y)
+    
     ## there must be at least 10 proportions greater than 0
-    if(sum(y > 0) < 10)
-      return(rep(NA, 3))
+    if(sum(y[!NAs] > 0) < 10)
+      return(rep(NA, 2))
     
-    data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("day", "response")])
     
-    res_tmp <- aov(y ~ day * response, data = data_tmp)
+    res_tmp <- aov(y ~ day + response, data = data_tmp)
     summ_tmp <- summary(res_tmp)
     
-    summ_tmp[[1]][1:3, "Pr(>F)"]
+    summ_tmp[[1]][1:2, "Pr(>F)"]
     
   }))
   
-  movars <- c("day", "response", "day:response")
+  movars <- c("day", "response")
   colnames(pvs_anova) <- paste0("pval_", movars)
   pvs_anova <- data.frame(pvs_anova)
   
@@ -32,9 +34,9 @@ fit_two_way_anova <- function(data, md){
   adjp_anova <- data.frame(apply(pvs_anova, 2, p.adjust, method = "BH"))
   colnames(adjp_anova) <- paste0("adjp_", movars)
   
-  pvs_anova_out <- data.frame(group = rownames(pvs_anova), pvs_anova, adjp_anova)
+  pvs_out <- data.frame(pvs_anova, adjp_anova)
   
-  return(pvs_anova_out)
+  return(pvs_out)
   
 }
 
@@ -45,42 +47,92 @@ fit_two_way_anova <- function(data, md){
 
 fit_glm_norm <- function(data, md){
   
-  pvs_glm <- t(apply(data[, md$shortname], 1, function(y){
+  pvs <- t(apply(data[, md$shortname], 1, function(y){
     # y <- data[1, md$shortname]
     
-    ## there must be at least 10 proportions greater than 0
-    if(sum(y > 0) < 10)
-      return(rep(NA, 4))
+    NAs <- is.na(y)
     
-    data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("day", "response")])
+    
+    ## there must be at least 10 proportions greater than 0
+    if(sum(y[!NAs] > 0) < 10){
+      mm <- model.matrix(y ~ response + day, data = data_tmp)
+      out <- rep(NA, ncol(mm))
+      names(out) <- colnames(mm)
+      return(out)
+    }
     
     res_tmp <- glm(y ~ response + day, data = data_tmp)
+    summ_tmp <- summary(res_tmp)
     
-    sum_tmp <- summary(res_tmp)
-    
-    out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
+    out <- as.numeric(summ_tmp$coefficients[, "Pr(>|t|)"])
+    names(out) <- rownames(summ_tmp$coefficients)
     
     return(out)
     
   }))
   
-  data_tmp <- data.frame(y = as.numeric(data[1, md$shortname]), md[, c("day", "response")])
-  momat <- model.matrix(y ~ response + day, data = data_tmp)
-  movars <- colnames(momat)
+  movars <- colnames(pvs)
   
-  colnames(pvs_glm) <- paste0("pval_", movars)
-  pvs_glm <- data.frame(pvs_glm)
-  
+  colnames(pvs) <- paste0("pval_", movars)
+  pvs <- data.frame(pvs)
   
   ## get adjusted p-values
-  
-  adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
-  colnames(adjp_glm) <- paste0("adjp_", movars)
+  adjp <- data.frame(apply(pvs, 2, p.adjust, method = "BH"))
+  colnames(adjp) <- paste0("adjp_", movars)
   
   ## save the results
-  pvs_glm_out <- data.frame(group = rownames(pvs_glm), pvs_glm, adjp_glm)
+  pvs_out <- data.frame(pvs, adjp)
   
-  return(pvs_glm_out)
+  return(pvs_out)
+  
+}
+
+
+# -----------------------------
+### Fit a normal GLM - with response only
+# -----------------------------
+
+fit_glm_norm_resp <- function(data, md){
+  
+  pvs <- t(apply(data[, md$shortname], 1, function(y){
+    # y <- data[1, md$shortname]
+    
+    NAs <- is.na(y)
+    
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("response"), drop = FALSE])
+    
+    ## there must be at least 10 proportions greater than 0
+    if(sum(y[!NAs] > 0) < 10){
+      mm <- model.matrix(y ~ response, data = data_tmp)
+      out <- rep(NA, ncol(mm))
+      names(out) <- colnames(mm)
+      return(out)
+    }
+    
+    res_tmp <- glm(y ~ response, data = data_tmp)
+    summ_tmp <- summary(res_tmp)
+    
+    out <- as.numeric(summ_tmp$coefficients[, "Pr(>|t|)"])
+    names(out) <- rownames(summ_tmp$coefficients)
+    
+    return(out)
+    
+  }))
+  
+  movars <- colnames(pvs)
+  
+  colnames(pvs) <- paste0("pval_", movars)
+  pvs <- data.frame(pvs)
+  
+  ## get adjusted p-values
+  adjp <- data.frame(apply(pvs, 2, p.adjust, method = "BH"))
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  ## save the results
+  pvs_out <- data.frame(pvs, adjp)
+  
+  return(pvs_out)
   
 }
 
@@ -91,43 +143,109 @@ fit_glm_norm <- function(data, md){
 
 fit_glm_norm_inter <- function(data, md){
   
-  
-  pvs_glm <- t(apply(data[, md$shortname], 1, function(y){
+  pvs <- t(apply(data[, md$shortname], 1, function(y){
     # y <- data[1, md$shortname]
     
+    NAs <- is.na(y)
+    
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("day", "response")])
+    
+    ## create contrasts
+    contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
+    k0 <- c(0, 1, 0, 0, 1/2, 0) # NR vs R
+    k1 <- c(0, 1, 0, 0, 0, 0) # NR vs R in base
+    k2 <- c(0, 1, 0, 0, 1, 0) # NR vs R in tx
+    k3 <- c(0, 0, 0, 0, 1, 0) # whether NR vs R is different in base and tx
+    K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
+    rownames(K) <- contrast_names
+    
     ## there must be at least 10 proportions greater than 0
-    if(sum(y > 0) < 10)
-      return(rep(NA, 4))
+    if(sum(y[!NAs] > 0) < 10){
+      out <- rep(NA, nrow(K))
+      names(out) <- rownames(K)
+      return(out)
+    }
     
-    data_tmp <- data.frame(y = as.numeric(y), md[, c("day", "response")])
+    model_tmp <- glm(y ~ response + day + response:day, data = data_tmp)
     
-    res_tmp <- glm(y ~ response + day + response:day, data = data_tmp)
+    summ_tmp <- summary(model_tmp)
     
-    sum_tmp <- summary(res_tmp)
+    ## fit contrasts
+    contr_tmp <- glht(model_tmp, linfct = K)
+    summ_tmp <- summary(contr_tmp)
     
-    out <- as.numeric(sum_tmp$coefficients[, "Pr(>|t|)"])
+    out <- summ_tmp$test$pvalues
+    names(out) <- contrast_names
     
     return(out)
     
   }))
   
-  data_tmp <- data.frame(y = as.numeric(data[1, md$shortname]), md[, c("day", "response")])
-  momat <- model.matrix(y ~ response + day + response:day, data = data_tmp)
-  movars <- colnames(momat)
+  movars <- colnames(pvs)
   
-  colnames(pvs_glm) <- paste0("pval_", movars)
-  pvs_glm <- data.frame(pvs_glm)
+  colnames(pvs) <- paste0("pval_", movars)
+  pvs <- data.frame(pvs)
+  
+  ## get adjusted p-values
+  adjp <- data.frame(apply(pvs, 2, p.adjust, method = "BH"))
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  pvs_out <- data.frame(pvs, adjp)
+  
+  return(pvs_out)
+  
+}
+
+
+
+# -----------------------------
+### Fit a logit GLM
+# -----------------------------
+
+
+fit_glm_logit <- function(data, md){
+  
+  ntot <- colSums(data[, md$shortname, drop = FALSE])
+  
+  pvs <- t(apply(data[, md$shortname], 1, function(y){
+    # y <- data[1, md$shortname]
+    
+    NAs <- is.na(y)
+    
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], total = as.numeric(ntot), md[!NAs, c("day", "response")])
+    
+    if(sum(y[!NAs] > 0) < 10){
+      mm <- model.matrix(y ~ response + day, data = data_tmp)
+      out <- rep(NA, ncol(mm))
+      names(out) <- colnames(mm)
+      return(out)
+    }
+    
+    res_tmp <- glm(cbind(y, total-y) ~ response + day, family = binomial(link = "logit"), data = data_tmp)
+    
+    summ_tmp <- summary(res_tmp)
+    
+    out <- as.numeric(summ_tmp$coefficients[, "Pr(>|z|)"])
+    names(out) <- rownames(summ_tmp$coefficients)
+    
+    return(out)
+    
+  }))
+  
+  movars <- colnames(pvs)
+  
+  colnames(pvs) <- paste0("pval_", movars)
+  pvs <- data.frame(pvs)
   
   
   ## get adjusted p-values
-  
-  adjp_glm <- data.frame(apply(pvs_glm, 2, p.adjust, method = "BH"))
-  colnames(adjp_glm) <- paste0("adjp_", movars)
+  adjp <- data.frame(apply(pvs, 2, p.adjust, method = "BH"))
+  colnames(adjp) <- paste0("adjp_", movars)
   
   ## save the results
-  pvs_glm_out <- data.frame(cluster = rownames(pvs_glm), pvs_glm, adjp_glm)
+  pvs_out <- data.frame(pvs, adjp)
   
-  return(pvs_glm_out)
+  return(pvs_out)
   
 }
 
@@ -143,29 +261,26 @@ fit_glmm_logit <- function(data, md){
   
   pvs <- t(apply(data[, md$shortname], 1, function(y){
     # y <- data[1, md$shortname]
-    
-    ## there must be at least 10 proportions greater than 0
-    if(sum(y > 0) < 10)
-      return(rep(NA, 4))
+
+    NAs <- is.na(y)
     
     ## prepare binomial/Bernoulli data
-    data_tmp <- data.frame(y = rep(c(1, 0), times = c(sum(y), sum(ntot) - sum(y))), sample_id = c(rep(md$shortname, times = as.numeric(y)), rep(md$shortname, times = as.numeric(ntot - y))))
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], total = as.numeric(ntot), md[!NAs, c("day", "response", "patient_id")])
     
-    # table(data_tmp$y, data_tmp$sample_id)
+    ## there must be at least 10 proportions greater than 0
+    if(sum(y[!NAs] > 0) < 10){
+      mm <- model.matrix(y ~ response + day, data = data_tmp)
+      out <- rep(NA, ncol(mm))
+      names(out) <- colnames(mm)
+      return(out)
+    }
     
-    ## add other variables from the metadata
-    mm <- match(data_tmp$sample_id, md$shortname)
+    res_tmp <- glmer(y/total ~ response + day + (1|patient_id), weights = total, family = binomial, data = data_tmp)
     
-    data_tmp$day <- md[mm, "day"]
-    data_tmp$response <- md[mm, "response"]
-    data_tmp$patient_id <- md[mm, "patient_id"]
-
-    res_tmp <- glmer(y ~ response + day + (1|patient_id), data_tmp, binomial)
+    summ_tmp <- summary(res_tmp)
     
-    sum_tmp <- summary(res_tmp)
-    
-    out <- as.numeric(sum_tmp$coefficients[, "Pr(>|z|)"])
-    names(out) <- rownames(sum_tmp$coefficients)
+    out <- as.numeric(summ_tmp$coefficients[, "Pr(>|z|)"])
+    names(out) <- rownames(summ_tmp$coefficients)
     
     return(out)
     
@@ -178,14 +293,25 @@ fit_glmm_logit <- function(data, md){
   
   
   ## get adjusted p-values
-  
   adjp <- data.frame(apply(pvs, 2, p.adjust, method = "BH"))
   colnames(adjp) <- paste0("adjp_", movars)
   
   ## save the results
-  pvs_out <- data.frame(group = rownames(pvs), pvs, adjp)
+  pvs_out <- data.frame(pvs, adjp)
   
   return(pvs_out)
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
 

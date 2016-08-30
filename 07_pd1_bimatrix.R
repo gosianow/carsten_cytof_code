@@ -1,9 +1,9 @@
 ##############################################################################
-## <<06_cytokines_bimatrix.R>>
+## <<07_pd1_bimatrix.R>>
 
 # BioC 3.3
-# Created 24 Aug 2016
-# Updated 25 Aug 2016
+# Created 27 Aug 2016
+# Updated 27 Aug 2016
 
 ##############################################################################
 Sys.time()
@@ -25,15 +25,15 @@ library(limma)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# cytokines_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw2_'
-# cytokines_outdir='060_cytokines'
-# path_data='010_data/23CD4_02CD4_expr_raw.rds'
-# path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
-# path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging_clustering.xls'
-# path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging_clustering_labels.xls'
-# clsubset=c('CM','EM')
-# cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw2_'
+pd1_outdir='070_pd1'
+path_data='010_data/23CD4_02CD4_expr_raw.rds'
+path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
+path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging_clustering.xls'
+path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging_clustering_labels.xls'
+clsubset=c('CM','EM')
+cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')
 
 ##############################################################################
 # Read in the arguments
@@ -50,9 +50,9 @@ print(args)
 
 setwd(rwd)
 
-prefix <- cytokines_prefix
+prefix <- pd1_prefix
 suffix <- ""
-outdir <- cytokines_outdir
+outdir <- pd1_outdir
 
 if(!file.exists(outdir)) 
   dir.create(outdir)
@@ -120,7 +120,15 @@ fcs_panel <- data.frame(fcs_colname = fcs_colnames, Isotope = cytokines_cutoffs$
 # -------------------------------------
 # Indeces of observables used for positive-negative analysis
 
-pn_markers <- complete.cases(cytokines_cutoffs[, cutoff_colname, drop = FALSE]) 
+pd1_marker <- cytokines_cutoffs$Antigen == "PD-1"
+
+if(any(is.na(cytokines_cutoffs[pd1_marker, cutoff_colname])))
+  stop("NAs in PD-1 cutoffs")
+
+pn_markers <- complete.cases(cytokines_cutoffs[, cutoff_colname, drop = FALSE]) & !pd1_marker
+
+
+pd1col <- which(fcs_colnames %in% cytokines_cutoffs[pd1_marker, "fcs_colname"])
 
 pncols <- which(fcs_colnames %in% cytokines_cutoffs[pn_markers, "fcs_colname"])
 
@@ -134,12 +142,70 @@ pncols <- pncols[mm]
 
 cells2keep_clust <- clust %in% labels[labels$label %in% clsubset, "cluster"]
 
-eb <- e[cells2keep_clust, pncols]
+# ----------------------------------------------------------------------------------------
+# Create the bimatrix - for PD1
+# ----------------------------------------------------------------------------------------
+
+epd1 <- e[cells2keep_clust, pd1col, drop = FALSE]
 sampb <- samp[cells2keep_clust]
 
+## get the corresponding cutoffs
+mm <- match(colnames(epd1), cytokines_cutoffs$fcs_colname)
+
+cytcut <- cytokines_cutoffs[mm, cutoff_colname, drop = FALSE]
+rownames(cytcut) <- colnames(epd1)
+print(cytcut)
+
+
+### create the bimatrix
+
+## use one cutoff
+if(length(cutoff_colname) == 1){
+  
+  bimatrix <- epd1 > cytcut[, cutoff_colname]
+  
+}
+
+## use base and tx cutoffs
+if(length(cutoff_colname) == 2){
+  
+  cutoff_colname_base <- cutoff_colname[grep("base", cutoff_colname)]
+  cutoff_colname_tx <- cutoff_colname[grep("tx", cutoff_colname)]
+  
+  cytcut_samp <- cytcut[, ifelse(grepl("base", sampb), cutoff_colname_base, cutoff_colname_tx)]
+  
+  bimatrix <- epd1 > as.numeric(cytcut_samp)
+  
+}
+
+
+bimatrix <- apply(bimatrix, 2, as.numeric)
+
+### Save the bmatrix (it has to contain cell_id and sample_id)
+
+bimatrix_out <- data.frame(cell_id = cell_id[cells2keep_clust], sample_id = samp[cells2keep_clust], bimatrix)
+
+write.table(bimatrix_out, file.path(outdir, paste0(prefix, "pd1_bimatrix", suffix, ".txt")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+
 # ------------------------------------------------------------
-# Create the bimatrix - TRUE when cells are positive expressed for a given marker
+# Create a table with clustering and clustering_labels - needed for 04_frequencies.R to work 
 # ------------------------------------------------------------
+
+clustering <- data.frame(cluster = bimatrix[, 1] + 1, cell_id = cell_id[cells2keep_clust], sample_id = samp[cells2keep_clust], stringsAsFactors = FALSE)
+
+write.table(clustering, file.path(outdir, paste0(prefix, "pd1_clustering.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+freq_clust <- table(clustering$cluster)
+
+clustering_labels <- data.frame(cluster = c(1, 2), label = c("PD1-", "PD1+"), counts = as.numeric(freq_clust), stringsAsFactors = FALSE)
+
+write.table(clustering_labels, file.path(outdir, paste0(prefix, "pd1_clustering_labels.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+
+# ----------------------------------------------------------------------------------------
+# Create the bimatrix for other cytokines for positive and negative PD1
+# ----------------------------------------------------------------------------------------
 
 ## get the corresponding cutoffs
 mm <- match(colnames(eb), cytokines_cutoffs$fcs_colname)
@@ -226,8 +292,6 @@ write.table(clustering_observables, file.path(outdir, paste0(prefix, "clustering
 
 
 
-
-
 ################################
-### 06_cytokines_bimatrix.R done!
+### 07_pd1_bimatrix.R done!
 ################################
