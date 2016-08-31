@@ -278,15 +278,6 @@ plotting_wrapper <- function(e, suffix){
   
   dfm$clust <- factor(dfm$clust, labels = labels$label)
   
-  # ggp <- ggplot(dfm, aes(x=value)) + 
-  #   geom_density(adjust=3, fill = "black", alpha = 0.3) + 
-  #   facet_grid(clust ~ variable, scales = "free") +
-  #   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-  # 
-  # pdf(file.path(outdir, paste0(prefix, "distros_raw_in.pdf")), w = ncol(e), h = nrow(labels))
-  # print(ggp)
-  # dev.off()
-  
   ## with free scales using facet_wrap 
   dfm$variable_clust <- interaction(dfm$variable, dfm$clust, lex.order = FALSE)
   
@@ -304,84 +295,13 @@ plotting_wrapper <- function(e, suffix){
 }
 
 
-
 # ## Expression, included observables
-# 
 # plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
 # 
-# 
+# ## Expression, excluded observables
 # if(length(xcols) > 0){
-# 
-#   # Expression, excluded observables
-# 
 #   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
-# 
 # }
-
-
-# ------------------------------------------------------------
-# Plot expression of markers for all data and strat. per sample
-# ------------------------------------------------------------
-
-
-plotting_wrapper2 <- function(e, suffix){
-  
-  df <- data.frame(samp = samp, e)
-  dfm <- melt(df, id.var = "samp")
-  
-  # add group info
-  mm <- match(dfm$samp, md$shortname)
-  dfm$group <- factor(md$condition[mm])
-  
-  ggp <- ggplot(dfm, aes(x=value)) + 
-    geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
-    facet_wrap(~ variable, nrow = 3, scales = "free") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
-  
-  pdf(file.path(outdir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e), h = 10)
-  print(ggp)
-  dev.off()
-  
-  ## create colors per group not per sample
-  colors <- unique(md[, c("condition", "color")])
-  
-  mm <- match(levels(dfm$samp), md$shortname)
-  groups <- factor(md$condition[mm])
-  color_values <- colorRampPalette(brewer.pal(12,"Paired"))(12)[c(1,3,5,2,4,6)]
-  color_values <- color_values[as.numeric(groups)]
-  names(color_values) <- levels(dfm$samp)
-  
-  ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
-    geom_density(adjust = 1) + 
-    facet_wrap(~ variable, nrow = 3, scales = "free") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
-    guides(color = guide_legend(nrow = 2)) +
-    scale_color_manual(values = color_values)
-  
-  pdf(file.path(outdir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e), h = 10)
-  print(ggp)
-  dev.off()
-  
-  
-  return(NULL)
-  
-}
-
-
-
-
-# ## Expression, included observables
-# 
-# plotting_wrapper2(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
-# 
-# if(length(xcols) > 0){
-# 
-#   # Expression, excluded observables
-# 
-#   plotting_wrapper2(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
-# 
-# }
-
 
 
 

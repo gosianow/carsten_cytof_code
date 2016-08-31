@@ -22,12 +22,12 @@ library(RColorBrewer)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-pcas_prefix='23_01_'
-pcas_outdir='020_pcascores'
-path_data='010_data/23_01_expr_raw.rds'
-path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+# pcas_prefix='23_01_'
+# pcas_outdir='020_pcascores'
+# path_data='010_data/23_01_expr_raw.rds'
+# path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
 ##############################################################################
 # Read in the arguments

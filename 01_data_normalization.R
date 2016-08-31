@@ -51,8 +51,8 @@ prefix <- data_prefix
 # ------------------------------------------------------------
 
 fcsDir <- "010_cleanfcs"
-dataDir <- data_outdir
-if( !file.exists(dataDir) ) dir.create(dataDir)
+outdir <- data_outdir
+if( !file.exists(outdir) ) dir.create(outdir)
 
 
 # ------------------------------------------------------------
@@ -70,11 +70,11 @@ md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 f <- file.path(fcsDir, md$filename)
 names(f) <- md$shortname
 
-
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
 fcs_colnames <- colnames(fcs[[1]])
+fcs_colnames
 
 ## Create sample info
 samp <- rep(names(fcs), sapply(fcs, nrow))
@@ -134,13 +134,80 @@ el[el>1] <- 1
 
 e_out <- data.frame(cell_id = 1:nrow(e), sample_id = samp, e, check.names = FALSE, stringsAsFactors = FALSE)
 
-saveRDS(e_out, file.path(dataDir, paste0(prefix, "expr_raw.rds")))
+saveRDS(e_out, file.path(outdir, paste0(prefix, "expr_raw.rds")))
 
 
 
 el_out <- data.frame(cell_id = 1:nrow(el), sample_id = samp, el, check.names = FALSE, stringsAsFactors = FALSE)
 
-saveRDS(el_out, file.path(dataDir, paste0(prefix, "expr_norm.rds")))
+saveRDS(el_out, file.path(outdir, paste0(prefix, "expr_norm.rds")))
+
+
+
+
+
+# ------------------------------------------------------------
+# Plot expression of markers for (i) pooled/merged data and (ii) strat. per sample
+# ------------------------------------------------------------
+
+## colors per sample
+color_values <- md$color
+names(color_values) <- md$shortname
+
+
+
+plotting_wrapper <- function(e, suffix){
+  
+  df <- data.frame(samp = samp, e)
+  dfm <- melt(df, id.var = "samp")
+  
+  ggp <- ggplot(dfm, aes(x=value)) + 
+    geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
+    facet_wrap(~ variable, nrow = 4, scales = "free") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+  pdf(file.path(outdir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e)*2/3, h = 10)
+  print(ggp)
+  dev.off()
+  
+  
+  ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
+    geom_density(adjust = 1) + 
+    facet_wrap(~ variable, nrow = 3, scales = "free") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
+    guides(color = guide_legend(nrow = 2)) +
+    scale_color_manual(values = color_values)
+  
+  pdf(file.path(outdir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e)*2/3, h = 11)
+  print(ggp)
+  dev.off()
+  
+  
+  return(NULL)
+  
+}
+
+
+
+
+## Expression of raw data
+
+colnames(e) <- fcs_panel$Antigen[cols]
+
+plotting_wrapper(e = e, suffix = "_raw")
+
+
+## Expression of normalized data
+
+colnames(el) <- fcs_panel$Antigen[cols]
+
+plotting_wrapper(e = el, suffix = "_norm")
+
+
+
+
+
+
 
 
 
