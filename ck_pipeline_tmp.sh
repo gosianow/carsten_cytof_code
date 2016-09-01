@@ -11,14 +11,14 @@ PANELS=$RWD_MAIN/CK_panels
 
 ## Define which analysis to re-run
 data_normalization=false
-pcascores=true
+pcascores=false
 select_observables=false
 flowsom=false
 heatmaps=false
 runtsne=false
 plottsne=false
 frequencies=false
-expression=false
+expression=true
 cluster_merging=false
 cluster_extracting=false
 fcs_saving=false

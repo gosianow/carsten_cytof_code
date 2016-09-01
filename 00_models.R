@@ -40,6 +40,65 @@ library(multcomp) # for contrasts glht()
 #   
 # }
 
+# -----------------------------
+### Fit a normal GLM - with response only, no day
+# -----------------------------
+
+fit_glm_norm_resp <- function(data, md){
+  
+  ### Fit the GLM
+  fit <- lapply(1:nrow(data), function(i){
+    # i = 1
+    
+    y <- data[i, md$shortname]
+    NAs <- is.na(y)
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("response"), drop = FALSE])
+    
+    ## there must be at least 10 proportions greater than 0
+    if(sum(y[!NAs] > 0) < 10){
+      mm <- model.matrix(y ~ response, data = data_tmp)
+      out <- matrix(NA, nrow = ncol(mm), ncol = 2)
+      colnames(out) <- c("coeff", "pval")
+      rownames(out) <- colnames(mm)
+      return(out)
+    }
+    
+    fit_tmp <- glm(y ~ response, data = data_tmp)
+    summ_tmp <- summary(fit_tmp)
+    
+    out <- summ_tmp$coefficients[, c("Estimate", "Pr(>|t|)")]
+    colnames(out) <- c("coeff", "pval")
+    
+    return(out)
+    
+  })
+  
+  ### Extract p-values
+  pvals <- lapply(fit, function(x){
+    x[, "pval"]
+  })
+  pvals <- do.call(rbind, pvals)
+  
+  ### Extract fitted coefficients
+  coeffs <- lapply(fit, function(x){
+    x[, "coeff"]
+  })
+  coeffs <- do.call(rbind, coeffs)
+  
+  movars <- colnames(pvals)
+  
+  colnames(pvals) <- paste0("pval_", movars)
+  
+  ## get adjusted p-values
+  adjp <- apply(pvals, 2, p.adjust, method = "BH")
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
+  
+  return(out)
+  
+}
+
 
 # -----------------------------
 ### Fit a normal GLM
@@ -102,11 +161,12 @@ fit_glm_norm <- function(data, md){
 }
 
 
+
 # -----------------------------
-### Fit a normal GLM - with response only, no day
+### Fit a normal GLM with inteactions
 # -----------------------------
 
-fit_glm_norm_resp <- function(data, md){
+fit_glm_norm_inter <- function(data, md){
   
   ### Fit the GLM
   fit <- lapply(1:nrow(data), function(i){
@@ -114,18 +174,18 @@ fit_glm_norm_resp <- function(data, md){
     
     y <- data[i, md$shortname]
     NAs <- is.na(y)
-    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("response"), drop = FALSE])
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("day", "response")])
     
     ## there must be at least 10 proportions greater than 0
     if(sum(y[!NAs] > 0) < 10){
-      mm <- model.matrix(y ~ response, data = data_tmp)
+      mm <- model.matrix(y ~ response + day + response:day, data = data_tmp)
       out <- matrix(NA, nrow = ncol(mm), ncol = 2)
       colnames(out) <- c("coeff", "pval")
       rownames(out) <- colnames(mm)
       return(out)
     }
     
-    fit_tmp <- glm(y ~ response, data = data_tmp)
+    fit_tmp <- glm(y ~ response + day + response:day, data = data_tmp)
     summ_tmp <- summary(fit_tmp)
     
     out <- summ_tmp$coefficients[, c("Estimate", "Pr(>|t|)")]
@@ -161,12 +221,11 @@ fit_glm_norm_resp <- function(data, md){
   
 }
 
-
 # -----------------------------
-### Fit a normal GLM with inteactions
+### Fit a normal GLM with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
-fit_glm_norm_inter <- function(data, md){
+fit_glm_norm_interglht <- function(data, md){
   
   ### Fit the GLM
   fit <- lapply(1:nrow(data), function(i){
@@ -234,7 +293,6 @@ fit_glm_norm_inter <- function(data, md){
 }
 
 
-
 # -----------------------------
 ### Fit a logit GLM
 # -----------------------------
@@ -248,7 +306,6 @@ fit_glm_logit <- function(data, md){
     # y <- data[1, md$shortname]
     
     NAs <- is.na(y)
-    
     data_tmp <- data.frame(y = as.numeric(y)[!NAs], total = as.numeric(ntot), md[!NAs, c("day", "response")])
     
     if(sum(y[!NAs] > 0) < 10){
@@ -273,7 +330,6 @@ fit_glm_logit <- function(data, md){
   
   colnames(pvals) <- paste0("pval_", movars)
   pvals <- data.frame(pvals)
-  
   
   ## get adjusted p-values
   adjp <- data.frame(apply(pvals, 2, p.adjust, method = "BH"))

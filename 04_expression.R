@@ -189,20 +189,26 @@ write.table(aa, file.path(outdir, paste0(prefix, "expr_all.xls")), sep = "\t", q
 # -----------------------------------------------------------------------------
 
 alist <- list()
+
+a$label <- factor(a$label, levels = labels$label)
+
 alist[[1]] <- a
 alist[[2]] <- aa
 
 out_names <- c("clust", "all")
 
-for(i in 1:length(alist)){
+pdf_width <- c(10, 4)
+pdf_height <- c(8, 4)
+
+for(j in 1:length(alist)){
   
-  aaa <- alist[[i]]
-  out_name <- out_names[i]
+  aaa <- alist[[j]]
+  out_name <- out_names[j]
   
   ggdf <- melt(aaa, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
   
   ## use labels as clusters
-  ggdf$cluster <- factor(ggdf$cluster, levels = labels$cluster, labels = labels$label)
+  ggdf$cluster <- ggdf$label
   
   ## add group info
   mm <- match(ggdf$samp, md$shortname)
@@ -231,7 +237,7 @@ for(i in 1:length(alist)){
     ds <- ggds[ggds$marker == markers[i], , drop = FALSE]
     
     ggp[[i]] <- ggplot(df, aes(x = group, y = expr, color = group)) +
-      geom_jitter(size=2, shape = 16, width = 0.5, height = 0) +
+      geom_jitter(size=2.5, shape = 16, width = 0.5, height = 0) +
       geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
       geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +
       facet_wrap(~ cluster, scales = "free") +
@@ -246,7 +252,7 @@ for(i in 1:length(alist)){
     
   }
   
-  pdf(file.path(outdir, paste0(prefix, "expr_", out_name, ".pdf")), w=10, h=8, onefile=TRUE)
+  pdf(file.path(outdir, paste0(prefix, "expr_", out_name, ".pdf")), w = pdf_width[j], h = pdf_height[j], onefile=TRUE)
   for(i in seq(length(ggp)))
     print(ggp[[i]])
   dev.off()
@@ -268,7 +274,7 @@ out_names <- c("clust", "all")
 
 
 for(j in 1:length(alist)){
-  # i = 1
+  # j = 1
   
   aaa <- alist[[j]]
   out_name <- out_names[j]
@@ -283,6 +289,27 @@ for(j in 1:length(alist)){
   
   
   # -----------------------------
+  # Fit a normal GLM with interactions
+  # -----------------------------
+  
+  fit_glm_norm_inter_out <- fit_glm_norm_inter(data = exprc, md)
+  
+  pvs_glm_norm_inter <- data.frame(exprc[, c("cluster", "label", "marker")], fit_glm_norm_inter_out[["pvals"]])
+  coeffs_glm_norm_inter <- data.frame(exprc[, c("cluster", "label", "marker")], fit_glm_norm_inter_out[["coeffs"]])
+  
+  oo <- order(pvs_glm_norm_inter$pval_responseR, decreasing = FALSE)
+  pvs_glm_norm_inter <- pvs_glm_norm_inter[oo, ]
+  coeffs_glm_norm_inter <- coeffs_glm_norm_inter[oo, ]
+  
+  ## save the results
+  write.table(pvs_glm_norm_inter, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_pvs_glm_norm_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  write.table(coeffs_glm_norm_inter, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs_glm_norm_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+  table(pvs_glm_norm_inter$adjp_responseR < 0.05, useNA = "always")
+  table(pvs_glm_norm_inter$adjp_responseR.daytx < 0.05, useNA = "always")
+  
+  
+  # -----------------------------
   # Fit a normal GLM
   # -----------------------------
   
@@ -294,7 +321,6 @@ for(j in 1:length(alist)){
   oo <- order(pvs_glm_norm$pval_responseR, decreasing = FALSE)
   pvs_glm_norm <- pvs_glm_norm[oo, ]
   coeffs_glm_norm <- coeffs_glm_norm[oo, ]
-  
   
   ## save the results
   write.table(pvs_glm_norm, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_pvs_glm_norm", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
@@ -318,41 +344,44 @@ for(j in 1:length(alist)){
   
   
   # -----------------------------
-  # Fit a normal GLM with interactions
+  # Fit a normal GLM with interactions + test contrasts with multcomp pckg
   # -----------------------------
   
-  fit_glm_norm_inter_out <- fit_glm_norm_inter(data = exprc, md)
+  fit_glm_norm_interglht_out <- fit_glm_norm_interglht(data = exprc, md)
   
-  pvs_glm_norm_inter <- data.frame(exprc[, c("cluster", "label", "marker")], fit_glm_norm_inter_out[["pvals"]])
-  coeffs_glm_norm_inter <- data.frame(exprc[, c("cluster", "label", "marker")], fit_glm_norm_inter_out[["coeffs"]])
+  pvs_glm_norm_interglht <- data.frame(exprc[, c("cluster", "label", "marker")], fit_glm_norm_interglht_out[["pvals"]])
+  coeffs_glm_norm_interglht <- data.frame(exprc[, c("cluster", "label", "marker")], fit_glm_norm_interglht_out[["coeffs"]])
   
-  oo <- order(pvs_glm_norm_inter$pval_NRvsR, decreasing = FALSE)
-  pvs_glm_norm_inter <- pvs_glm_norm_inter[oo, ]
-  coeffs_glm_norm_inter <- coeffs_glm_norm_inter[oo, ]
+  oo <- order(pvs_glm_norm_interglht$pval_NRvsR, decreasing = FALSE)
+  pvs_glm_norm_interglht <- pvs_glm_norm_interglht[oo, ]
+  coeffs_glm_norm_interglht <- coeffs_glm_norm_interglht[oo, ]
   
   ## save the results
-  write.table(pvs_glm_norm_inter, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_pvs_glm_norm_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-  write.table(coeffs_glm_norm_inter, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs_glm_norm_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  write.table(pvs_glm_norm_interglht, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_pvs_glm_norm_interglht", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  write.table(coeffs_glm_norm_interglht, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs_glm_norm_interglht", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   
   
-  table(pvs_glm_norm_inter$adjp_NRvsR < 0.05, useNA = "always")
-  table(pvs_glm_norm_inter$adjp_NRvsR_base < 0.05, useNA = "always")
-  table(pvs_glm_norm_inter$adjp_NRvsR_tx < 0.05, useNA = "always")
-  table(pvs_glm_norm_inter$adjp_NRvsR_basevstx < 0.05, useNA = "always")
+  table(pvs_glm_norm_interglht$adjp_NRvsR < 0.05, useNA = "always")
+  table(pvs_glm_norm_interglht$adjp_NRvsR_base < 0.05, useNA = "always")
+  table(pvs_glm_norm_interglht$adjp_NRvsR_tx < 0.05, useNA = "always")
+  table(pvs_glm_norm_interglht$adjp_NRvsR_basevstx < 0.05, useNA = "always")
   
   # ----------------------------------------
-  # Plot top significant cases per cluster
+  # Plot a heatmap of significant cases
   # ----------------------------------------
   
-  which_top_pvs <- pvs_glm_norm_inter$adjp_NRvsR < 0.05 & !is.na(pvs_glm_norm_inter$adjp_NRvsR)
+  which_top_pvs <- pvs_glm_norm_interglht$adjp_NRvsR < 0.05 & !is.na(pvs_glm_norm_interglht$adjp_NRvsR)
   which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0){
     
-    pvs_top <- pvs_glm_norm_inter[which_top_pvs, c("cluster", "label", "marker", "adjp_NRvsR"), drop = FALSE]
+    pvs_top <- pvs_glm_norm_interglht[which_top_pvs, c("cluster", "label", "marker", "adjp_NRvsR"), drop = FALSE]
     colnames(pvs_top) <- c("cluster", "label", "marker", "adjpval")
     
     expr_heat <- merge(pvs_top, exprc, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
+    
+    ## group the expression by cluster
+    expr_heat <- expr_heat[order(expr_heat$label), , drop = FALSE]
     
     # -----------------------------
     ### Plot one heatmap with R vs NR
@@ -362,7 +391,10 @@ for(j in 1:length(alist)){
     samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
     
     ## gap in the heatmap 
-    gaps_col<- sum(grepl("_NR", samples2plot))
+    gaps_col <- sum(grepl("_NR", samples2plot))
+    gaps_row <- unique(cumsum(table(expr_heat$label)))
+    if(length(gaps_row == 1)) 
+      gaps_row <- NULL
     
     ## expression scaled by row
     th <- 2.5
@@ -370,10 +402,10 @@ for(j in 1:length(alist)){
     expr[expr > th] <- th
     expr[expr < -th] <- -th
     
-    labels_row <- paste0(expr_heat$label, "/", expr_heat$marker, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
+    labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
     labels_col <- colnames(expr)
     
-    pheatmap(expr, color = colorRampPalette(c("green", "black", "red"), space = "Lab")(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap1", suffix, ".pdf")), width = 12, height = 7)
+    pheatmap(expr, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = seq(from = -th, to = th, length.out = 101), legend_breaks = seq(from = -round(th), to = round(th), by = 1), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap1", suffix, ".pdf")), width = 12, height = max(3, nrow(expr)/3))
     
     
     # -----------------------------
@@ -396,38 +428,37 @@ for(j in 1:length(alist)){
       expr[expr > th] <- th
       expr[expr < -th] <- -th
       
-      labels_row <- paste0(expr_heat$label, "/", expr_heat$marker, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
+      labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
       labels_col <- colnames(expr)
       
-      pheatmap(expr, color = colorRampPalette(c("green", "black", "red"), space = "Lab")(100), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_number = 7, fontsize_row = 10, fontsize_col = 10, fontsize = 7, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap_", i, suffix, ".pdf")), width = 8, height = 7)
+      pheatmap(expr, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = seq(from = -th, to = th, length.out = 101), legend_breaks = seq(from = -round(th), to = round(th), by = 1), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap_", i, suffix, ".pdf")), width = 8, height = max(3, nrow(expr)/3))
       
     }
     
     
-    # ----------------------------------------
-    # Plot coefficients NRvsR for base and tx (to show that they correlate)
-    # ----------------------------------------
-    
-    ggdf <- coeffs_glm_norm_inter[, c("NRvsR_base", "NRvsR_tx")]
-    
-    limmin <- min(ggdf, na.rm = TRUE)
-    limmax <- max(ggdf, na.rm = TRUE)
-    
-    ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx)) +
-      geom_point(size = 3, alpha = 0.75) +
-      geom_abline(intercept = 0, slope = 1) +
-      coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
-      theme_bw() +
-      theme(axis.text = element_text(size=12), 
-        axis.title = element_text(size=12, face="bold"))
-    
-    pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs", suffix, ".pdf")), w=7, h=7, onefile=TRUE)
-    print(ggp)
-    dev.off()
-    
-    
     
   }
+  
+  # ----------------------------------------
+  # Plot coefficients NRvsR for base and tx (to show that they correlate)
+  # ----------------------------------------
+  
+  ggdf <- coeffs_glm_norm_interglht[, c("NRvsR_base", "NRvsR_tx")]
+  
+  limmin <- min(ggdf, na.rm = TRUE)
+  limmax <- max(ggdf, na.rm = TRUE)
+  
+  ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx)) +
+    geom_point(size = 3, alpha = 0.75) +
+    geom_abline(intercept = 0, slope = 1) +
+    coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
+    theme_bw() +
+    theme(axis.text = element_text(size=14), 
+      axis.title = element_text(size=14, face="bold"))
+  
+  pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs", suffix, ".pdf")), w=7, h=7, onefile=TRUE)
+  print(ggp)
+  dev.off()
   
   
 }
