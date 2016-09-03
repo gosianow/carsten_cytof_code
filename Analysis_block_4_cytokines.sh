@@ -110,80 +110,67 @@ if ${cytokines}; then
   tail $ROUT/06_cytokines_bimatrix.Rout
 
 
-  # ### FlowSOM clustering of bimatrix
-  # echo "02_flowsom"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_cytokines}${prefix_clust}' flowsom_outdir='060_cytokines' path_data='060_cytokines/${prefix_cytokines}bimatrix.txt' path_clustering_observables='060_cytokines/${prefix_cytokines}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
-  # tail $ROUT/02_flowsom.Rout
-  #
-  #
-  # ### Heatmaps
-  # echo "02_heatmaps"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_clust}' heatmap_outdir='060_cytokines' path_data='060_cytokines/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls'  path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-  # tail $ROUT/02_heatmaps.Rout
-  #
-  #
-  # ### tSNE plot with bimatrix clusters (based on raw data)
-  # echo "03_plottsne"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_cytokines}${prefix_clust}raw_' tsnep_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_clust}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
-  # tail $ROUT/03_plottsne.Rout
-  #
-  #
-  # ### Get cluster frequencies
-  # echo "04_frequencies"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_clust}' freq_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
-  # tail $ROUT/04_frequencies.Rout
+  ### FlowSOM clustering of bimatrix
+  echo "02_flowsom"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_cytokines}${prefix_clust}' flowsom_outdir='060_cytokines' path_data='060_cytokines/${prefix_cytokines}bimatrix.txt' path_clustering_observables='060_cytokines/${prefix_cytokines}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+  tail $ROUT/02_flowsom.Rout
+
+
+  ### Heatmaps
+  echo "02_heatmaps"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_clust}' heatmap_outdir='060_cytokines' path_data='060_cytokines/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls'  path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+
+
+  ### tSNE plot with bimatrix clusters (based on raw data)
+  echo "03_plottsne"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_cytokines}${prefix_clust}raw_' tsnep_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_clust}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  tail $ROUT/03_plottsne.Rout
+
+
+  ### Get cluster frequencies
+  echo "04_frequencies"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_clust}' freq_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  tail $ROUT/04_frequencies.Rout
 
   #############################################################################
   ### Cluster merging analysis
   #############################################################################
 
-  # if [ ! -e "$RWD/${file_merging_cyt}" ]; then
-  #   echo "File '$RWD/${file_merging_cyt}' does NOT exist! No merging analysis!"
-  #   exit
-  # fi
-  #
-  #
-  # ### Cluster merging
-  # echo "02_cluster_merging"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_cytokines}${prefix_merging_cyt}' merging_outdir='060_cytokines' path_cluster_merging='${file_merging_cyt}' path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
-  # tail $ROUT/02_cluster_merging.Rout
-  #
-  #
-  # if [ ! -e "$RWD/060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls" ]; then
-  #   echo "File '$RWD/060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' does NOT exist!"
-  #   exit
-  # fi
-  #
-  #
-  # ### Heatmaps of merged clusters
-  # echo "02_heatmaps"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_merging_cyt}' heatmap_outdir='060_cytokines' path_data='060_cytokines/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls'  path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-  # tail $ROUT/02_heatmaps.Rout
+  if [ ! -e "$RWD/${file_merging_cyt}" ]; then
+    echo "File '$RWD/${file_merging_cyt}' does NOT exist! No merging analysis!"
+    exit
+  fi
 
 
-
-  ### Heatmaps per condition
-  conditions=("base_HD" "base_NR" "base_R" "tx_HD" "tx_NR" "tx_R")
-
-  for i in "${conditions[@]}"
-  do
-
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_merging_cyt}cond_${i}_' heatmap_outdir='060_cytokines' path_data='060_cytokines/${prefix_cytokines}bimatrix_${i}.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls'  path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-    tail $ROUT/02_heatmaps.Rout
-
-  done
+  ### Cluster merging
+  echo "02_cluster_merging"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_cytokines}${prefix_merging_cyt}' merging_outdir='060_cytokines' path_cluster_merging='${file_merging_cyt}' path_clustering='060_cytokines/${prefix_cytokines}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+  tail $ROUT/02_cluster_merging.Rout
 
 
-  # ### tSNE plot with bimatrix clusters (based on raw data)
-  # echo "03_plottsne"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_cytokines}${prefix_merging_cyt}raw_' tsnep_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
-  # tail $ROUT/03_plottsne.Rout
-  #
-  #
-  # ### Get cluster frequencies
-  # echo "04_frequencies"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
-  # tail $ROUT/04_frequencies.Rout
+  if [ ! -e "$RWD/060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls" ]; then
+    echo "File '$RWD/060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' does NOT exist!"
+    exit
+  fi
+
+
+  ### Heatmaps of merged clusters
+  echo "02_heatmaps"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_merging_cyt}' heatmap_outdir='060_cytokines' path_data='060_cytokines/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls'  path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+
+
+  ### tSNE plot with bimatrix clusters (based on raw data)
+  echo "03_plottsne"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_cytokines}${prefix_merging_cyt}raw_' tsnep_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  tail $ROUT/03_plottsne.Rout
+
+
+  ### Get cluster frequencies
+  echo "04_frequencies"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='060_cytokines' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  tail $ROUT/04_frequencies.Rout
 
 
 fi

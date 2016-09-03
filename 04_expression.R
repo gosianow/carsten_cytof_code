@@ -393,19 +393,21 @@ for(j in 1:length(alist)){
     ## gap in the heatmap 
     gaps_col <- sum(grepl("_NR", samples2plot))
     gaps_row <- unique(cumsum(table(expr_heat$label)))
-    if(length(gaps_row == 1)) 
+    if(length(gaps_row) == 1) 
       gaps_row <- NULL
     
     ## expression scaled by row
-    th <- 2.5
     expr <- t(apply(expr_heat[, samples2plot, drop = FALSE], 1, function(x) (x-mean(x))/sd(x)))
+    th <- 2.5
     expr[expr > th] <- th
     expr[expr < -th] <- -th
+    breaks = seq(from = -th, to = th, length.out = 101)
+    legend_breaks = seq(from = -round(th), to = round(th), by = 1)
     
     labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
     labels_col <- colnames(expr)
     
-    pheatmap(expr, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = seq(from = -th, to = th, length.out = 101), legend_breaks = seq(from = -round(th), to = round(th), by = 1), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap1", suffix, ".pdf")), width = 12, height = max(3, nrow(expr)/3))
+    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap1", suffix, ".pdf")))
     
     
     # -----------------------------
@@ -423,15 +425,17 @@ for(j in 1:length(alist)){
       gaps_col<- sum(grepl("_NR", samples2plot_sub))
       
       ## expression scaled by row
-      th <- 2.5
       expr <- t(apply(expr_heat[, samples2plot_sub], 1, function(x) (x-mean(x))/sd(x)))
+      th <- 2.5
       expr[expr > th] <- th
       expr[expr < -th] <- -th
+      breaks = seq(from = -th, to = th, length.out = 101)
+      legend_breaks = seq(from = -round(th), to = round(th), by = 1)
       
       labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
       labels_col <- colnames(expr)
       
-      pheatmap(expr, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = seq(from = -th, to = th, length.out = 101), legend_breaks = seq(from = -round(th), to = round(th), by = 1), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap_", i, suffix, ".pdf")), width = 8, height = max(3, nrow(expr)/3))
+      pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_pheatmap_", i, suffix, ".pdf")))
       
     }
     
@@ -456,7 +460,7 @@ for(j in 1:length(alist)){
     theme(axis.text = element_text(size=14), 
       axis.title = element_text(size=14, face="bold"))
   
-  pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs", suffix, ".pdf")), w=7, h=7, onefile=TRUE)
+  pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs", suffix, ".pdf")), w=5, h=5, onefile=TRUE)
   print(ggp)
   dev.off()
   

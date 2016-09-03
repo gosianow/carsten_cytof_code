@@ -62,6 +62,11 @@ if( !file.exists(outdir) ) dir.create(outdir)
 # read metadata
 md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
+## colors per sample
+color_values <- md$color
+names(color_values) <- md$shortname
+
+
 # ------------------------------------------------------------
 # Load fcs files
 # ------------------------------------------------------------
@@ -150,9 +155,6 @@ saveRDS(el_out, file.path(outdir, paste0(prefix, "expr_norm.rds")))
 # Plot expression of markers for (i) pooled/merged data and (ii) strat. per sample
 # ------------------------------------------------------------
 
-## colors per sample
-color_values <- md$color
-names(color_values) <- md$shortname
 
 
 

@@ -29,6 +29,12 @@ library(reshape2)
 # path_clustering_labels='030_heatmaps/23_01_pca1_mergingNEW2_clustering_labels.xls'
 # extract_cluster='CD4'
 
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/MyeEUNITER'                                      
+# extract_outdir='/Users/gosia/Dropbox/UZH/carsten_cytof/MyeEUNITER_CD66b_merging/010_cleanfcs'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/MyeEUNITER_metadata/metadata_MyeEUNITER.xlsx'   
+# path_clustering='030_heatmaps/mye_mye_pca1_merging_clustering.xls'                           
+# path_clustering_labels='030_heatmaps/mye_mye_pca1_merging_clustering_labels.xls'             
+# extract_cluster='CD66b+'
 
 ##############################################################################
 # Read in the arguments
@@ -48,7 +54,7 @@ setwd(rwd)
 outdir <- extract_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 fcsDir <- "010_cleanfcs"
 
@@ -74,8 +80,8 @@ fcs <- lapply(f, read.FCS)
 # Load clustering data
 # ------------------------------------------------------------
 
-clust <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
-clust <- clust[, "cluster"]
+clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
+clust <- clustering[, "cluster"]
 
 labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
@@ -86,25 +92,24 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 # Save fcs files for a cluster to export
 # ------------------------------------------------------------
 
-
-nrow_fcs <- sapply(fcs, nrow)
+## use labels as cluster names
 mlab <- match(clust, labels$cluster)
 clust <- labels$label[mlab]
   
-clustList <- split(clust, rep(names(nrow_fcs), nrow_fcs))
+clustList <- split(clust, factor(clustering[, "sample_id"], levels = names(fcs)))
+
 
 writeOutCluster <- function(u,v,z, keep="CD4", outdir) {
   # u - cluster; v - flowFrame; z - original filename
   
   fn <- file.path(outdir, basename(z))
-  # out <- v[u==keep, ]
-  out <- v[grep(keep, u), ]
+  out <- v[u==keep, ]
+  # out <- v[grep(keep, u), ]
   write.FCS(out, fn)
   
 }
 
-m <- match(names(fcs), names(clustList))
-clustList <- clustList[m]
+
 
 dummy <- mapply(writeOutCluster, u = clustList, v = fcs, z = f, keep = extract_cluster, outdir = outdir)
 

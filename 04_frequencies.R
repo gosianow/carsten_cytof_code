@@ -23,13 +23,13 @@ library(pheatmap)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-freq_prefix='23_01_pca1_merging5_'
-freq_outdir='050_frequencies'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-path_clustering='030_heatmaps/23_01_pca1_merging5_clustering.xls'
-path_clustering_labels='030_heatmaps/23_01_pca1_merging5_clustering_labels.xls'
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+# freq_prefix='23_01_pca1_merging5_'
+# freq_outdir='050_frequencies'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+# path_clustering='030_heatmaps/23_01_pca1_merging5_clustering.xls'
+# path_clustering_labels='030_heatmaps/23_01_pca1_merging5_clustering_labels.xls'
+# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 
 ##############################################################################
 # Read in the arguments
@@ -194,7 +194,7 @@ for(i in 1:nlevels(ggdf$cluster)){
   
 }
 
-pdf(file.path(outdir, paste0(prefix, "frequencies2.pdf")), w=5, h=4, onefile=TRUE)
+pdf(file.path(outdir, paste0(prefix, "frequencies.pdf")), w=5, h=4, onefile=TRUE)
 for(i in seq(length(ggp)))
   print(ggp[[i]])
 dev.off()
@@ -308,8 +308,8 @@ ggp <- ggplot(ggdf, aes(x = samp, y = prop, fill = cluster)) +
   theme_bw() +
   ylab("Frequency") +
   xlab("") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
-    axis.title.y = element_text(size=12, face="bold"), 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=14, face="bold"), 
+    axis.title.y = element_text(size=14, face="bold"), 
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), 
     panel.border = element_blank(), 
@@ -333,8 +333,8 @@ ggp <- ggplot(ggdf[!grepl("HD", ggdf$samp), ], aes(x = samp, y = prop, fill = cl
   theme_bw() +
   ylab("Frequency") +
   xlab("") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
-    axis.title.y = element_text(size=12, face="bold"), 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=14, face="bold"), 
+    axis.title.y = element_text(size=14, face="bold"), 
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), 
     panel.border = element_blank(), 
@@ -452,13 +452,18 @@ if(sum(which_top_pvs) > 0){
   gaps_col <- sum(grepl("_NR", samples2plot))
   
   ## expression scaled by row
-  # expr <- t(apply(expr_heat[, samples2plot, drop = FALSE], 1, function(x) (x-min(x))/(max(x)-min(x)) * 100))
-  expr <- expr_heat[, samples2plot, drop = FALSE]
+  # expr <- expr_heat[, samples2plot, drop = FALSE]
+  expr <- t(apply(expr_heat[, samples2plot, drop = FALSE], 1, function(x) (x-mean(x))/sd(x) ))
+  th <- 2.5
+  expr[expr > th] <- th
+  expr[expr < -th] <- -th
+  breaks = seq(from = -th, to = th, length.out = 101)
+  legend_breaks = seq(from = -round(th), to = round(th), by = 1)
   
   labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
   labels_col <- colnames(expr)
   
-  pheatmap(expr, color = colorRampPalette(c("#000000", "#F0E442", "#D55E00"), space = "Lab")(100), breaks = seq(from = 0, to = 100, length.out = 101), legend_breaks = seq(from = 0, to = 100, by = 50), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap1", suffix, ".pdf")), width = 12, height = max(3, nrow(expr)/3))
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap1", suffix, ".pdf")))
   
   
   # -----------------------------
@@ -476,13 +481,18 @@ if(sum(which_top_pvs) > 0){
     gaps_col<- sum(grepl("_NR", samples2plot_sub))
     
     ## expression scaled by row
-    # expr <- t(apply(expr_heat[, samples2plot_sub], 1, function(x) (x-min(x))/(max(x)-min(x)) * 100))
-    expr <- expr_heat[, samples2plot_sub]
+    # expr <- expr_heat[, samples2plot_sub]
+    expr <- t(apply(expr_heat[, samples2plot_sub], 1, function(x) (x-mean(x))/sd(x) ))
+    th <- 2.5
+    expr[expr > th] <- th
+    expr[expr < -th] <- -th
+    breaks = seq(from = -th, to = th, length.out = 101)
+    legend_breaks = seq(from = -round(th), to = round(th), by = 1)
     
     labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
     labels_col <- colnames(expr)
     
-    pheatmap(expr, color = colorRampPalette(c("#000000", "#F0E442", "#D55E00"), space = "Lab")(100), breaks = seq(from = 0, to = 100, length.out = 101), legend_breaks = seq(from = 0, to = 100, by = 50), cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap_", i, suffix, ".pdf")), width = 8, height = max(3, nrow(expr)/3))
+    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap_", i, suffix, ".pdf")))
     
   }
   

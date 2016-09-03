@@ -80,6 +80,20 @@ e <- expr[, fcs_colnames]
 
 md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
+
+### Colors 
+colors <- unique(md[, c("condition", "color")])
+colors$condition <- factor(colors$condition)
+## replace _ with \n
+levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
+
+color_groups <- colors$color
+names(color_groups) <- colors$condition
+
+color_samples <- md$color
+names(color_samples) <- md$shortname
+
+
 # ------------------------------------------------------------
 # Load clustering data
 # ------------------------------------------------------------
@@ -162,7 +176,45 @@ for(i in 1:length(marker_selection)){
 }
 
 
+# ------------------------------------------------------------
+# tSNE plots with samples as a heat color
+# ------------------------------------------------------------
 
+
+ggdf <- data.frame(tSNE1 = rtsne_out$Y[,1], tSNE2 = rtsne_out$Y[,2], sample = rtsne_data$sample_name)
+
+# add group info
+mm <- match(ggdf$sample, md$shortname)
+ggdf$group <- md$condition[mm]
+
+
+### Plot of tsne
+
+## facet per group
+ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = sample)) +
+  geom_point(size=1) +
+  facet_wrap(~ group) +
+  labs(x = "tSNE 1", y="tSNE 2")+ 
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
+  scale_color_manual(values = color_samples)
+
+pdf(file.path(outdir, paste0(prefix, "sample_tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)    
+print(ggp)
+dev.off()
+
+
+## one plot 
+ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = sample)) +
+  geom_point(size = 1) +
+  labs(x = "tSNE 1", y="tSNE 2")+ 
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
+  scale_color_manual(values = color_samples)
+
+pdf(file.path(outdir, paste0(prefix, "sample_tSNEone", suffix, ".pdf")), width = 9, height = 7)      
+print(ggp)
+dev.off()
 
 
 

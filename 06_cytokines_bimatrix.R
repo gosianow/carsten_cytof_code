@@ -223,23 +223,23 @@ write.table(clustering_observables, file.path(outdir, paste0(prefix, "clustering
 # Save the subsets of bimatrix for diff. conditions separately (needed for plotting the heatmaps per condition) 
 # ------------------------------------------------------------
 
-mm <- match(bimatrix_out$sample_id, md$shortname)
-
-split_condition <- factor(md$condition[mm])
-bimatrix_split <- split(bimatrix_out, split_condition)
-
-split_levels <- levels(split_condition)
-
-dummy <- lapply(1:length(split_levels), function(i){
-  # i = 1
-  
-  bimatrix_split_out <- bimatrix_split[[split_levels[i]]]
-  
-  write.table(bimatrix_split_out, file.path(outdir, paste0(prefix, "bimatrix_", split_levels[i], suffix, ".txt")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-  
-  return(NULL)
-  
-})
+# mm <- match(bimatrix_out$sample_id, md$shortname)
+# 
+# split_condition <- factor(md$condition[mm])
+# bimatrix_split <- split(bimatrix_out, split_condition)
+# 
+# split_levels <- levels(split_condition)
+# 
+# dummy <- lapply(1:length(split_levels), function(i){
+#   # i = 1
+#   
+#   bimatrix_split_out <- bimatrix_split[[split_levels[i]]]
+#   
+#   write.table(bimatrix_split_out, file.path(outdir, paste0(prefix, "bimatrix_", split_levels[i], suffix, ".txt")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+#   
+#   return(NULL)
+#   
+# })
 
 
 
