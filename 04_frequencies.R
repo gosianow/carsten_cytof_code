@@ -328,6 +328,7 @@ if(sum(which_top_pvs) > 0){
   
   expr_heat <- merge(pvs_top, props_new, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
   
+  # -----------------------------
   ## order the samples by NR and R
   samples2plot <- md[md$response %in% c("NR", "R"), ]
   samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
@@ -347,9 +348,9 @@ if(sum(which_top_pvs) > 0){
   labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
   labels_col <- colnames(expr)
   
-  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap1", suffix, ".pdf")))
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap1", suffix, ".pdf")))
   
-  
+  # -----------------------------
   ## order the samples by base and tx
   samples2plot <- md[md$response %in% c("NR", "R"), ]
   samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
@@ -369,7 +370,7 @@ if(sum(which_top_pvs) > 0){
   labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
   labels_col <- colnames(expr)
   
-  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap2", suffix, ".pdf")))
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap2", suffix, ".pdf")))
   
 }
 
@@ -404,7 +405,7 @@ for(i in c("base", "tx")){
     
     ## expression scaled by row
     # expr <- expr_heat[, samples2plot_sub]
-    expr <- t(apply(expr_heat[, samples2plot_sub], 1, function(x) (x-mean(x))/sd(x) ))
+    expr <- t(apply(expr_heat[, samples2plot_sub, drop = FALSE], 1, function(x) (x-mean(x))/sd(x) ))
     th <- 2.5
     expr[expr > th] <- th
     expr[expr < -th] <- -th
@@ -414,7 +415,7 @@ for(i in c("base", "tx")){
     labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
     labels_col <- colnames(expr)
     
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap_", i, suffix, ".pdf")))
+    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap_", i, suffix, ".pdf")))
     
   }
   
