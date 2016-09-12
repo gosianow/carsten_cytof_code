@@ -18,6 +18,8 @@ library(reshape2)
 library(limma) # for strsplit2
 library(RColorBrewer)
 library(pheatmap)
+library(gtools) # for logit
+
 
 ##############################################################################
 # Test arguments
@@ -97,20 +99,6 @@ labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = 
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
 
-# ------------------------------------------------------------
-### Colors for 20 clusters 
-# ------------------------------------------------------------
-
-# ggplot palette
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length=n+1)
-  hcl(h=hues, l=60 , c=100)[1:n]
-}
-
-color_ramp <- c(colorRampPalette(brewer.pal(12,"Paired"))(12)[-c(11)],  gg_color_hue(max(1, nlevels(labels$label)-11)) )
-
-tsne_colors <- color_ramp[1:nlevels(labels$label)]
-names(tsne_colors) <- levels(labels$label)
 
 # ---------------------------------------
 # Calculate the cluster frequencies per sample
@@ -162,11 +150,14 @@ ggdf$day <- strsplit2(ggdf$group, "\n")[, 1]
 ggds$day <- strsplit2(ggds$group, "\n")[, 1]
 
 
-clusters <- levels(ggdf$cluster)
+ggdf$day <- factor(ggdf$day)
+ggds$day <- factor(ggds$day)
+
 
 # ------------------------------------
 ### plot each cluster as a separate page in the pdf file
 ggp <- list()
+clusters <- levels(ggdf$cluster)
 
 for(i in 1:nlevels(ggdf$cluster)){
   # i = 1
@@ -194,90 +185,27 @@ for(i in 1:nlevels(ggdf$cluster)){
   
 }
 
-pdf(file.path(outdir, paste0(prefix, "frequencies.pdf")), w=5, h=4, onefile=TRUE)
+pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w=5, h=4, onefile=TRUE)
 for(i in seq(length(ggp)))
   print(ggp[[i]])
 dev.off()
 
 
 # ------------------------------------
-# plot all clusters in one pdf; colors per group; points
+# plot all clusters in one pdf; colors per group; points; separate pdf for base and tx
 
-ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group)) +
-  # geom_jitter(size=2, shape = 16, width = 0.6, height = 0) +
-  geom_point(size=2, shape = 16, position = position_jitterdodge(jitter.width = 3, jitter.height = 0, dodge.width = 0.7)) +
-  geom_errorbar(data=ggds, aes(x=cluster, y=mean, ymin=mean, ymax=mean), width=0.4, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7)) +
-  geom_errorbar(data=ggds, aes(x=cluster, y=mean, ymin=mean-sd, ymax=mean+sd), width=0.25, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7)) +
-  theme_bw() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
-    axis.title.y = element_text(size=12, face="bold"), 
-    panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), 
-    panel.border = element_blank(), 
-    axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
-    axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-    legend.title = element_blank(), legend.position = "bottom") +
-  guides(color = guide_legend(nrow = 1)) +
-  scale_color_manual(values = color_groups) +
-  facet_wrap(~ day, nrow = 1, scales = "free_x")
+days <- levels(ggdf$day)
 
-pdf(file.path(outdir, paste0(prefix, "frequencies_colors.pdf")), w=12, h=5)
-print(ggp)
-dev.off()
-
-
-# ------------------------------------
-# plot each cluster as a separate page in the pdf file; colors per group; barplot ordered by proportion
-
-# ggp <- list()
-# 
-# for(i in 1:nlevels(ggdf$cluster)){
-#   # i = 1
-#   
-#   df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
-#   df$samp <- factor(df$samp, levels = df$samp[order(df$prop, decreasing = TRUE)])
-#   
-#   ggp[[i]] <- ggplot(df, aes(x = samp, y = prop, fill = group)) +
-#     geom_bar(stat="identity") +
-#     ggtitle(clusters[i]) +
-#     theme_bw() +
-#     ylab("Frequency") +
-#     xlab("") +
-#     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
-#       axis.title.y = element_text(size=12, face="bold"), 
-#       panel.grid.major = element_blank(), 
-#       panel.grid.minor = element_blank(), 
-#       panel.border = element_blank(), 
-#       axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
-#       axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
-#       legend.position = "none") +
-#     scale_fill_manual(values = color_groups)
-#   
-# }
-# 
-# pdf(file.path(outdir, paste0(prefix, "frequencies_bar.pdf")), w=10, h=5, onefile=TRUE)
-# for(i in seq(length(ggp)))
-#   print(ggp[[i]])
-# dev.off()
-
-
-
-# ------------------------------------
-# plot each cluster as a separate page in the pdf file; colors per group; barplot ordered by proportion; facet per day
-
-ggp <- list()
-
-for(i in 1:nlevels(ggdf$cluster)){
+for(i in 1:nlevels(ggdf$day)){
   # i = 1
   
-  df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
-  df$samp <- factor(df$samp, levels = df$samp[order(df$prop, decreasing = TRUE)])
+  df <- ggdf[ggdf$day == days[i], , drop = FALSE]
+  ds <- ggds[ggds$day == days[i], , drop = FALSE]
   
-  ggp[[i]] <- ggplot(df, aes(x = samp, y = prop, fill = group)) +
-    geom_bar(stat="identity") +
-    ggtitle(clusters[i]) +
+  ggp <- ggplot(df, aes(x = cluster, y = prop, color = group)) +
+    geom_point(size=2, shape = 16, alpha = 0.8, position = position_jitterdodge(jitter.width = 3, jitter.height = 0, dodge.width = 0.7)) +
+    geom_errorbar(data=ds, aes(x=cluster, y=mean, ymin=mean, ymax=mean), width=0.4, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7), size = 1) +
+    geom_errorbar(data=ds, aes(x=cluster, y=mean, ymin=mean-sd, ymax=mean+sd), width=0.25, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7), size = 1) +
     theme_bw() +
     ylab("Frequency") +
     xlab("") +
@@ -288,117 +216,15 @@ for(i in 1:nlevels(ggdf$cluster)){
       panel.border = element_blank(), 
       axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
       axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-      legend.position = "none") +
-    scale_fill_manual(values = color_groups) +
-    facet_wrap(~ day, nrow = 1, scales = "free_x")
+      legend.title = element_blank(), legend.position = "right", legend.key = element_blank()) +
+    guides(color = guide_legend(ncol = 1)) +
+    scale_color_manual(values = color_groups)
+  
+  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_", days[i] ,".pdf")), w=7, h=4)
+  print(ggp)
+  dev.off()
   
 }
-
-pdf(file.path(outdir, paste0(prefix, "frequencies_bar_facet.pdf")), w=10, h=5, onefile=TRUE)
-for(i in seq(length(ggp)))
-  print(ggp[[i]])
-dev.off()
-
-
-# ------------------------------------
-# Plot frequencies as barplots per sample
-
-ggp <- ggplot(ggdf, aes(x = samp, y = prop, fill = cluster)) +
-  geom_bar(stat="identity") +
-  theme_bw() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=14, face="bold"), 
-    axis.title.y = element_text(size=14, face="bold"), 
-    panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), 
-    panel.border = element_blank(), 
-    axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
-    axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-    legend.key = element_blank()) +
-  scale_fill_manual("", values = tsne_colors)
-
-
-pdf(file.path(outdir, paste0(prefix, "frequencies_bar_sample.pdf")), w=10, h=5, onefile=TRUE)
-print(ggp)
-dev.off()
-
-
-
-# ------------------------------------
-# Plot frequencies as barplots per sample + facet by day
-
-ggp <- ggplot(ggdf[!grepl("HD", ggdf$samp), ], aes(x = samp, y = prop, fill = cluster)) +
-  geom_bar(stat="identity") +
-  theme_bw() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=14, face="bold"), 
-    axis.title.y = element_text(size=14, face="bold"), 
-    panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), 
-    panel.border = element_blank(), 
-    axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
-    axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-    legend.key = element_blank()) +
-  scale_fill_manual("", values = tsne_colors) +
-  facet_wrap(~ day, nrow = 1, scales = "free_x")
-
-
-pdf(file.path(outdir, paste0(prefix, "frequencies_bar_sample_facet.pdf")), w=10, h=5, onefile=TRUE)
-print(ggp)
-dev.off()
-
-
-
-# ------------------------------------------------------------------------
-# proportion of samples in clusters
-# ------------------------------------------------------------------------
-
-# prop2 <- freq / rowSums(freq) * 100
-# rowSums(prop2)
-# 
-# prop2_out <- data.frame(labels[mlab, c("cluster", "label")], as.data.frame.matrix(prop2))
-# 
-# ggdf <- melt(prop2_out, id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
-# 
-# ## use labels as clusters
-# ggdf$cluster <- factor(ggdf$label, levels = labels$label)
-# ggdf <- ggdf[, c("cluster", "samp", "prop")]
-# 
-# ## add group info
-# mm <- match(ggdf$samp, md$shortname)
-# ggdf$group <- factor(md$condition[mm])
-# 
-# ## replace _ with \n
-# levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
-# 
-# clusters <- levels(ggdf$cluster)
-# 
-# 
-# # ------------------------------------
-# # Plot frequencies as barplots per cluster
-# 
-# ggp <- ggplot(ggdf, aes(x = cluster, y = prop, fill = samp)) +
-#   geom_bar(stat="identity") +
-#   theme_bw() +
-#   ylab("Frequency") +
-#   xlab("") +
-#   theme(axis.text.y = element_text(size=12, face="bold"), 
-#     axis.title.y = element_text(size=12, face="bold"), 
-#     panel.grid.major = element_blank(), 
-#     panel.grid.minor = element_blank(), 
-#     panel.border = element_blank(), 
-#     axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
-#     axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-#     legend.key = element_blank()) +
-#   scale_fill_manual("", values = color_samples) +
-#   coord_flip()
-# 
-# 
-# pdf(file.path(outdir, paste0(prefix, "frequencies_bar_cluster.pdf")), w=10, h=5, onefile=TRUE)
-# print(ggp)
-# dev.off()
 
 
 # ------------------------------------------------------------
@@ -407,6 +233,25 @@ dev.off()
 
 source(path_fun_models)
 
+# -----------------------------
+### Fit a logit GLM with interactions
+# -----------------------------
+
+fit_glm_logit_inter_out <- fit_glm_logit_inter(data = freq_out, md)
+
+pvs_glm_logit_inter <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_inter_out[["pvals"]])
+coeffs_glm_logit_inter <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_inter_out[["coeffs"]])
+
+oo <- order(pvs_glm_logit_inter$pval_responseR, decreasing = FALSE)
+pvs_glm_logit_inter <- pvs_glm_logit_inter[oo, ]
+coeffs_glm_logit_inter <- coeffs_glm_logit_inter[oo, ]
+
+## save the results
+write.table(pvs_glm_logit_inter, file=file.path(outdir, paste0(prefix, "frequencies_pvs_glm_logit_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(coeffs_glm_logit_inter, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_glm_logit_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+table(pvs_glm_logit_inter$adjp_responseR < 0.05, useNA = "always")
+table(pvs_glm_logit_inter$adjp_responseR.daytx < 0.05, useNA = "always")
 
 # -----------------------------
 ### Fit a logit GLM
@@ -414,37 +259,76 @@ source(path_fun_models)
 
 fit_glm_logit_out <- fit_glm_logit(data = freq_out, md)
 
-pvs_glm_logit <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_out)
+pvs_glm_logit <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_out[["pvals"]])
+coeffs_glm_logit <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_out[["coeffs"]])
 
 oo <- order(pvs_glm_logit$pval_responseR, decreasing = FALSE)
 pvs_glm_logit <- pvs_glm_logit[oo, ]
-
+coeffs_glm_logit <- coeffs_glm_logit[oo, ]
 
 ## save the results
 write.table(pvs_glm_logit, file=file.path(outdir, paste0(prefix, "frequencies_pvs_glm_logit", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(coeffs_glm_logit, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_glm_logit", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 table(pvs_glm_logit$adjp_responseR < 0.05, useNA = "always")
 
 
+# -----------------------------
+### Fit a logit GLM with interactions + test contrasts with multcomp pckg
+# -----------------------------
+
+fit_glm_logit_interglht_out <- fit_glm_logit_interglht(data = freq_out, md)
+
+pvs_glm_logit_interglht <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_interglht_out[["pvals"]])
+coeffs_glm_logit_interglht <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_interglht_out[["coeffs"]])
+
+oo <- order(pvs_glm_logit_interglht$pval_NRvsR, decreasing = FALSE)
+pvs_glm_logit_interglht <- pvs_glm_logit_interglht[oo, ]
+coeffs_glm_logit_interglht <- coeffs_glm_logit_interglht[oo, ]
+
+## save the results
+write.table(pvs_glm_logit_interglht, file=file.path(outdir, paste0(prefix, "frequencies_pvs_glm_logit_interglht", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(coeffs_glm_logit_interglht, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_glm_logit_interglht", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+table(pvs_glm_logit_interglht$adjp_NRvsR < 0.05, useNA = "always")
+table(pvs_glm_logit_interglht$adjp_NRvsR_base < 0.05, useNA = "always")
+table(pvs_glm_logit_interglht$adjp_NRvsR_tx < 0.05, useNA = "always")
+table(pvs_glm_logit_interglht$adjp_NRvsR_basevstx < 0.05, useNA = "always")
+
+pvs_glm_logit_interglht[, grep("adjp", colnames(pvs_glm_logit_interglht))] < 0.05
 
 # ----------------------------------------
 # Plot a heatmap of significant cases
 # ----------------------------------------
 
-which_top_pvs <- pvs_glm_logit$adjp_responseR < 0.05 & !is.na(pvs_glm_logit$adjp_responseR)
+# -----------------------------
+### Plot one heatmap with R vs NR; extract the daytx coeffs from the tx proportions (to get rid of the batch effect in the visualisation)
+
+which_top_pvs <- pvs_glm_logit_interglht$adjp_NRvsR < 0.05 & !is.na(pvs_glm_logit_interglht$adjp_NRvsR)
 which(which_top_pvs)
+
+## get the daytx logit regression coefficients ordered as in prop_out
+mm <- match(prop_out$label, coeffs_glm_logit_inter$label)
+coeffs_daytx <- coeffs_glm_logit_inter$daytx[mm]
+
 
 if(sum(which_top_pvs) > 0){
   
-  pvs_top <- pvs_glm_logit[which_top_pvs, c("cluster", "label", "adjp_responseR"), drop = FALSE]
+  pvs_top <- pvs_glm_logit_interglht[which_top_pvs, c("cluster", "label", "adjp_NRvsR"), drop = FALSE]
   colnames(pvs_top) <- c("cluster", "label", "adjpval")
   
-  expr_heat <- merge(pvs_top, prop_out, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+  ## extract the daytx coeffs from the tx proportions
+  props <- as.matrix(prop_out[, !grepl("cluster|label", colnames(prop_out))] / 100)
+  logits <- logit(props)
   
-  # -----------------------------
-  ### Plot one heatmap with R vs NR
+  logits_new <- logits
+  logits_new[, grep("tx_", colnames(logits_new))] <- logits_new[, grep("tx_", colnames(logits_new))] - coeffs_daytx
   
-  ## order the samples
+  props_new <- data.frame(prop_out[, c("cluster", "label")], inv.logit(logits_new))
+  
+  expr_heat <- merge(pvs_top, props_new, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+  
+  ## order the samples by NR and R
   samples2plot <- md[md$response %in% c("NR", "R"), ]
   samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
   
@@ -466,14 +350,52 @@ if(sum(which_top_pvs) > 0){
   pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap1", suffix, ".pdf")))
   
   
-  # -----------------------------
-  ### Plot two heatmaps with R vs NR for base and tx
-  
-  ## order the samples
+  ## order the samples by base and tx
   samples2plot <- md[md$response %in% c("NR", "R"), ]
-  samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
+  samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
   
-  for(i in c("base", "tx")){
+  ## gap in the heatmap 
+  gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
+  
+  ## expression scaled by row
+  # expr <- expr_heat[, samples2plot, drop = FALSE]
+  expr <- t(apply(expr_heat[, samples2plot, drop = FALSE], 1, function(x) (x-mean(x))/sd(x) ))
+  th <- 2.5
+  expr[expr > th] <- th
+  expr[expr < -th] <- -th
+  breaks = seq(from = -th, to = th, length.out = 101)
+  legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+  
+  labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
+  labels_col <- colnames(expr)
+  
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap2", suffix, ".pdf")))
+  
+}
+
+
+
+# -----------------------------
+### Plot two heatmaps with R vs NR for base and tx
+
+
+
+for(i in c("base", "tx")){
+  # i = "tx"
+  
+  which_top_pvs <- pvs_glm_logit_interglht[, paste0("adjp_NRvsR_", i)] < 0.05 & !is.na(pvs_glm_logit_interglht[, paste0("adjp_NRvsR_", i)])
+  which(which_top_pvs)
+  
+  if(sum(which_top_pvs) > 0){
+    
+    pvs_top <- pvs_glm_logit_interglht[which_top_pvs, c("cluster", "label", paste0("adjp_NRvsR_", i)), drop = FALSE]
+    colnames(pvs_top) <- c("cluster", "label", "adjpval")
+    
+    expr_heat <- merge(pvs_top, prop_out, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+    
+    ## order the samples
+    samples2plot <- md[md$response %in% c("NR", "R"), ]
+    samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
     
     samples2plot_sub <- samples2plot[grep(i, samples2plot)]
     
@@ -496,12 +418,32 @@ if(sum(which_top_pvs) > 0){
     
   }
   
-  
-  
 }
 
 
+# ----------------------------------------
+# Plot coefficients NRvsR for base and tx (to show that they correlate)
+# ----------------------------------------
 
+ggdf <- coeffs_glm_logit_interglht[, c("NRvsR_base", "NRvsR_tx")]
+
+limmin <- min(ggdf, na.rm = TRUE)
+limmax <- max(ggdf, na.rm = TRUE)
+
+ggdf$interaction <- factor(pvs_glm_logit_interglht$adjp_NRvsR_basevstx < 0.05, levels = c("FALSE", "TRUE"))
+
+
+ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
+  geom_point(size = 3, alpha = 0.9) +
+  geom_abline(intercept = 0, slope = 1) +
+  coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
+  theme_bw() +
+  theme(axis.text = element_text(size=14), 
+    axis.title = element_text(size=14, face="bold"))
+
+pdf(file.path(outdir, paste0(prefix, "frequencies_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
+print(ggp)
+dev.off()
 
 
 
