@@ -87,18 +87,26 @@ names(color_samples) <- md$shortname
 # Load cluster data
 # ------------------------------------------------------------
 
-## clustering
-clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
-
-clust <- clustering[, "cluster"]
-names(clust) <- clustering[, "cell_id"]
-
-
 ## clustering labels
 labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
 
+## clustering
+clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
+
+## drop the "drop" cluster
+if("drop" %in% labels$label){
+  
+  clust2drop <- labels$cluster[labels$label == "drop"]
+  cells2drop <- clustering$cluster != clust2drop
+  clustering <- clustering[cells2drop, , drop = FALSE]
+  labels <- labels[labels$label != "drop", ,drop = FALSE]
+  labels$label <- factor(labels$label)
+  
+}
+
+clust <- clustering[, "cluster"]
 
 # ---------------------------------------
 # Calculate the cluster frequencies per sample

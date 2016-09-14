@@ -74,8 +74,6 @@ md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
 
 clust <- clustering[, "cluster"]
-names(clust) <- clustering[, "cell_id"]
-
 
 ## clustering labels
 labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
@@ -84,8 +82,11 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 
 
 # ------------------------------------------------------------
-### Colors for 20 clusters 
+### Colors for tSNE maps
 # ------------------------------------------------------------
+
+# ------------------------------ 
+# palette 1
 
 # ggplot palette
 gg_color_hue <- function(n) {
@@ -93,10 +94,21 @@ gg_color_hue <- function(n) {
   hcl(h=hues, l=60 , c=100)[1:n]
 }
 
-color_ramp <- c(colorRampPalette(brewer.pal(12,"Paired"))(12)[-c(11)],  gg_color_hue(max(1, nlevels(labels$label)-11)) )
+# # colors for 20 clusters 
+# color_ramp <- c(colorRampPalette(brewer.pal(12,"Paired"))(12)[-c(11)],  gg_color_hue(max(1, nlevels(labels$label)-11)) )
+# 
+# colors_tsne <- color_ramp[1:nlevels(labels$label)]
+# names(colors_tsne) <- levels(labels$label)
 
-tsne_colors <- color_ramp[1:nlevels(labels$label)]
-names(tsne_colors) <- levels(labels$label)
+# ------------------------------ 
+# color blind palette
+
+colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(labels$label) - length(colors_muted))))
+
+colors_tsne <- color_ramp[1:nlevels(labels$label)]
+names(colors_tsne) <- levels(labels$label)
+
 
 # ------------------------------------------------------------
 # Load tSNE data
@@ -115,6 +127,7 @@ cells2keep_rtsne <- rtsne_data$cell_index %in% clustering[, "cell_id"]
 # ------------------------------------------------------------
 
 # get clustering for cells that were used in tSNE
+names(clust) <- clustering[, "cell_id"]
 clust_tsne <- clust[as.character(rtsne_data$cell_index[cells2keep_rtsne])]
 
 ggdf <- data.frame(tSNE1 = rtsne_out$Y[cells2keep_rtsne,1], tSNE2 = rtsne_out$Y[cells2keep_rtsne,2], cluster = clust_tsne, sample = rtsne_data$sample_name[cells2keep_rtsne])
@@ -130,7 +143,7 @@ ggdf$cluster <- labels$label[mm]
 ggdf$cluster <- factor(ggdf$cluster, levels = levels(labels$label))
 
 
-# skipp drop cluster
+# skipp the "drop" cluster
 
 ggdf <- ggdf[ggdf$cluster != "drop", ]
 ggdf$cluster <- factor(ggdf$cluster)
@@ -147,7 +160,7 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   labs(x = "tSNE 1", y="tSNE 2")+ 
   theme_bw() +
   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
-  scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
+  scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
 pdf(file.path(outdir, paste0(prefix, "tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)  
@@ -161,7 +174,7 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   labs(x = "tSNE 1", y="tSNE 2")+ 
   theme_bw() +
   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
-  scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
+  scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
 pdf(file.path(outdir, paste0(prefix, "tSNEone", suffix, ".pdf")), width = 9, height = 7)                 
@@ -176,7 +189,7 @@ dev.off()
 #   labs(x = "tSNE 1", y="tSNE 2")+ 
 #   theme_bw() +
 #   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
-#   scale_color_manual(values = tsne_colors[levels(ggdf$cluster)]) +
+#   scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
 #   guides(colour = guide_legend(override.aes = list(size = 5)))
 # 
 # pdf(file.path(outdir, paste0(prefix, "tSNEsample", suffix, ".pdf")), width = pdf_width, height = pdf_height)          
@@ -210,7 +223,7 @@ if(any(grepl("tsne_cmin", args))){
     labs(x = "tSNE 1", y="tSNE 2")+ 
     theme_bw() +
     theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
-    scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) + 
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) + 
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
   pdf(file.path(outdir, paste0(prefix, "tSNEgroup_subset", suffix, ".pdf")), width = pdf_width, height = pdf_height)                 
@@ -262,7 +275,7 @@ if(any(grepl("tsne_distse", args))){
     labs(x = "tSNE 1", y="tSNE 2")+ 
     theme_bw() +
     theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"))+
-    scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) +
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
   
@@ -278,7 +291,7 @@ if(any(grepl("tsne_distse", args))){
     labs(x = "tSNE 1", y="tSNE 2")+ 
     theme_bw() +
     theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"))+
-    scale_color_manual(values = tsne_colors[levels(ggdf_sub$cluster)]) +
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
   

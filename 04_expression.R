@@ -70,8 +70,7 @@ if(grepl(".rds", path_data)){
   expr <- readRDS(path_data)
 }
 
-cell_id <- expr[, "cell_id"]
-samp <- expr[, "sample_id"]
+
 fcs_colnames <- colnames(expr)[!grepl("cell_id|sample_id", colnames(expr))]
 e <- expr[, fcs_colnames]
 
@@ -103,11 +102,12 @@ names(color_groups) <- colors$condition
 # Load clustering data
 # ------------------------------------------------------------
 
-# clustering
-clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
+# clustering observables
+clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
+rownames(clustering_observables) <- clustering_observables$mass
 
-clust <- clustering[, "cluster"]
-names(clust) <- clustering[, "cell_id"]
+clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
+
 
 # clustering labels
 labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
@@ -115,11 +115,25 @@ labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
 rownames(labels) <- labels$cluster
 
-# clustering observables
-clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
-rownames(clustering_observables) <- clustering_observables$mass
+# clustering
+clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
 
-clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
+## drop the "drop" cluster
+if("drop" %in% labels$label){
+  
+  clust2drop <- labels$cluster[labels$label == "drop"]
+  cells2drop <- clustering$cluster != clust2drop
+  clustering <- clustering[cells2drop, , drop = FALSE]
+  labels <- labels[labels$label != "drop", ,drop = FALSE]
+  labels$label <- factor(labels$label)
+  e <- e[cells2drop, , drop = FALSE]
+  
+}
+
+
+clust <- clustering[, "cluster"]
+
+samp <- clustering[, "sample_id"]
 
 
 # ------------------------------------------------------------
@@ -224,7 +238,6 @@ for(j in 1:length(alist)){
   ## calculate mean and sd for the error bars on the plot
   ggds <- ddply(ggdf, .(group, cluster, marker), summarise, mean = mean(expr), sd = sd(expr))
   
-  markers <- levels(ggdf$marker)
   clusters <- levels(ggdf$cluster)
   
   # ------------------------------------
