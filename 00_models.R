@@ -3,110 +3,12 @@ library(multcomp) # for contrasts glht()
 
 
 # -----------------------------
-### Run two-way ANOVA
+### Fit a LM
 # -----------------------------
 
-# fit_two_way_anova <- function(data, md){
-#   
-#   pvals_anova <- t(apply(data[, md$shortname], 1, function(y){
-#     # y <- data[1, md$shortname]
-#     
-#     NAs <- is.na(y)
-#     
-#     ## there must be at least 10 proportions greater than 0
-#     if(sum(y[!NAs] > 0) < 10)
-#       return(rep(NA, 2))
-#     
-#     data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("day", "response")])
-#     
-#     fit_tmp <- aov(y ~ day + response, data = data_tmp)
-#     summ_tmp <- summary(fit_tmp)
-#     
-#     summ_tmp[[1]][1:2, "Pr(>F)"]
-#     
-#   }))
-#   
-#   movars <- c("day", "response")
-#   colnames(pvals_anova) <- paste0("pval_", movars)
-#   pvals_anova <- data.frame(pvals_anova)
-#   
-#   ## get adjusted p-values
-#   adjp_anova <- data.frame(apply(pvals_anova, 2, p.adjust, method = "BH"))
-#   colnames(adjp_anova) <- paste0("adjp_", movars)
-#   
-#   pvals_out <- data.frame(pvals_anova, adjp_anova)
-#   
-#   return(pvals_out)
-#   
-# }
-
-# -----------------------------
-### Fit a normal GLM - with response only, no day
-# -----------------------------
-
-fit_glm_norm_resp <- function(data, md){
+fit_lm <- function(data, md){
   
-  ### Fit the GLM
-  fit <- lapply(1:nrow(data), function(i){
-    # i = 1
-    
-    y <- data[i, md$shortname]
-    NAs <- is.na(y)
-    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("response"), drop = FALSE])
-    
-    ## there must be at least 10 proportions greater than 0
-    if(sum(y[!NAs] > 0) < 10){
-      mm <- model.matrix(y ~ response, data = data_tmp)
-      out <- matrix(NA, nrow = ncol(mm), ncol = 2)
-      colnames(out) <- c("coeff", "pval")
-      rownames(out) <- colnames(mm)
-      return(out)
-    }
-    
-    fit_tmp <- glm(y ~ response, data = data_tmp)
-    summ_tmp <- summary(fit_tmp)
-    
-    out <- summ_tmp$coefficients[, c("Estimate", "Pr(>|t|)")]
-    colnames(out) <- c("coeff", "pval")
-    
-    return(out)
-    
-  })
-  
-  ### Extract p-values
-  pvals <- lapply(fit, function(x){
-    x[, "pval"]
-  })
-  pvals <- do.call(rbind, pvals)
-  
-  ### Extract fitted coefficients
-  coeffs <- lapply(fit, function(x){
-    x[, "coeff"]
-  })
-  coeffs <- do.call(rbind, coeffs)
-  
-  movars <- colnames(pvals)
-  
-  colnames(pvals) <- paste0("pval_", movars)
-  
-  ## get adjusted p-values
-  adjp <- apply(pvals, 2, p.adjust, method = "BH")
-  colnames(adjp) <- paste0("adjp_", movars)
-  
-  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
-  
-  return(out)
-  
-}
-
-
-# -----------------------------
-### Fit a normal GLM
-# -----------------------------
-
-fit_glm_norm <- function(data, md){
-  
-  ### Fit the GLM
+  ### Fit the LM
   fit <- lapply(1:nrow(data), function(i){
     # i = 1
     
@@ -123,7 +25,7 @@ fit_glm_norm <- function(data, md){
       return(out)
     }
     
-    fit_tmp <- glm(y ~ response + day, data = data_tmp)
+    fit_tmp <- lm(y ~ response + day, data = data_tmp)
     summ_tmp <- summary(fit_tmp)
     
     out <- summ_tmp$coefficients[, c("Estimate", "Pr(>|t|)")]
@@ -136,7 +38,7 @@ fit_glm_norm <- function(data, md){
   ### Extract p-values
   pvals <- lapply(fit, function(x){
     x[, "pval"]
-    })
+  })
   pvals <- do.call(rbind, pvals)
   
   ### Extract fitted coefficients
@@ -153,7 +55,7 @@ fit_glm_norm <- function(data, md){
   ## get adjusted p-values
   adjp <- apply(pvals, 2, p.adjust, method = "BH")
   colnames(adjp) <- paste0("adjp_", movars)
-
+  
   out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
   
   return(out)
@@ -163,12 +65,12 @@ fit_glm_norm <- function(data, md){
 
 
 # -----------------------------
-### Fit a normal GLM with inteactions
+### Fit a LM with inteactions
 # -----------------------------
 
-fit_glm_norm_inter <- function(data, md){
+fit_lm_inter <- function(data, md){
   
-  ### Fit the GLM
+  ### Fit the LM
   fit <- lapply(1:nrow(data), function(i){
     # i = 1
     
@@ -185,7 +87,7 @@ fit_glm_norm_inter <- function(data, md){
       return(out)
     }
     
-    fit_tmp <- glm(y ~ response + day + response:day, data = data_tmp)
+    fit_tmp <- lm(y ~ response + day + response:day, data = data_tmp)
     summ_tmp <- summary(fit_tmp)
     
     out <- summ_tmp$coefficients[, c("Estimate", "Pr(>|t|)")]
@@ -222,12 +124,12 @@ fit_glm_norm_inter <- function(data, md){
 }
 
 # -----------------------------
-### Fit a normal GLM with inteactions + test contrasts with multcomp pckg
+### Fit a LM with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
-fit_glm_norm_interglht <- function(data, md){
+fit_lm_interglht <- function(data, md){
   
-  ### Fit the GLM
+  ### Fit the LM
   fit <- lapply(1:nrow(data), function(i){
     # i = 1
     
@@ -252,15 +154,29 @@ fit_glm_norm_interglht <- function(data, md){
       return(out)
     }
     
-    fit_tmp <- glm(y ~ response + day + response:day, data = data_tmp)
-    summ_tmp <- summary(fit_tmp)
+    fit_tmp <- lm(y ~ response + day + response:day, data = data_tmp)
+    summary(fit_tmp)
     
-    ## fit contrasts
-    contr_tmp <- glht(fit_tmp, linfct = K)
-    summ_tmp <- summary(contr_tmp)
+    ## fit all contrasts at once
+    # contr_tmp <- glht(fit_tmp, linfct = K)
+    # summ_tmp <- summary(contr_tmp)
+    # 
+    # out <- cbind(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+    # colnames(out) <- c("coeff", "pval")
+    # out
     
-    out <- cbind(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
-    colnames(out) <- c("coeff", "pval")
+    ## fit contrasts one by one
+    out <- t(apply(K, 1, function(k){
+
+      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
+      summ_tmp <- summary(contr_tmp)
+      
+      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+      names(out) <- c("coeff", "pval")
+      return(out)
+      
+    }))
+    out
     
     return(out)
     
@@ -451,14 +367,30 @@ fit_glm_logit_interglht <- function(data, md){
     }
     
     fit_tmp <- glm(cbind(y, total-y) ~ response + day + response:day, family = binomial(link = "logit"), data = data_tmp)
-    summ_tmp <- summary(fit_tmp)
+    summary(fit_tmp)
     
-    ## fit contrasts
-    contr_tmp <- glht(fit_tmp, linfct = K)
-    summ_tmp <- summary(contr_tmp)
     
-    out <- cbind(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
-    colnames(out) <- c("coeff", "pval")
+    ## fit all contrasts at once
+    # contr_tmp <- glht(fit_tmp, linfct = K)
+    # summ_tmp <- summary(contr_tmp)
+    # 
+    # out <- cbind(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+    # colnames(out) <- c("coeff", "pval")
+    # out
+    
+    ## fit contrasts one by one
+    out <- t(apply(K, 1, function(k){
+      
+      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
+      summ_tmp <- summary(contr_tmp)
+      
+      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+      names(out) <- c("coeff", "pval")
+      return(out)
+      
+    }))
+    out
+    
     
     return(out)
     

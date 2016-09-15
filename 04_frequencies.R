@@ -25,13 +25,13 @@ library(gtools) # for logit
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# freq_prefix='23_01_pca1_merging5_'
-# freq_outdir='050_frequencies'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_clustering='030_heatmaps/23_01_pca1_merging5_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_merging5_clustering_labels.xls'
-# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+freq_prefix='23_01_pca1_merging6_'
+freq_outdir='050_frequencies'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
+path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 
 ##############################################################################
 # Read in the arguments
@@ -242,46 +242,6 @@ for(i in 1:nlevels(ggdf$day)){
 source(path_fun_models)
 
 # -----------------------------
-### Fit a logit GLM with interactions
-# -----------------------------
-
-fit_glm_logit_inter_out <- fit_glm_logit_inter(data = freq_out, md)
-
-pvs_glm_logit_inter <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_inter_out[["pvals"]])
-coeffs_glm_logit_inter <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_inter_out[["coeffs"]])
-
-oo <- order(pvs_glm_logit_inter$pval_responseR, decreasing = FALSE)
-pvs_glm_logit_inter <- pvs_glm_logit_inter[oo, ]
-coeffs_glm_logit_inter <- coeffs_glm_logit_inter[oo, ]
-
-## save the results
-write.table(pvs_glm_logit_inter, file=file.path(outdir, paste0(prefix, "frequencies_pvs_glm_logit_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-write.table(coeffs_glm_logit_inter, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_glm_logit_inter", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-table(pvs_glm_logit_inter$adjp_responseR < 0.05, useNA = "always")
-table(pvs_glm_logit_inter$adjp_responseR.daytx < 0.05, useNA = "always")
-
-# -----------------------------
-### Fit a logit GLM
-# -----------------------------
-
-fit_glm_logit_out <- fit_glm_logit(data = freq_out, md)
-
-pvs_glm_logit <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_out[["pvals"]])
-coeffs_glm_logit <- data.frame(freq_out[, c("cluster", "label")], fit_glm_logit_out[["coeffs"]])
-
-oo <- order(pvs_glm_logit$pval_responseR, decreasing = FALSE)
-pvs_glm_logit <- pvs_glm_logit[oo, ]
-coeffs_glm_logit <- coeffs_glm_logit[oo, ]
-
-## save the results
-write.table(pvs_glm_logit, file=file.path(outdir, paste0(prefix, "frequencies_pvs_glm_logit", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-write.table(coeffs_glm_logit, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_glm_logit", suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-table(pvs_glm_logit$adjp_responseR < 0.05, useNA = "always")
-
-
-# -----------------------------
 ### Fit a logit GLM with interactions + test contrasts with multcomp pckg
 # -----------------------------
 
@@ -303,60 +263,63 @@ table(pvs_glm_logit_interglht$adjp_NRvsR_base < 0.05, useNA = "always")
 table(pvs_glm_logit_interglht$adjp_NRvsR_tx < 0.05, useNA = "always")
 table(pvs_glm_logit_interglht$adjp_NRvsR_basevstx < 0.05, useNA = "always")
 
-pvs_glm_logit_interglht[, grep("adjp", colnames(pvs_glm_logit_interglht))] < 0.05
+table(pvs_glm_logit_interglht$pval_NRvsR < 0.05, useNA = "always")
+table(pvs_glm_logit_interglht$pval_NRvsR_base < 0.05, useNA = "always")
+table(pvs_glm_logit_interglht$pval_NRvsR_tx < 0.05, useNA = "always")
+table(pvs_glm_logit_interglht$pval_NRvsR_basevstx < 0.05, useNA = "always")
 
 # ----------------------------------------
 # Plot a heatmap of significant cases
 # ----------------------------------------
 
-# -----------------------------
-### Plot one heatmap with R vs NR; extract the daytx coeffs from the tx proportions (to get rid of the batch effect in the visualisation)
+### normalize the expression for base and tx separately
+expr_norm <- prop_out[, grep("cluster|label|_NR|_R", colnames(prop_out))]
+th <- 2.5
 
-which_top_pvs <- pvs_glm_logit_interglht$adjp_NRvsR < 0.05 & !is.na(pvs_glm_logit_interglht$adjp_NRvsR)
+for(i in c("base", "tx")){
+  # i = "base"
+  expr_norm[, grep(i, colnames(expr_norm))] <- t(apply(expr_norm[, grep(i, colnames(expr_norm)), drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+}
+
+breaks = seq(from = -th, to = th, length.out = 101)
+legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+
+### add p-value info
+expr_all <- merge(pvs_glm_logit_interglht, expr_norm, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+
+# -----------------------------
+### Plot one heatmap with R vs NR
+
+adjpval_name <- "adjp_NRvsR"
+
+## group the expression by cluster
+expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+
+which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
 which(which_top_pvs)
 
-## get the daytx logit regression coefficients ordered as in prop_out
-mm <- match(prop_out$label, coeffs_glm_logit_inter$label)
-coeffs_daytx <- coeffs_glm_logit_inter$daytx[mm]
-
-
-if(sum(which_top_pvs) > 0){
+if(sum(which_top_pvs) > 0) {
   
-  pvs_top <- pvs_glm_logit_interglht[which_top_pvs, c("cluster", "label", "adjp_NRvsR"), drop = FALSE]
-  colnames(pvs_top) <- c("cluster", "label", "adjpval")
-  
-  ## extract the daytx coeffs from the tx proportions
-  props <- as.matrix(prop_out[, !grepl("cluster|label", colnames(prop_out))] / 100)
-  logits <- logit(props)
-  
-  logits_new <- logits
-  logits_new[, grep("tx_", colnames(logits_new))] <- logits_new[, grep("tx_", colnames(logits_new))] - coeffs_daytx
-  
-  props_new <- data.frame(prop_out[, c("cluster", "label")], inv.logit(logits_new))
-  
-  expr_heat <- merge(pvs_top, props_new, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+  expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
   
   # -----------------------------
   ## order the samples by NR and R
+  
   samples2plot <- md[md$response %in% c("NR", "R"), ]
   samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
   
   ## gap in the heatmap 
   gaps_col <- sum(grepl("_NR", samples2plot))
+  gaps_row <- NULL
   
   ## expression scaled by row
-  # expr <- expr_heat[, samples2plot, drop = FALSE]
-  expr <- t(apply(expr_heat[, samples2plot, drop = FALSE], 1, function(x) (x-mean(x))/sd(x) ))
-  th <- 2.5
-  expr[expr > th] <- th
-  expr[expr < -th] <- -th
-  breaks = seq(from = -th, to = th, length.out = 101)
-  legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+  expr <- expr_heat[ , samples2plot, drop = FALSE]
   
-  labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
+  labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
   labels_col <- colnames(expr)
   
-  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap1", suffix, ".pdf")))
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap1", suffix, ".pdf")))
+  
   
   # -----------------------------
   ## order the samples by base and tx
@@ -365,65 +328,57 @@ if(sum(which_top_pvs) > 0){
   
   ## gap in the heatmap 
   gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
+  gaps_row <- NULL
   
   ## expression scaled by row
-  # expr <- expr_heat[, samples2plot, drop = FALSE]
-  expr <- t(apply(expr_heat[, samples2plot, drop = FALSE], 1, function(x) (x-mean(x))/sd(x) ))
-  th <- 2.5
-  expr[expr > th] <- th
-  expr[expr < -th] <- -th
-  breaks = seq(from = -th, to = th, length.out = 101)
-  legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+  expr <- expr_heat[ , samples2plot, drop = FALSE]
   
-  labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
+  labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
   labels_col <- colnames(expr)
   
-  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap2", suffix, ".pdf")))
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap2", suffix, ".pdf")))
+  
   
 }
-
 
 
 # -----------------------------
 ### Plot two heatmaps with R vs NR for base and tx
 
-
-
 for(i in c("base", "tx")){
-  # i = "tx"
+  # i = "base"
   
-  which_top_pvs <- pvs_glm_logit_interglht[, paste0("adjp_NRvsR_", i)] < 0.05 & !is.na(pvs_glm_logit_interglht[, paste0("adjp_NRvsR_", i)])
+  adjpval_name <- paste0("adjp_NRvsR_", i)
+  
+  ## group the expression by cluster
+  expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+  
+  which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
   which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0){
     
-    pvs_top <- pvs_glm_logit_interglht[which_top_pvs, c("cluster", "label", paste0("adjp_NRvsR_", i)), drop = FALSE]
-    colnames(pvs_top) <- c("cluster", "label", "adjpval")
+    expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
     
-    expr_heat <- merge(pvs_top, prop_out, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+    # -----------------------------
+    ## order the samples by NR and R
     
-    ## order the samples
     samples2plot <- md[md$response %in% c("NR", "R"), ]
     samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
-    
-    samples2plot_sub <- samples2plot[grep(i, samples2plot)]
+    samples2plot <- samples2plot[grep(i, samples2plot)]
     
     ## gap in the heatmap 
-    gaps_col<- sum(grepl("_NR", samples2plot_sub))
+    gaps_col <- sum(grepl("_NR", samples2plot))
+    gaps_row <- NULL
     
     ## expression scaled by row
-    # expr <- expr_heat[, samples2plot_sub]
-    expr <- t(apply(expr_heat[, samples2plot_sub, drop = FALSE], 1, function(x) (x-mean(x))/sd(x) ))
-    th <- 2.5
-    expr[expr > th] <- th
-    expr[expr < -th] <- -th
-    breaks = seq(from = -th, to = th, length.out = 101)
-    legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+    expr <- expr_heat[ , samples2plot, drop = FALSE]
     
-    labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat$adjpval), ")") 
+    labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
     labels_col <- colnames(expr)
     
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap_", i, suffix, ".pdf")))
+    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap_", i, suffix, ".pdf")))
+    
     
   }
   
@@ -434,12 +389,14 @@ for(i in c("base", "tx")){
 # Plot coefficients NRvsR for base and tx (to show that they correlate)
 # ----------------------------------------
 
+adjpval_name <- "adjp_NRvsR_basevstx"
+
 ggdf <- coeffs_glm_logit_interglht[, c("NRvsR_base", "NRvsR_tx")]
 
 limmin <- min(ggdf, na.rm = TRUE)
 limmax <- max(ggdf, na.rm = TRUE)
 
-ggdf$interaction <- factor(pvs_glm_logit_interglht$adjp_NRvsR_basevstx < 0.05, levels = c("FALSE", "TRUE"))
+ggdf$interaction <- factor(pvs_glm_logit_interglht[, adjpval_name] < 0.05, levels = c("FALSE", "TRUE"))
 
 
 ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
