@@ -287,6 +287,7 @@ legend_breaks = seq(from = -round(th), to = round(th), by = 1)
 ### add p-value info
 expr_all <- merge(pvs_glm_logit_interglht, expr_norm, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
 
+
 # -----------------------------
 ### Plot one heatmap with R vs NR
 
@@ -383,6 +384,50 @@ for(i in c("base", "tx")){
   }
   
 }
+
+# -----------------------------
+### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
+
+adjpval_name <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+
+## group the expression by cluster
+expr_all <- expr_all[order(expr_all[, adjpval_name[4]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[2]], expr_all$label), , drop = FALSE]
+
+which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
+which(which_top_pvs)
+
+if(sum(which_top_pvs) > 0) {
+  
+  expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
+  
+  # -----------------------------
+  ## order the samples by base and tx
+  samples2plot <- md[md$response %in% c("NR", "R"), ]
+  samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
+  
+  ## gap in the heatmap 
+  gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
+  gaps_row <- NULL
+  
+  ## expression 
+  expr <- expr_heat[ , samples2plot, drop = FALSE]
+  
+  labels_row <- paste0(expr_heat$label) 
+  labels_col <- colnames(expr)
+  
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap3", suffix, ".pdf")))
+  
+  
+  pvs <- expr_heat[, adjpval_name, drop = FALSE]
+  labels_col <- colnames(pvs)
+  gaps_col <- NULL
+  
+  
+  pheatmap(pvs, cellwidth = 60, cellheight = 24, color = c("grey50", "grey90"), breaks = c(0, 0.05, 1), legend_breaks = c(0, 0.05, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap3pvs", suffix, ".pdf")))
+  
+  
+}
+
 
 
 # ----------------------------------------
