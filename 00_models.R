@@ -1,6 +1,9 @@
 library(lme4) # for fitting mixed models
 library(multcomp) # for contrasts glht()
 
+# ---------------------------------------------------------------------------------------
+# normal models
+# ---------------------------------------------------------------------------------------
 
 # -----------------------------
 ### Fit a LM
@@ -210,6 +213,104 @@ fit_lm_interglht <- function(data, md){
 
 
 # -----------------------------
+### Fit a lmer with inteactions + test contrasts with multcomp pckg
+# -----------------------------
+
+fit_lmer_interglht <- function(data, md){
+  
+  ### Fit the LM
+  fit <- lapply(1:nrow(data), function(i){
+    # i = 1
+    
+    y <- data[i, md$shortname]
+    NAs <- is.na(y)
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, c("day", "response", "patient_id")])
+    
+    ## create contrasts
+    contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
+    k0 <- c(0, 1, 0, 0, 1/2, 0) # NR vs R
+    k1 <- c(0, 1, 0, 0, 0, 0) # NR vs R in base
+    k2 <- c(0, 1, 0, 0, 1, 0) # NR vs R in tx
+    k3 <- c(0, 0, 0, 0, 1, 0) # whether NR vs R is different in base and tx
+    K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
+    rownames(K) <- contrast_names
+    
+    ## there must be at least 10 proportions greater than 0
+    if(sum(y[!NAs] > 0) < 10){
+      out <- matrix(NA, nrow = nrow(K), ncol = 2)
+      colnames(out) <- c("coeff", "pval")
+      rownames(out) <- rownames(K)
+      return(out)
+    }
+    
+    fit_tmp <- lmer(y ~ response + day + response:day + (1|patient_id), data = data_tmp)
+    
+    ## get p-values
+    ## The summary method for lmer objects doesn’t print p-values for Gaussian mixed models because the degrees of freedom of the t reference distribution are not obvious. However, one can rely on the asymptotic normal distribution for computing univariate p-values for the fixed effects using the cftest function from package multcomp. 
+    
+    summary(fit_tmp)
+    cftest(fit_tmp)
+    
+    ## fit contrasts one by one
+    out <- t(apply(K, 1, function(k){
+      # k = K[2, ]
+      
+      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
+      summ_tmp <- summary(contr_tmp)
+      summ_tmp
+      
+      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+      names(out) <- c("coeff", "pval")
+      return(out)
+      
+    }))
+    out
+    
+    return(out)
+    
+  })
+  
+  ### Extract p-values
+  pvals <- lapply(fit, function(x){
+    x[, "pval"]
+  })
+  pvals <- do.call(rbind, pvals)
+  
+  ### Extract fitted coefficients
+  coeffs <- lapply(fit, function(x){
+    x[, "coeff"]
+  })
+  coeffs <- do.call(rbind, coeffs)
+  
+  movars <- colnames(pvals)
+  
+  colnames(pvals) <- paste0("pval_", movars)
+  
+  ## get adjusted p-values
+  adjp <- apply(pvals, 2, p.adjust, method = "BH")
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
+  
+  return(out)
+  
+}
+
+
+
+
+
+
+    
+
+
+
+
+# ---------------------------------------------------------------------------------------
+# logit models
+# ---------------------------------------------------------------------------------------
+
+# -----------------------------
 ### Fit a logit GLM
 # -----------------------------
 
@@ -270,6 +371,8 @@ fit_glm_logit <- function(data, md){
   return(out)
   
 }
+
+
 
 # -----------------------------
 ### Fit a logit GLM with inteactions
@@ -424,56 +527,87 @@ fit_glm_logit_interglht <- function(data, md){
 
 
 # -----------------------------
-### Fit a logit GLMM 
+### Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
-# fit_glmm_logit <- function(data, md){
-#   
-#   ntot <- colSums(data[, md$shortname, drop = FALSE])
-#   
-#   pvals <- t(apply(data[, md$shortname], 1, function(y){
-#     # y <- data[1, md$shortname]
-# 
-#     NAs <- is.na(y)
-#     
-#     ## prepare binomial/Bernoulli data
-#     data_tmp <- data.frame(y = as.numeric(y)[!NAs], total = as.numeric(ntot), md[!NAs, c("day", "response", "patient_id")])
-#     
-#     ## there must be at least 10 proportions greater than 0
-#     if(sum(y[!NAs] > 0) < 10){
-#       mm <- model.matrix(y ~ response + day, data = data_tmp)
-#       out <- rep(NA, ncol(mm))
-#       names(out) <- colnames(mm)
-#       return(out)
-#     }
-#     
-#     fit_tmp <- glmer(y/total ~ response + day + (1|patient_id), weights = total, family = binomial, data = data_tmp)
-#     
-#     summ_tmp <- summary(fit_tmp)
-#     
-#     out <- as.numeric(summ_tmp$coefficients[, "Pr(>|z|)"])
-#     names(out) <- rownames(summ_tmp$coefficients)
-#     
-#     return(out)
-#     
-#   }))
-#   
-#   movars <- colnames(pvals)
-#   
-#   colnames(pvals) <- paste0("pval_", movars)
-#   pvals <- data.frame(pvals)
-#   
-#   
-#   ## get adjusted p-values
-#   adjp <- data.frame(apply(pvals, 2, p.adjust, method = "BH"))
-#   colnames(adjp) <- paste0("adjp_", movars)
-#   
-#   ## save the results
-#   pvals_out <- data.frame(pvals, adjp)
-#   
-#   return(pvals_out)
-#   
-# }
+
+fit_glmer_logit_interglht <- function(data, md){
+  
+  ntot <- colSums(data[, md$shortname, drop = FALSE])
+  
+  ### Fit the GLM
+  fit <- lapply(1:nrow(data), function(i){
+    # i = 1
+    
+    y <- data[i, md$shortname]
+    NAs <- is.na(y)
+    data_tmp <- data.frame(y = as.numeric(y)[!NAs], total = as.numeric(ntot), md[!NAs, c("day", "response", "patient_id")])
+    
+    ## create contrasts
+    contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
+    k0 <- c(0, 1, 0, 0, 1/2, 0) # NR vs R
+    k1 <- c(0, 1, 0, 0, 0, 0) # NR vs R in base
+    k2 <- c(0, 1, 0, 0, 1, 0) # NR vs R in tx
+    k3 <- c(0, 0, 0, 0, 1, 0) # whether NR vs R is different in base and tx
+    K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
+    rownames(K) <- contrast_names
+    
+    ## there must be at least 10 proportions greater than 0
+    if(sum(y[!NAs] > 0) < 10){
+      out <- matrix(NA, nrow = nrow(K), ncol = 2)
+      colnames(out) <- c("coeff", "pval")
+      rownames(out) <- rownames(K)
+      return(out)
+    }
+    
+    fit_tmp <- glmer(y/total ~ response + day + response:day + (1|patient_id), weights = total, family = binomial, data = data_tmp)
+    
+    summary(fit_tmp)
+    
+    ## fit contrasts one by one
+    out <- t(apply(K, 1, function(k){
+      # k = K[2, ]
+      
+      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
+      summ_tmp <- summary(contr_tmp)
+      summ_tmp
+      
+      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+      names(out) <- c("coeff", "pval")
+      return(out)
+      
+    }))
+    out
+    
+    return(out)
+    
+  })
+  
+  ### Extract p-values
+  pvals <- lapply(fit, function(x){
+    x[, "pval"]
+  })
+  pvals <- do.call(rbind, pvals)
+  
+  ### Extract fitted coefficients
+  coeffs <- lapply(fit, function(x){
+    x[, "coeff"]
+  })
+  coeffs <- do.call(rbind, coeffs)
+  
+  movars <- colnames(pvals)
+  
+  colnames(pvals) <- paste0("pval_", movars)
+  
+  ## get adjusted p-values
+  adjp <- apply(pvals, 2, p.adjust, method = "BH")
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
+  
+  return(out)
+  
+}
 
 
 
