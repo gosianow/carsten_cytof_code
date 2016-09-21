@@ -245,32 +245,65 @@ for(i in 1:nlevels(ggdf$day)){
 
 source(path_fun_models)
 
-models2fit <- c("glm_logit_interglht", "glmer_logit_interglht")
+## glmer_logit_norm_interglht - issue with Inf and -Inf; glmmadmb_mixed_beta_interglht and glmmadmb_mixed_betabinomial_interglht - issues with estimation of standard errors
 
+models2fit <- c("glm_logit_interglht", "glm_quasilogit_interglht", "glmer_logit_interglht", "glmer_arcsinesqrt_norm_interglht", "glmmadmb_fixed_beta_interglht", "glmmadmb_fixed_betabinomial_interglht")
+
+# x <- seq(0, 1, 0.01)
+# plot(x, logit(x), type = "l")
+# lines(x, asin(sqrt(x)), col = "blue")
+# lines(x, asin(x), col = "red")
+# lines(x, sqrt(x), col = "green")
 
 for(k in models2fit){
   # k = "glmer_logit_interglht"
   
   switch(k,
     glm_logit_interglht = {
-      
-      # -----------------------------
-      # Fit a LM with interactions + test contrasts with multcomp pckg
-      # -----------------------------
-      
-      fit_out <- fit_glm_logit_interglht(data = freq_out, md)
+      # Fit a GLM binomial with interactions + test contrasts with multcomp pckg
+      fit_out <- fit_glm_logit_interglht(data = freq_out, md, family = "binomial")
       
     }, 
+    glm_quasilogit_interglht = {
+      # Fit a GLM quasibinomial with interactions + test contrasts with multcomp pckg
+      fit_out <- fit_glm_logit_interglht(data = freq_out, md, family = "quasibinomial")
+      
+    },
     glmer_logit_interglht = {
+      # Fit a GLMM binomial with interactions + test contrasts with multcomp pckg
+      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmer")
       
-      # -----------------------------
-      # Fit a lmer with interactions + test contrasts with multcomp pckg
-      # -----------------------------
+    },
+    glmer_logit_norm_interglht = {
       
-      fit_out <- fit_glmer_logit_interglht(data = freq_out, md)
+      logit_freq_out <- freq_out
+      logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))
+      ## Be carefull about Inf and -Inf for prop = 0, 1
+      fit_out <- fit_lmer_interglht(data = logit_freq_out, md)
       
-    })
-  
+    },
+    glmer_arcsinesqrt_norm_interglht = {
+      
+      ass_freq_out <- freq_out
+      ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
+      
+      fit_out <- fit_lmer_interglht(data = ass_freq_out, md)
+      
+    },
+    glmmadmb_fixed_beta_interglht = {
+      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_fixed_beta")
+    },
+    glmmadmb_fixed_betabinomial_interglht = {
+      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_fixed_betabinomial")
+    },
+    glmmadmb_mixed_beta_interglht = {
+      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_mixed_beta")
+    },
+    glmmadmb_mixed_betabinomial_interglht = {
+      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_mixed_betabinomial")
+    }
+    
+  )
   
   # ----------------------------------------
   # Extract p-values and coeffs
@@ -423,7 +456,8 @@ for(k in models2fit){
   ## group the expression by cluster
   expr_all <- expr_all[order(expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[4]], expr_all$label), , drop = FALSE]
   
-  which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
+  # which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
+  which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name])) == 0
   which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0) {
@@ -453,7 +487,7 @@ for(k in models2fit){
     gaps_col <- NULL
     
     
-    pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey90"), breaks = c(0, 0.05, 1), legend_breaks = c(0, 0.05, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap3pvs", suffix, ".pdf")))
+    pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap3pvs", suffix, ".pdf")))
     
     
   }

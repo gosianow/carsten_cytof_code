@@ -1,6 +1,7 @@
 library(lme4) # for fitting mixed models
 library(multcomp) # for contrasts glht()
-
+library(glmmADMB) # for glmmadmb()
+ 
 # ---------------------------------------------------------------------------------------
 # normal models
 # ---------------------------------------------------------------------------------------
@@ -170,7 +171,7 @@ fit_lm_interglht <- function(data, md){
     
     ## fit contrasts one by one
     out <- t(apply(K, 1, function(k){
-
+      
       contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
       summ_tmp <- summary(contr_tmp)
       
@@ -235,7 +236,7 @@ fit_lmer_interglht <- function(data, md){
     K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
     rownames(K) <- contrast_names
     
-    ## there must be at least 10 proportions greater than 0
+    ## there must be at least 10 values greater than 0
     if(sum(y[!NAs] > 0) < 10){
       out <- matrix(NA, nrow = nrow(K), ncol = 2)
       colnames(out) <- c("coeff", "pval")
@@ -301,7 +302,7 @@ fit_lmer_interglht <- function(data, md){
 
 
 
-    
+
 
 
 
@@ -440,7 +441,7 @@ fit_glm_logit_inter <- function(data, md){
 ### Fit a logit GLM with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
-fit_glm_logit_interglht <- function(data, md){
+fit_glm_logit_interglht <- function(data, md, family = "binomial"){
   
   ntot <- colSums(data[, md$shortname, drop = FALSE])
   
@@ -469,9 +470,17 @@ fit_glm_logit_interglht <- function(data, md){
       return(out)
     }
     
-    fit_tmp <- glm(cbind(y, total-y) ~ response + day + response:day, family = binomial(link = "logit"), data = data_tmp)
-    summary(fit_tmp)
     
+    switch(family,
+      binomial = {
+        fit_tmp <- glm(cbind(y, total-y) ~ response + day + response:day, family = binomial(link = "logit"), data = data_tmp)
+        summary(fit_tmp)
+      },
+      quasibinomial = {
+        fit_tmp <- glm(cbind(y, total-y) ~ response + day + response:day, family = quasibinomial(link = "logit"), data = data_tmp)
+        summary(fit_tmp)
+      }
+    )
     
     ## fit all contrasts at once
     # contr_tmp <- glht(fit_tmp, linfct = K)
@@ -531,13 +540,13 @@ fit_glm_logit_interglht <- function(data, md){
 # -----------------------------
 
 
-fit_glmer_logit_interglht <- function(data, md){
+fit_glmer_logit_interglht <- function(data, md, method = "glmer"){
   
   ntot <- colSums(data[, md$shortname, drop = FALSE])
   
   ### Fit the GLM
   fit <- lapply(1:nrow(data), function(i){
-    # i = 1
+    # i = 2
     
     y <- data[i, md$shortname]
     NAs <- is.na(y)
@@ -559,10 +568,31 @@ fit_glmer_logit_interglht <- function(data, md){
       rownames(out) <- rownames(K)
       return(out)
     }
+
+    switch(method, 
+      glmer = {
+        fit_tmp <- glmer(y/total ~ response + day + response:day + (1|patient_id), weights = total, family = binomial, data = data_tmp)
+        summary(fit_tmp)
+        },
+      glmmadmb_mixed_beta = {
+        data_tmp$prop <- data_tmp$y/data_tmp$total
+        fit_tmp <- glmmadmb(prop ~ response + day + response:day + (1|patient_id), family = "beta", data = data_tmp)
+        summary(fit_tmp)
+        },
+      glmmadmb_mixed_betabinomial = {
+        fit_tmp <- glmmadmb(cbind(y, total-y) ~ response + day + response:day + (1|patient_id), family = "betabinomial", data = data_tmp)
+        summary(fit_tmp)
+        },
+      glmmadmb_fixed_beta = {
+        fit_tmp <- glmmadmb(y/total ~ response + day + response:day, family = "beta", data = data_tmp)
+        summary(fit_tmp)
+      },
+      glmmadmb_fixed_betabinomial = {
+        fit_tmp <- glmmadmb(cbind(y, total-y) ~ response + day + response:day, family = "betabinomial", data = data_tmp)
+        summary(fit_tmp)
+        }
+      )
     
-    fit_tmp <- glmer(y/total ~ response + day + response:day + (1|patient_id), weights = total, family = binomial, data = data_tmp)
-    
-    summary(fit_tmp)
     
     ## fit contrasts one by one
     out <- t(apply(K, 1, function(k){

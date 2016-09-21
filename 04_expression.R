@@ -382,7 +382,7 @@ for(j in 1:length(alist)){
     adjpval_name <- "adjp_NRvsR"
     
     ## group the expression by cluster
-    expr_all <- expr_all[order(expr_all[, adjpval_name], expr_all$label), , drop = FALSE]
+    expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
@@ -446,7 +446,7 @@ for(j in 1:length(alist)){
       adjpval_name <- paste0("adjp_NRvsR_", i)
       
       ## group the expression by cluster
-      expr_all <- expr_all[order(expr_all[, adjpval_name], expr_all$label), , drop = FALSE]
+      expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
       
       which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
       which(which_top_pvs)
@@ -480,54 +480,53 @@ for(j in 1:length(alist)){
         
       }
       
+    }
+    
+    # -----------------------------
+    ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
+    
+    adjpval_name <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+    
+    ## group the expression by cluster
+    expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[4]]), , drop = FALSE]
+    
+    which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
+    which(which_top_pvs)
+    
+    if(sum(which_top_pvs) > 0) {
+      
+      expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
       
       # -----------------------------
-      ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
+      ## order the samples by base and tx
+      samples2plot <- md[md$response %in% c("NR", "R"), ]
+      samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
       
-      adjpval_name <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+      ## gap in the heatmap 
+      gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
+      gaps_row <- unique(cumsum(table(expr_heat$label)))
+      gaps_row <- gaps_row[gaps_row > 0]
+      if(length(gaps_row) == 1) 
+        gaps_row <- NULL
       
-      ## group the expression by cluster
-      expr_all <- expr_all[order(expr_all[, adjpval_name[4]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[2]], expr_all$label), , drop = FALSE]
+      ## expression 
+      expr <- expr_heat[ , samples2plot, drop = FALSE]
       
-      which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
-      which(which_top_pvs)
+      labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker) 
+      labels_col <- colnames(expr)
       
-      if(sum(which_top_pvs) > 0) {
-        
-        expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
-        
-        # -----------------------------
-        ## order the samples by base and tx
-        samples2plot <- md[md$response %in% c("NR", "R"), ]
-        samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
-        
-        ## gap in the heatmap 
-        gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
-        gaps_row <- unique(cumsum(table(expr_heat$label)))
-        gaps_row <- gaps_row[gaps_row > 0]
-        if(length(gaps_row) == 1) 
-          gaps_row <- NULL
-        
-        ## expression 
-        expr <- expr_heat[ , samples2plot, drop = FALSE]
-        
-        labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker) 
-        labels_col <- colnames(expr)
-        
-        pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3", suffix, ".pdf")))
-        
-        
-        pvs_heat <- expr_heat[, adjpval_name, drop = FALSE]
-        labels_col <- colnames(pvs_heat)
-        gaps_col <- NULL
+      pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3", suffix, ".pdf")))
 
-        pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey90"), breaks = c(0, 0.05, 1), legend_breaks = c(0, 0.05, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3pvs", suffix, ".pdf")))
-        
-        
-      }
+      pvs_heat <- expr_heat[, adjpval_name, drop = FALSE]
+      labels_col <- colnames(pvs_heat)
+      gaps_col <- NULL
+      
+      pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey90"), breaks = c(0, 0.05, 1), legend_breaks = c(0, 0.05, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3pvs", suffix, ".pdf")))
       
       
     }
+    
+    
     
     # ----------------------------------------
     # Plot coefficients NRvsR for base and tx (to show that they correlate)
@@ -556,12 +555,12 @@ for(j in 1:length(alist)){
     
     
     
-  }
+  } # models2fit
   
   
   
   
-}
+} # alist
 
 
 

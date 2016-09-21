@@ -46,6 +46,18 @@ while [[ ${1} ]]; do
     plottsne=${2}
     shift
     ;;
+    --plottsne_expr)
+    plottsne_expr=${2}
+    shift
+    ;;
+    --frequencies)
+    frequencies=${2}
+    shift
+    ;;
+    --expression)
+    expression=${2}
+    shift
+    ;;
     --METADATA)
     METADATA=${2}
     shift
@@ -150,10 +162,6 @@ if ${heatmaps}; then
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' heatmap_outdir='030_heatmaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds'    path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}marker_selection.txt' aggregate_fun='median' pheatmap_palette='YlGnBu' pheatmap_palette_rev=FALSE pheatmap_scale=TRUE extra_path_data='010_data/${prefix_data}${prefix_panel}expr_norm.rds' extra_pheatmap_palette='RdYlBu' extra_pheatmap_palette_rev=TRUE extra_suffix='_norm'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
-  # # based on 01 normalized data data
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}norm_' heatmap_outdir='030_heatmaps' path_data='010_data/${prefix_data}${prefix_panel}expr_norm.rds' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}marker_selection.txt' aggregate_fun='median' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=TRUE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-  # tail $ROUT/02_heatmaps.Rout
-
 fi
 
 
@@ -164,10 +172,6 @@ if ${runtsne}; then
   # on raw data
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsne_prefix='${prefix_data}${prefix_panel}${prefix_pca}raw_' tsne_outdir='040_tsnemaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' tsne_pmin=${tsne_pmin}" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
   tail $ROUT/03_runtsne.Rout
-
-  # # on 01 normalized data
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsne_prefix='${prefix_data}${prefix_panel}${prefix_pca}norm_' tsne_outdir='040_tsnemaps' path_data='010_data/${prefix_data}${prefix_panel}expr_norm.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' tsne_pmin=${tsne_pmin}" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
-  # tail $ROUT/03_runtsne.Rout
 
 fi
 
@@ -180,17 +184,35 @@ if ${plottsne}; then
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
   tail $ROUT/03_plottsne.Rout
 
-  # ### Based on 0-1 normalized data
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}norm_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}norm_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}norm_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
-  # tail $ROUT/03_plottsne.Rout
+fi
 
+### Plot tSNE with marker expression as a heat
+if ${plottsne_expr}; then
+  echo "03_plottsne_expr"
 
-  ### Plot tSNE with marker expression as a heat
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}raw_mark_raw_' tsnep_outdir='040_tsnemaps_expr' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne_expr.R $ROUT/03_plottsne_expr.Rout
   tail $ROUT/03_plottsne_expr.Rout
 
 fi
 
+
+### Get cluster frequencies
+if ${frequencies}; then
+  echo "04_frequencies"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' freq_outdir='050_frequencies' path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  tail $ROUT/04_frequencies.Rout
+fi
+
+
+### Explore the expression of markers
+if ${expression}; then
+  echo "04_expression"
+
+  ## Based on raw data
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' expr_outdir='080_expression' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R'" $RCODE/04_expression.R $ROUT/04_expression.Rout
+  tail $ROUT/04_expression.Rout
+
+fi
 
 
 
