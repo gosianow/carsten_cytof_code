@@ -245,9 +245,9 @@ for(i in 1:nlevels(ggdf$day)){
 
 source(path_fun_models)
 
-## glmer_logit_norm_interglht - issue with Inf and -Inf; glmmadmb_mixed_beta_interglht and glmmadmb_mixed_betabinomial_interglht - issues with estimation of standard errors
+# models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht", "test_wilcoxon", "glmmadmb_fixed_betabinomial_interglht", "glmmadmb_fixed_beta_interglht")
 
-models2fit <- c("glm_logit_interglht", "glm_quasilogit_interglht", "glmer_logit_interglht", "glmer_arcsinesqrt_norm_interglht", "glmmadmb_fixed_beta_interglht", "glmmadmb_fixed_betabinomial_interglht")
+models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht", "test_wilcoxon", "glmmadmb_fixed_betabinomial_interglht", "glmmadmb_fixed_beta_interglht")
 
 # x <- seq(0, 1, 0.01)
 # plot(x, logit(x), type = "l")
@@ -259,22 +259,22 @@ for(k in models2fit){
   # k = "glmer_logit_interglht"
   
   switch(k,
-    glm_logit_interglht = {
+    glm_binomial_interglht = {
       # Fit a GLM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glm_logit_interglht(data = freq_out, md, family = "binomial")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "binomial")
       
     }, 
-    glm_quasilogit_interglht = {
+    glm_quasibinomial_interglht = {
       # Fit a GLM quasibinomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glm_logit_interglht(data = freq_out, md, family = "quasibinomial")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "quasibinomial")
       
     },
-    glmer_logit_interglht = {
+    glmer_binomial_interglht = {
       # Fit a GLMM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmer")
+      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "binomial")
       
     },
-    glmer_logit_norm_interglht = {
+    lmer_logit_interglht = {
       
       logit_freq_out <- freq_out
       logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))
@@ -282,7 +282,7 @@ for(k in models2fit){
       fit_out <- fit_lmer_interglht(data = logit_freq_out, md)
       
     },
-    glmer_arcsinesqrt_norm_interglht = {
+    lmer_arcsinesqrt_interglht = {
       
       ass_freq_out <- freq_out
       ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
@@ -291,16 +291,23 @@ for(k in models2fit){
       
     },
     glmmadmb_fixed_beta_interglht = {
-      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_fixed_beta")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "beta")
     },
     glmmadmb_fixed_betabinomial_interglht = {
-      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_fixed_betabinomial")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "betabinomial")
     },
     glmmadmb_mixed_beta_interglht = {
-      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_mixed_beta")
+      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "beta")
     },
     glmmadmb_mixed_betabinomial_interglht = {
-      fit_out <- fit_glmer_logit_interglht(data = freq_out, md, method = "glmmadmb_mixed_betabinomial")
+      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "betabinomial")
+    },
+    test_wilcoxon = {
+      
+      n01_freq_out <- freq_out
+      n01_freq_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname]))
+      
+      fit_out <- test_wilcoxon(data = n01_freq_out, md)
     }
     
   )
@@ -336,7 +343,10 @@ for(k in models2fit){
   # ----------------------------------------
   
   ### normalize the expression for base and tx separately
-  expr_norm <- prop_out[, grep("cluster|label|_NR|_R", colnames(prop_out))]
+  ass_freq_out <- freq_out
+  ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
+  
+  expr_norm <- ass_freq_out[, grep("cluster|label|_NR|_R", colnames(ass_freq_out))]
   th <- 2.5
   
   for(i in c("base", "tx")){
@@ -456,8 +466,9 @@ for(k in models2fit){
   ## group the expression by cluster
   expr_all <- expr_all[order(expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[4]], expr_all$label), , drop = FALSE]
   
-  # which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
-  which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name])) == 0
+  # which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
+  # which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name])) < length(adjpval_name)
+  which_top_pvs <- rep(TRUE, nrow(expr_all))
   which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0) {
@@ -483,6 +494,7 @@ for(k in models2fit){
     
     
     pvs_heat <- expr_heat[, adjpval_name, drop = FALSE]
+    
     labels_col <- colnames(pvs_heat)
     gaps_col <- NULL
     
@@ -502,24 +514,27 @@ for(k in models2fit){
   
   ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
   
-  limmin <- min(ggdf, na.rm = TRUE)
-  limmax <- max(ggdf, na.rm = TRUE)
-  
-  ggdf$interaction <- factor(pvs[, adjpval_name] < 0.05, levels = c("FALSE", "TRUE"))
-  
-  
-  ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
-    geom_point(size = 3, alpha = 0.9) +
-    geom_abline(intercept = 0, slope = 1) +
-    coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
-    theme_bw() +
-    theme(axis.text = element_text(size=14), 
-      axis.title = element_text(size=14, face="bold"))
-  
-  pdf(file.path(outdir, paste0(prefix, "frequencies_", k, "_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
-  print(ggp)
-  dev.off()
-  
+  if(sum(complete.cases(ggdf)) > 0){
+    
+    limmin <- min(ggdf, na.rm = TRUE)
+    limmax <- max(ggdf, na.rm = TRUE)
+    
+    ggdf$interaction <- factor(pvs[, adjpval_name] < 0.05, levels = c("FALSE", "TRUE"))
+    
+    
+    ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
+      geom_point(size = 3, alpha = 0.9) +
+      geom_abline(intercept = 0, slope = 1) +
+      coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
+      theme_bw() +
+      theme(axis.text = element_text(size=14), 
+        axis.title = element_text(size=14, face="bold"))
+    
+    pdf(file.path(outdir, paste0(prefix, "frequencies_", k, "_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
+    print(ggp)
+    dev.off()
+    
+  }
   
   
   

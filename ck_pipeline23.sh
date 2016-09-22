@@ -327,6 +327,18 @@ done
 # Use Analysis block 4
 # --------------------------------------------------
 
+DATA=23
+PANEL=2
+file_metadata="metadata_23_02.xlsx"
+
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+data_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
+prefix_data=('23CD4_' '23CD8_')
+file_panel=('panel2CD4.xlsx' 'panel2CD8.xlsx')
+prefix_panel=('02CD4_' '02CD8_')
+
 prefix_merging=('merging_' 'merging_')
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
 prefix_clsubset=('Tmem_' 'Tmem_')

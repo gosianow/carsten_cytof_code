@@ -305,8 +305,7 @@ for(j in 1:length(alist)){
   
   exprc <- dcast(exprm, cluster + label + marker ~ sample, value.var = "expr")
   
-  
-  models2fit <- c("lm_interglht", "lmer_interglht")
+  models2fit <- c("rlm_interglht", "lm_interglht", "lmer_interglht", "test_wilcoxon")
   
   for(k in models2fit){
     # k = "lmer_interglht"
@@ -314,22 +313,28 @@ for(j in 1:length(alist)){
     switch(k,
       lm_interglht = {
         
-        # -----------------------------
         # Fit a LM with interactions + test contrasts with multcomp pckg
-        # -----------------------------
-        
-        fit_out <- fit_lm_interglht(data = exprc, md)
+        fit_out <- fit_lm_interglht(data = exprc, md, method = "lm")
         
       }, 
       lmer_interglht = {
         
-        # -----------------------------
         # Fit a lmer with interactions + test contrasts with multcomp pckg
-        # -----------------------------
-        
         fit_out <- fit_lmer_interglht(data = exprc, md)
         
-      })
+      },
+      test_wilcoxon = {
+        fit_out <- test_wilcoxon(data = exprc, md)
+      },
+      lmrob_interglht = {
+        ## Problems with running lmrob!!!
+        fit_out <- fit_lm_interglht(data = exprc, md, method = "lmrob")
+      },
+      rlm_interglht = {
+        fit_out <- fit_lm_interglht(data = exprc, md, method = "rlm")
+      }
+      
+    )
     
     
     # ----------------------------------------
@@ -490,7 +495,7 @@ for(j in 1:length(alist)){
     ## group the expression by cluster
     expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[4]]), , drop = FALSE]
     
-    which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
+    which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name])) < length(adjpval_name)
     which(which_top_pvs)
     
     if(sum(which_top_pvs) > 0) {
@@ -516,12 +521,13 @@ for(j in 1:length(alist)){
       labels_col <- colnames(expr)
       
       pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3", suffix, ".pdf")))
-
+      
       pvs_heat <- expr_heat[, adjpval_name, drop = FALSE]
+      
       labels_col <- colnames(pvs_heat)
       gaps_col <- NULL
       
-      pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey90"), breaks = c(0, 0.05, 1), legend_breaks = c(0, 0.05, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3pvs", suffix, ".pdf")))
+      pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3pvs", suffix, ".pdf")))
       
       
     }
@@ -536,22 +542,28 @@ for(j in 1:length(alist)){
     
     ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
     
-    limmin <- min(ggdf, na.rm = TRUE)
-    limmax <- max(ggdf, na.rm = TRUE)
+    if(sum(complete.cases(ggdf)) > 0){
+      
+      limmin <- min(ggdf, na.rm = TRUE)
+      limmax <- max(ggdf, na.rm = TRUE)
+      
+      ggdf$interaction <- factor(pvs[, adjpval_name] < 0.05, levels = c("FALSE", "TRUE"))
+      
+      ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
+        geom_point(size = 3, alpha = 0.75) +
+        geom_abline(intercept = 0, slope = 1) +
+        coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
+        theme_bw() +
+        theme(axis.text = element_text(size=14), 
+          axis.title = element_text(size=14, face="bold"))
+      
+      pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
+      print(ggp)
+      dev.off()
+      
+      
+    }
     
-    ggdf$interaction <- factor(pvs[, adjpval_name] < 0.05, levels = c("FALSE", "TRUE"))
-    
-    ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
-      geom_point(size = 3, alpha = 0.75) +
-      geom_abline(intercept = 0, slope = 1) +
-      coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
-      theme_bw() +
-      theme(axis.text = element_text(size=14), 
-        axis.title = element_text(size=14, face="bold"))
-    
-    pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
-    print(ggp)
-    dev.off()
     
     
     
