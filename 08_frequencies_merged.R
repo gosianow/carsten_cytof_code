@@ -86,6 +86,8 @@ md$response <- factor(md$response, levels = c("NR", "R", "HD"))
 md$day <- factor(md$day, levels = c("base", "tx"))
 md$patient_id <- factor(md$patient_id)
 
+md$data_day <- interaction(md$data, md$day, lex.order = TRUE)
+
 
 ### Colors 
 colors <- unique(md[, c("condition", "color")])

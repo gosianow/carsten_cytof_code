@@ -29,6 +29,13 @@ library(reshape2)
 # path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+data_prefix='23_01_'
+data_outdir='010_data'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
