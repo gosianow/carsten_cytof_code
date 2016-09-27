@@ -23,9 +23,10 @@ expression=false
 cluster_merging=false
 cluster_extracting=false
 fcs_saving=false
-cytokines=false
-pd1=false
-
+cytokines_bimatrix=false
+pd1_bimatrix=false
+cytokines_expression=false
+pd1_expression=false
 
 ## global parameters
 tsne_pmin=1500
@@ -374,7 +375,7 @@ done
 
 
 # --------------------------------------------------
-# Analysis of cytokines
+# Analysis of cytokines based on bimatrix
 # in CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
 # Use Analysis block 4
 # --------------------------------------------------
@@ -404,7 +405,7 @@ prefix_merging_cyt=("cytmerging_" "cytmerging_")
 
 for i in 0 1
 do
-  ./Analysis_block_4_cytokines.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cytokines ${cytokines} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_cyt ${file_merging_cyt[$i]} --prefix_merging_cyt ${prefix_merging_cyt[$i]}
+  ./Analysis_block_4_cytokines_bimatrix.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cytokines ${cytokines_bimatrix} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_cyt ${file_merging_cyt[$i]} --prefix_merging_cyt ${prefix_merging_cyt[$i]}
 done
 
 
@@ -414,18 +415,59 @@ prefix_merging_cyt=("cytmerging2_" "cytmerging2_")
 
 for i in 0 1
 do
-  ./Analysis_block_4_cytokines.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cytokines ${cytokines} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_cyt ${file_merging_cyt[$i]} --prefix_merging_cyt ${prefix_merging_cyt[$i]}
+  ./Analysis_block_4_cytokines_bimatrix.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cytokines ${cytokines_bimatrix} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_cyt ${file_merging_cyt[$i]} --prefix_merging_cyt ${prefix_merging_cyt[$i]}
+done
+
+
+# --------------------------------------------------
+# Analysis of cytokines based on expression
+# in CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
+# Use Analysis block 4
+# --------------------------------------------------
+
+DATA=23
+PANEL=2
+file_metadata="metadata_23_02.xlsx"
+
+prefix_pca="pca1_"
+
+data_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
+prefix_data=('23CD4_' '23CD8_')
+prefix_panel=('02CD4_' '02CD8_')
+
+prefix_merging=('merging2_' 'merging2_') # name of merging from which the Tmem clusters are extracted
+clsubset=("c('CM','EM','TE','TM')" "c('CM','EM','TE','TM')")
+prefix_clsubset=('Tmem_' 'Tmem_')
+file_cytokines_cutoffs=('panel2CD4_cytokines_CM.xlsx' 'panel2CD8_cytokines_CM.xlsx')
+prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
+
+
+for i in 0 1
+do
+  ./Analysis_block_4_cytokines_expression.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cytokines ${cytokines_expression} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]}
 done
 
 
 
 # --------------------------------------------------
-# Analysis of PD1+ and PD1- cells
+# Analysis of PD1+ and PD1- cells based on bimatrix
 # in CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
 # Use Analysis block 5
 # --------------------------------------------------
 
 ### Analysis of cytokines for PD1+
+
+DATA=23
+PANEL=2
+file_metadata="metadata_23_02.xlsx"
+
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+data_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
+prefix_data=('23CD4_' '23CD8_')
+file_panel=('panel2CD4.xlsx' 'panel2CD8.xlsx')
+prefix_panel=('02CD4_' '02CD8_')
 
 prefix_merging=('merging_' 'merging_')
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
@@ -440,7 +482,7 @@ prefix_merging_pd1=("pd1merging_" "pd1merging_")
 
 for i in 0 1
 do
-  ./Analysis_block_5_pd1.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --pd1 ${pd1} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_pd1 ${file_merging_pd1[$i]} --prefix_merging_pd1 ${prefix_merging_pd1[$i]}
+  ./Analysis_block_5_pd1_bimatrix.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --pd1 ${pd1_bimatrix} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_pd1 ${file_merging_pd1[$i]} --prefix_merging_pd1 ${prefix_merging_pd1[$i]}
 done
 
 
@@ -451,9 +493,39 @@ prefix_merging_pd1=("pd1merging2_" "pd1merging2_")
 
 for i in 0 1
 do
-  ./Analysis_block_5_pd1.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --pd1 ${pd1} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_pd1 ${file_merging_pd1[$i]} --prefix_merging_pd1 ${prefix_merging_pd1[$i]}
+  ./Analysis_block_5_pd1_bimatrix.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --pd1 ${pd1_bimatrix} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_pd1 ${file_merging_pd1[$i]} --prefix_merging_pd1 ${prefix_merging_pd1[$i]}
 done
 
+
+# --------------------------------------------------
+# Analysis of PD1+ and PD1- cells based on expression
+# in CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
+# Use Analysis block 5
+# --------------------------------------------------
+
+### Analysis of cytokines for PD1+
+
+DATA=23
+PANEL=2
+file_metadata="metadata_23_02.xlsx"
+
+prefix_pca="pca1_"
+
+data_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
+prefix_data=('23CD4_' '23CD8_')
+prefix_panel=('02CD4_' '02CD8_')
+
+prefix_merging=('merging2_' 'merging2_') # name of merging from which the Tmem clusters are extracted
+clsubset=("c('CM','EM','TE','TM')" "c('CM','EM','TE','TM')")
+prefix_clsubset=('Tmem_' 'Tmem_')
+file_cytokines_cutoffs=('panel2CD4_cytokines_CM.xlsx' 'panel2CD8_cytokines_CM.xlsx')
+prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
+
+
+for i in 0 1
+do
+  ./Analysis_block_5_pd1_expression.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --pd1 ${pd1_expression} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]}
+done
 
 
 ###############################################################################################################

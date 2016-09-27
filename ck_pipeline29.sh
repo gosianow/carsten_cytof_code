@@ -22,10 +22,6 @@ frequencies=false
 expression=false
 cluster_merging=false
 cluster_extracting=false
-cytokines=false
-fcs_saving=false
-pd1=false
-
 
 ## global parameters
 tsne_pmin=1500
