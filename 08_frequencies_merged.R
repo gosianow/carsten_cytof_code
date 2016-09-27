@@ -25,26 +25,26 @@ library(tools)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29'
-freq_prefix='23m6_29m4_'
-freq_outdir='050_frequencies'
-
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
-path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_counts.xls')
-data_name=c('data23','data29')
-
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models_merged.R'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29'
+# freq_prefix='23m6_29m4_'
+# freq_outdir='08_frequencies_merged'
+# 
+# path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+# path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_counts.xls')
+# data_name=c('data23','data29')
+# 
+# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models_merged.R'
 
 ##############################################################################
 # Read in the arguments
 ##############################################################################
 
-# args <- (commandArgs(trailingOnly = TRUE))
-# for (i in 1:length(args)) {
-#   eval(parse(text = args[[i]]))
-# }
-# 
-# print(args)
+args <- (commandArgs(trailingOnly = TRUE))
+for (i in 1:length(args)) {
+  eval(parse(text = args[[i]]))
+}
+
+print(args)
 
 ##############################################################################
 
@@ -547,5 +547,5 @@ sessionInfo()
 
 
 ################################
-### 04_frequencies done!
+### 08_frequencies_merged.R done!
 ################################
