@@ -34,6 +34,10 @@ while [[ ${1} ]]; do
     flowsom=${2}
     shift
     ;;
+    --flowsom_validation)
+    flowsom_validation=${2}
+    shift
+    ;;
     --heatmaps)
     heatmaps=${2}
     shift
@@ -152,6 +156,13 @@ if ${flowsom}; then
   echo "02_flowsom"
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' flowsom_outdir='030_heatmaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=${rand_seed_consensus}" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
   tail $ROUT/02_flowsom.Rout
+fi
+
+### FlowSOM validation
+if ${flowsom_validation}; then
+  echo "02_flowsom_validation"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' flowsom_outdir='030_flowsom_validation' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=${rand_seed_consensus}" $RCODE/02_flowsom_validation.R $ROUT/02_flowsom_validation.Rout
+  tail $ROUT/02_flowsom_validation.Rout
 fi
 
 ### Heatmaps
