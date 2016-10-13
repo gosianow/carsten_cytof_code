@@ -1,8 +1,8 @@
 ##############################################################################
-## <<04_expression.R>>
+## <<08_expression_merged.R>>
 
 # BioC 3.3
-# Created 22 Aug 2016
+# Created 13 Oct 2016
 # Updated 13 Oct 2016
 
 ##############################################################################
@@ -19,20 +19,21 @@ library(reshape2)
 library(RColorBrewer)
 library(limma)
 library(pheatmap)
+library(tools)
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# expr_prefix='23_01_pca1_merging6_raw_'
-# expr_outdir='080_expression'
-# path_data='010_data/23_01_expr_raw.rds'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
-# path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
-# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
+# expr_prefix='23m6_29m4_'
+# expr_outdir='08_expression_merged'
+# 
+# path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+# path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_raw_expr_all.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_raw_expr_all.xls')
+# data_name=c('data23','data29')
+# 
+# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models_merged.R'
 # analysis_type='all'
 
 ##############################################################################
@@ -64,27 +65,22 @@ if(!analysis_type %in% c("clust", "all"))
 
 out_name <- analysis_type
 
-# ------------------------------------------------------------
-# Load data
-# ------------------------------------------------------------
-
-# read expression data
-if(grepl(".txt", path_data)){
-  expr <- read.table(path_data, header = TRUE, sep = "\t", as.is = TRUE)
-}
-if(grepl(".rds", path_data)){
-  expr <- readRDS(path_data)
-}
-
-
-fcs_colnames <- colnames(expr)[!grepl("cell_id|sample_id", colnames(expr))]
-e <- expr[, fcs_colnames]
 
 # ------------------------------------------------------------
 # Load metadata
 # ------------------------------------------------------------
 
-md <- read.xls(path_metadata, stringsAsFactors=FALSE)
+md <- lapply(1:length(data_name), function(i){
+  
+  path <- path_metadata[i]
+  md <- read.xls(path, stringsAsFactors=FALSE)
+  md$data <- data_name[i]
+  md
+  
+})
+
+md <- rbind.fill(md)
+
 
 # add more info about samples
 cond_split <- strsplit2(md$condition, "_")
@@ -94,6 +90,8 @@ md[, c("day", "response")] <- cond_split
 md$response <- factor(md$response, levels = c("NR", "R", "HD"))
 md$day <- factor(md$day, levels = c("base", "tx"))
 md$patient_id <- factor(md$patient_id)
+
+md$data_day <- interaction(md$data, md$day, lex.order = TRUE)
 
 
 
@@ -106,115 +104,29 @@ levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
 color_groups <- colors$color
 names(color_groups) <- colors$condition
 
+color_samples <- md$color
+names(color_samples) <- md$shortname
+
 
 # ------------------------------------------------------------
-# Load clustering data
+# Load expression data
 # ------------------------------------------------------------
 
-# clustering observables
-clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
-rownames(clustering_observables) <- clustering_observables$mass
+a <- lapply(1:length(data_name), function(i){
+  
+  path <- path_expression[i]
+  a <- read.table(path, header = TRUE, sep = "\t", as.is = TRUE, check.names = FALSE)
+  a
+  
+})
 
-clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
+a <- rbind.fill(a)
 
+a <- a[a$label != "drop", , drop = FALSE]
 
-# clustering labels
-labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
+labels <- unique(a[, c("cluster", "label")])
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
-rownames(labels) <- labels$cluster
-
-# clustering
-clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
-
-## drop the "drop" cluster
-if("drop" %in% labels$label){
-  
-  clust2drop <- labels$cluster[labels$label == "drop"]
-  cells2drop <- clustering$cluster != clust2drop
-  clustering <- clustering[cells2drop, , drop = FALSE]
-  labels <- labels[labels$label != "drop", ,drop = FALSE]
-  labels$label <- factor(labels$label)
-  e <- e[cells2drop, , drop = FALSE]
-  
-}
-
-
-clust <- clustering[, "cluster"]
-
-samp <- clustering[, "sample_id"]
-
-
-# ------------------------------------------------------------
-# get the isotope and antigen for fcs markers
-
-m <- match(fcs_colnames, clustering_observables$mass)
-
-fcs_panel <- data.frame(colnames = fcs_colnames, Isotope = clustering_observables$mass[m], Antigen = clustering_observables$marker[m], stringsAsFactors = FALSE)
-
-
-# ------------------------------------------------------------
-
-# Indeces of observables used for clustering 
-scols <- which(fcs_colnames %in% clust_observ)
-
-# Indeces of other observables
-xcols <- which(!fcs_colnames %in% clust_observ)
-
-
-# ordered by decreasing pca score
-if("avg_score" %in% colnames(clustering_observables)){
-  scols <- scols[order(clustering_observables[fcs_colnames[scols], "avg_score"], decreasing = TRUE)]
-  xcols <- xcols[order(clustering_observables[fcs_colnames[xcols], "avg_score"], decreasing = TRUE)]
-}
-
-
-# ------------------------------------------------------------
-# Get the median expression per cluster
-# ------------------------------------------------------------
-
-if(analysis_type == "clust"){
-  
-  colnames(e) <- fcs_panel$Antigen
-  
-  a <- aggregate(e, by = list(clust, samp), FUN = median)
-  
-  mlab <- match(a$Group.1, labels$cluster)
-  a$label <- labels$label[mlab]
-  
-  colnames(a)[1:2] <- c("cluster", "sample")
-  
-  a <- a[, c("cluster", "label", "sample", fcs_panel$Antigen[c(scols, xcols)])]
-  a$label <- factor(a$label, levels = labels$label)
-  
-  ### Save the median expression per cluster and sample
-  write.table(a, file.path(outdir, paste0(prefix, "expr_clust.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-  
-}
-
-
-# ------------------------------------------------------------
-# Get the median expression for cells from all the clusters
-# ------------------------------------------------------------
-
-if(analysis_type == "all"){
-  
-  colnames(e) <- fcs_panel$Antigen
-  
-  a <- aggregate(e, by = list(samp), FUN = median)
-  
-  colnames(a)[1] <- c("sample")
-  
-  a$cluster <- -1
-  a$label <- "all"
-  
-  a <- a[, c("cluster", "label", "sample", fcs_panel$Antigen[c(scols, xcols)])]
-  a$label <- factor(a$label)
-  
-  ### Save the median expression per cluster and sample
-  write.table(a, file.path(outdir, paste0(prefix, "expr_all.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-  
-}
 
 
 # -----------------------------------------------------------------------------
@@ -225,20 +137,24 @@ if(analysis_type == "all"){
 ggdf <- melt(a, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
 
 ## use labels as clusters
-ggdf$cluster <- ggdf$label
+ggdf$cluster <- factor(ggdf$label, levels = labels$label)
+
 
 ## add group info
 mm <- match(ggdf$samp, md$shortname)
 ggdf$group <- factor(md$condition[mm])
+## add data info
+ggdf$data <- factor(md$data[mm])
+
 
 ## replace _ with \n
 levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
 
 ## order markers as for heatmaps
-ggdf$marker <- factor(ggdf$marker, levels = fcs_panel$Antigen[c(scols, xcols)])
+ggdf$marker <- factor(ggdf$marker, levels = colnames(a)[!grepl("cluster|label|sample", colnames(a))])
 
 ## calculate mean and sd for the error bars on the plot
-ggds <- ddply(ggdf, .(group, cluster, marker), summarise, mean = mean(expr), sd = sd(expr))
+ggds <- ddply(ggdf, .(group, cluster, marker, data), summarise, mean = mean(expr), sd = sd(expr))
 
 clusters <- levels(ggdf$cluster)
 
@@ -253,18 +169,23 @@ for(i in 1:nlevels(ggdf$cluster)){
   df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
   ds <- ggds[ggds$cluster == clusters[i], , drop = FALSE]
   
-  ggp[[i]] <- ggplot(df, aes(x = group, y = expr, color = group)) +
-    geom_jitter(size=2.5, shape = 16, width = 0.5, height = 0) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), colour='black', width=0.4) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), colour='black', width=0.25) +
+  ggp[[i]] <- ggplot(df, aes(x = group, y = expr, color = group, shape = data)) +
+    geom_point(size=2.5, position = position_jitterdodge(jitter.width = 3, jitter.height = 0, dodge.width = 0.7)) +
+    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), color='black', width=0.4, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7)) +
+    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), color='black', width=0.25, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7)) +
     facet_wrap(~ marker, scales = "free") +
     ggtitle(clusters[i]) +
     theme_bw() +
     ylab("Expression") +
     xlab("") +
-    theme(axis.text.x = element_text(size=12, face="bold"), 
-      axis.title.y = element_text(size=12, face="bold"),
-      legend.position = "none") +
+    theme(axis.text.x = element_text(size=10, face="bold"), 
+      axis.title.y = element_text(size=12, face="bold"), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_blank(), 
+      axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
+      axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
+      legend.position = "right") +
     scale_color_manual(values = color_groups)
   
 }
@@ -291,7 +212,7 @@ exprm <- melt(expr, id.vars = c("cluster", "label", "sample"), value.name = "exp
 
 exprc <- dcast(exprm, cluster + label + marker ~ sample, value.var = "expr")
 
-models2fit <- c("rlm_interglht", "lm_interglht", "lmer_interglht", "test_wilcoxon")
+models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
 
 for(k in models2fit){
   # k = "lmer_interglht"
@@ -356,13 +277,21 @@ for(k in models2fit){
   expr_norm <- exprc[, c("cluster", "label", "marker", md[md$response != "HD", "shortname"])]
   th <- 2.5
   
-  day <- levels(md$day)
+  data_day <- levels(md$data_day)
   
-  ### Normalized to mean = 0 and sd = 1 per day
-  for(i in day){
-    # i = "base"
-    expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+  ### Normalized to mean = 0 and sd = 1 per data and day
+  for(i in data_day){
+    # i = "data23.base"
+    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   }
+  
+  # ### Normalize to mean = 0 per data and day
+  # for(i in data_day){
+  #   # i = "data23.base"
+  #   expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- x-mean(x); return(x)}))
+  # }
+  # ### Normalize to sd = 1 for all samples
+  # expr_norm[, md[md$response != "HD", "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD", "shortname"], drop = FALSE], 1, function(x){ x <- x/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   
   breaks = seq(from = -th, to = th, length.out = 101)
   legend_breaks = seq(from = -round(th), to = round(th), by = 1)
@@ -384,28 +313,6 @@ for(k in models2fit){
   if(sum(which_top_pvs) > 0) {
     
     expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
-    
-    # -----------------------------
-    ## order the samples by NR and R
-    
-    samples2plot <- md[md$response %in% c("NR", "R"), ]
-    samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
-    
-    ## gap in the heatmap 
-    gaps_col <- sum(grepl("_NR", samples2plot))
-    gaps_row <- unique(cumsum(table(expr_heat$label)))
-    gaps_row <- gaps_row[gaps_row > 0]
-    if(length(gaps_row) == 1) 
-      gaps_row <- NULL
-    
-    ## expression scaled by row
-    expr <- expr_heat[ , samples2plot, drop = FALSE]
-    
-    labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
-    labels_col <- colnames(expr)
-    
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap1", suffix, ".pdf")))
-    
     
     # -----------------------------
     ## order the samples by base and tx
@@ -580,5 +487,5 @@ sessionInfo()
 
 
 ################################
-### 04_expression done!
+### 08_expression_merged.R done!
 ################################

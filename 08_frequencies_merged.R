@@ -25,7 +25,7 @@ library(tools)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
 # freq_prefix='23m6_29m4_'
 # freq_outdir='08_frequencies_merged'
 # 
@@ -97,6 +97,9 @@ levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
 
 color_groups <- colors$color
 names(color_groups) <- colors$condition
+
+color_groupsb <- adjustcolor(color_groups, alpha = 0.5)
+names(color_groupsb) <- colors$condition
 
 color_samples <- md$color
 names(color_samples) <- md$shortname
@@ -234,6 +237,67 @@ for(i in 1:nlevels(ggdf$day)){
   
 }
 
+# ------------------------------------
+# plot all clusters in one pdf; colors per response; separate pdf for base and tx; boxplots
+
+days <- levels(ggdf$day)
+
+for(i in 1:nlevels(ggdf$day)){
+  # i = 1
+  
+  df <- ggdf[ggdf$day == days[i], , drop = FALSE]
+  
+  ggp <- ggplot(df) +
+    geom_boxplot(aes(x = cluster, y = prop, color = group), width = 1, position = position_dodge(width = 0.9), outlier.colour = NA) +
+    geom_point(aes(x = cluster, y = prop, color = group, shape = data), size=2, alpha = 0.7, position = position_jitterdodge(jitter.width = 1.2, jitter.height = 0, dodge.width = 0.9)) +
+    theme_bw() +
+    ylab("Frequency") +
+    xlab("") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
+      axis.title.y = element_text(size=12, face="bold"), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_blank(), 
+      axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
+      axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
+      legend.title = element_blank(), legend.position = "right", legend.key = element_blank()) +
+    guides(color = guide_legend(ncol = 1)) +
+    scale_color_manual(values = color_groups)
+  
+  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = 10, h = 4)
+  print(ggp)
+  dev.off()
+  
+}
+
+for(i in 1:nlevels(ggdf$day)){
+  # i = 1
+  
+  df <- ggdf[ggdf$day == days[i], , drop = FALSE]
+  
+  ggp <- ggplot(df) +
+    geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 1, position = position_dodge(width = 0.9)) +
+    theme_bw() +
+    ylab("Frequency") +
+    xlab("") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
+      axis.title.y = element_text(size=12, face="bold"), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_blank(), 
+      axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
+      axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
+      legend.title = element_blank(), legend.position = "right", legend.key = element_blank()) +
+    guides(color = guide_legend(ncol = 1)) +
+    scale_color_manual(values = color_groups) +
+    scale_fill_manual(values = color_groupsb)
+  
+  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplot_", days[i] ,".pdf")), w = 10, h = 4)
+  print(ggp)
+  dev.off()
+  
+}
+
 
 # ------------------------------------------------------------
 # Test for frequency differences between groups
@@ -326,19 +390,22 @@ for(k in models2fit){
   
   
   # ----------------------------------------
-  # Plot a heatmap of significant cases
+  # Plot a heatmap of significant cases - transform proportions with arcsin-sqrt so the dispersion is the same for low and high props.
   # ----------------------------------------
   
-  ### normalize the expression for base and tx separately
+  ### normalize the expression
   ass_freq_out <- freq_out
   ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
   
-  expr_norm <- ass_freq_out[, grep("cluster|label|_NR|_R", colnames(ass_freq_out))]
+  expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
   th <- 2.5
   
-  for(i in c("base", "tx")){
-    # i = "base"
-    expr_norm[, grep(i, colnames(expr_norm))] <- t(apply(expr_norm[, grep(i, colnames(expr_norm)), drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+  data_day <- levels(md$data_day)
+  
+  ### Normalized to mean = 0 and sd = 1 per data and day
+  for(i in data_day){
+    # i = "data23.base"
+    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   }
   
   breaks = seq(from = -th, to = th, length.out = 101)
@@ -362,25 +429,6 @@ for(k in models2fit){
   if(sum(which_top_pvs) > 0) {
     
     expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
-    
-    # -----------------------------
-    ## order the samples by NR and R
-    
-    samples2plot <- md[md$response %in% c("NR", "R"), ]
-    samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
-    
-    ## gap in the heatmap 
-    gaps_col <- sum(grepl("_NR", samples2plot))
-    gaps_row <- NULL
-    
-    ## expression scaled by row
-    expr <- expr_heat[ , samples2plot, drop = FALSE]
-    
-    labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
-    labels_col <- colnames(expr)
-    
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap1", suffix, ".pdf")))
-    
     
     # -----------------------------
     ## order the samples by base and tx
@@ -451,7 +499,7 @@ for(k in models2fit){
   adjpval_name <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
   
   ## group the expression by cluster
-  expr_all <- expr_all[order(expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[4]], expr_all$label), , drop = FALSE]
+  expr_all <- expr_all[order(expr_all[, adjpval_name[1]], expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all$label), , drop = FALSE]
   
   # which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
   # which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name])) < length(adjpval_name)

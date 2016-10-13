@@ -99,7 +99,10 @@ if ${cytokines}; then
 
   ### Expression analysis
   echo "04_expression"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_cytokines}raw_' expr_outdir='060_cytokines_expression' path_data='060_cytokines_expression/${prefix_cytokines}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='060_cytokines_expression/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_expression/${prefix_cytokines}clustering.xls'  path_clustering_labels='060_cytokines_expression/${prefix_cytokines}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R'" $RCODE/04_expression.R $ROUT/04_expression.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_cytokines}raw_' expr_outdir='060_cytokines_expression' path_data='060_cytokines_expression/${prefix_cytokines}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='060_cytokines_expression/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_expression/${prefix_cytokines}clustering.xls'  path_clustering_labels='060_cytokines_expression/${prefix_cytokines}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' analysis_type='all'" $RCODE/04_expression.R $ROUT/04_expression.Rout
+  tail $ROUT/04_expression.Rout
+
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_cytokines}raw_' expr_outdir='060_cytokines_expression' path_data='060_cytokines_expression/${prefix_cytokines}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='060_cytokines_expression/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_expression/${prefix_cytokines}clustering.xls'  path_clustering_labels='060_cytokines_expression/${prefix_cytokines}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' analysis_type='clust'" $RCODE/04_expression.R $ROUT/04_expression.Rout
   tail $ROUT/04_expression.Rout
 
 

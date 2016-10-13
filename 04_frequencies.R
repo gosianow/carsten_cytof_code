@@ -339,19 +339,22 @@ for(k in models2fit){
   
   
   # ----------------------------------------
-  # Plot a heatmap of significant cases
+  # Plot a heatmap of significant cases - transform proportions with arcsin-sqrt so the dispersion is the same for low and high props.
   # ----------------------------------------
   
-  ### normalize the expression for base and tx separately
+  ### normalize the expression
   ass_freq_out <- freq_out
   ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
   
-  expr_norm <- ass_freq_out[, grep("cluster|label|_NR|_R", colnames(ass_freq_out))]
+  expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
   th <- 2.5
   
-  for(i in c("base", "tx")){
+  day <- levels(md$day)
+  
+  ### Normalized to mean = 0 and sd = 1 per day
+  for(i in day){
     # i = "base"
-    expr_norm[, grep(i, colnames(expr_norm))] <- t(apply(expr_norm[, grep(i, colnames(expr_norm)), drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+    expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   }
   
   breaks = seq(from = -th, to = th, length.out = 101)
@@ -375,25 +378,6 @@ for(k in models2fit){
   if(sum(which_top_pvs) > 0) {
     
     expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
-    
-    # -----------------------------
-    ## order the samples by NR and R
-    
-    samples2plot <- md[md$response %in% c("NR", "R"), ]
-    samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
-    
-    ## gap in the heatmap 
-    gaps_col <- sum(grepl("_NR", samples2plot))
-    gaps_row <- NULL
-    
-    ## expression scaled by row
-    expr <- expr_heat[ , samples2plot, drop = FALSE]
-    
-    labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
-    labels_col <- colnames(expr)
-    
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap1", suffix, ".pdf")))
-    
     
     # -----------------------------
     ## order the samples by base and tx
@@ -464,7 +448,7 @@ for(k in models2fit){
   adjpval_name <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
   
   ## group the expression by cluster
-  expr_all <- expr_all[order(expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all[, adjpval_name[4]], expr_all$label), , drop = FALSE]
+  expr_all <- expr_all[order(expr_all[, adjpval_name[1]], expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all$label), , drop = FALSE]
   
   # which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
   # which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name])) < length(adjpval_name)
