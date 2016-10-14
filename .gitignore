@@ -9,3 +9,6 @@
 
 # ...even if they are in subdirectories
 !*/
+
+# Ignore tmp files
+*_tmp*.sh
