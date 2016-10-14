@@ -3,6 +3,7 @@
 
 # BioC 3.3
 # Created 7 Aug 2016
+# Updated 14 Oct 2016
 
 ##############################################################################
 Sys.time()
@@ -21,10 +22,11 @@ library(reshape2)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# save_prefix='pnlCD4_'
-# path_panel='panel_CD4.xlsx'
-
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging'
+# save_prefix='29CD4_02CD4_'
+# save_outdir='060_dumpfcs'
+# path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4.xlsx'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_02.xlsx'
 
 ##############################################################################
 # Read in the arguments
@@ -46,41 +48,61 @@ setwd(rwd)
 # define directories
 # ------------------------------------------------------------
 
-fcsDir <- "010_cleanfcs"; if( !file.exists(fcsDir) ) dir.create(fcsDir)
-dmpDir <- "060_dumpfcs"; if( !file.exists(dmpDir) ) dir.create(dmpDir)
+fcsDir <- "010_cleanfcs"
+outdir <- save_outdir
+if( !file.exists(outdir) ) dir.create(outdir)
 
 
 # ------------------------------------------------------------
-# Load data
+# Load metadata
 # ------------------------------------------------------------
 
 # read metadata
-md <- read.xls("metadata.xlsx",stringsAsFactors=FALSE)
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
 
+
+
+# ------------------------------------------------------------
+# Load fcs files
+# ------------------------------------------------------------
 
 # define FCS file names
 f <- file.path(fcsDir, md$filename)
 names(f) <- md$shortname
 
-
 # read raw FCS files in
 fcs <- lapply(f, read.FCS)
 
+fcs_colnames <- colnames(fcs[[1]])
+fcs_colnames
+
+## Create sample info
+samp <- rep(names(fcs), sapply(fcs, nrow))
+
+
+# ------------------------------------------------------------
+# Load panel
+# ------------------------------------------------------------
 
 # read panel, pick which columns to use
-panel <- read.xls(path_panel,stringsAsFactors=FALSE)
+panel <- read.xls(path_panel, stringsAsFactors=FALSE)
 
-# get isotope mass of columns in fcs files.. to match against the panel
-panel_mass <- as.numeric(gsub("[[:alpha:]]", "", colnames(fcs[[1]])))
+if(!all(c("fcs_colname", "Isotope", "Antigen", "transform") %in% colnames(panel)))
+  stop("Wrong columns in panel!!!")
+
 
 # cols - get fcs columns that are in the panel with transform = 1
-cols <- which(panel_mass %in% panel$Isotope[panel$transform==1])
+cols <- which(fcs_colnames %in% panel$fcs_colname[panel$transform==1])
+
+# get the isotope and antigen for fcs markers
+m <- match(fcs_colnames, panel$fcs_colname)
+
+fcs_panel <- data.frame(fcs_colname = fcs_colnames, Isotope = panel$Isotope[m], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
 
 
-# Antigen - get the antigen name
-m <- match(panel_mass, panel$Isotope)
-fcs_panel <- data.frame(colnames = colnames(fcs[[1]]), Isotope = panel_mass, cols = panel_mass %in% panel$Isotope[panel$transform==1], Antigen = panel$Antigen[m], stringsAsFactors = FALSE)
-fcs_panel$Antigen[is.na(fcs_panel$Antigen)] <- ""
+# --------------------------------------------------------------------------
+# Get the marker expression
+# --------------------------------------------------------------------------
 
 
 # arc-sin-h the columns specific 
@@ -92,17 +114,11 @@ fcsT <- lapply(fcs, function(u) {
 })
 
 
-# ------------------------------------------------------------
-# Normalization to 0-1
-# ------------------------------------------------------------
-
-
-# re-extract the data as list of tables
 es <- lapply(fcsT, function(u) {
-  exprs(u)[,cols]
+  exprs(u)[, cols]
 })
 
-e <- do.call("rbind", es)
+e <- do.call("rbind",es)
 
 
 # normalize to 0-1
@@ -115,8 +131,9 @@ el[el<0] <- 0
 el[el>1] <- 1
 
 
-## replace expression in fcsT with 0-1 normalized expr.
-samp <- rep( names(fcsT), sapply(fcsT, nrow) )
+
+
+# fcsT01 = fcsT with replaced expression which is normalized to 0-1
 samp <- factor(samp, levels = names(fcsT))
 
 el_spl <- split(data.frame(el), samp)
@@ -139,7 +156,7 @@ fcsT01 <- lapply(seq(length(fcsT)), function(i){
 dummy <- lapply(seq(length(fcsT)), function(i){
   # i = 1
   
-  fn <- file.path(dmpDir, paste0(save_prefix, "arcsineh_", basename(f[i])))
+  fn <- file.path(outdir, paste0(save_prefix, "arcsineh_", basename(f[i])))
   fcs_out <- fcsT[[i]]
   write.FCS(fcs_out, fn)
   
@@ -150,7 +167,7 @@ dummy <- lapply(seq(length(fcsT)), function(i){
 dummy <- lapply(seq(length(fcsT01)), function(i){
   # i = 1
   
-  fn <- file.path(dmpDir, paste0(save_prefix, "arcsineh01_", basename(f[i])))
+  fn <- file.path(outdir, paste0(save_prefix, "arcsineh01_", basename(f[i])))
   fcs_out <- fcsT01[[i]]
   
   write.FCS(fcs_out, fn)

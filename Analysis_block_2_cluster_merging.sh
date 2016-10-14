@@ -95,7 +95,11 @@ done
 RWD=$RWD_MAIN/${data_dir}
 ROUT=$RWD/Rout
 mkdir -p $ROUT
-echo "$RWD"
+
+if ${cluster_merging} || ${heatmaps} || ${plottsne} || ${frequencies} || ${expression}
+then
+  echo "$RWD"
+fi
 
 ### Cluster merging
 if ${cluster_merging}; then

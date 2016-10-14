@@ -325,6 +325,19 @@ do
 done
 
 
+# --------------------------------------------------
+# FCS (transformed with arcsineh and arcsineh01) saving for CK_2016-06-29_02_CD4 and CK_2016-06-29_02_CD8
+# Then one can define the thresholds for positive cytokines
+# --------------------------------------------------
+
+
+### FCS saving
+for i in 0 1
+do
+  ./Analysis_block_3_fcs_saving.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --fcs_saving ${fcs_saving} --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]}
+done
+
+
 
 # --------------------------------------------------
 # Analysis of cytokines based on bimatrix
@@ -347,7 +360,7 @@ prefix_panel=('02CD4_' '02CD8_')
 prefix_merging=('merging_' 'merging_')
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
 prefix_clsubset=('Tmem_' 'Tmem_')
-file_cytokines_cutoffs=('panel2CD4_cytokines_CM.xlsx' 'panel2CD8_cytokines_CM.xlsx')
+file_cytokines_cutoffs=('panel2CD4_23_cytokines_CM.xlsx' 'panel2CD8_23_cytokines_CM.xlsx')
 prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
 nmetaclusts=(40 20)
 
@@ -390,7 +403,7 @@ prefix_panel=('02CD4_' '02CD8_')
 prefix_merging=('merging2_' 'merging2_') # name of merging from which the Tmem clusters are extracted
 clsubset=("c('CM','EM','TE','TM')" "c('CM','EM','TE','TM')")
 prefix_clsubset=('Tmem_' 'Tmem_')
-file_cytokines_cutoffs=('panel2CD4_cytokines_CM.xlsx' 'panel2CD8_cytokines_CM.xlsx')
+file_cytokines_cutoffs=('panel2CD4_23_cytokines_CM.xlsx' 'panel2CD8_23_cytokines_CM.xlsx')
 prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
 
 
@@ -424,7 +437,7 @@ prefix_panel=('02CD4_' '02CD8_')
 prefix_merging=('merging_' 'merging_')
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
 prefix_clsubset=('Tmem_' 'Tmem_')
-file_cytokines_cutoffs=('panel2CD4_cytokines_CM.xlsx' 'panel2CD8_cytokines_CM.xlsx')
+file_cytokines_cutoffs=('panel2CD4_23_cytokines_CM.xlsx' 'panel2CD8_23_cytokines_CM.xlsx')
 prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
 nmetaclusts=(20 20)
 
@@ -470,7 +483,7 @@ prefix_panel=('02CD4_' '02CD8_')
 prefix_merging=('merging2_' 'merging2_') # name of merging from which the Tmem clusters are extracted
 clsubset=("c('CM','EM','TE','TM')" "c('CM','EM','TE','TM')")
 prefix_clsubset=('Tmem_' 'Tmem_')
-file_cytokines_cutoffs=('panel2CD4_cytokines_CM.xlsx' 'panel2CD8_cytokines_CM.xlsx')
+file_cytokines_cutoffs=('panel2CD4_23_cytokines_CM.xlsx' 'panel2CD8_23_cytokines_CM.xlsx')
 prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
 
 

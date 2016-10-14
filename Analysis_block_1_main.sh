@@ -127,8 +127,11 @@ done
 RWD=$RWD_MAIN/${data_dir}
 ROUT=$RWD/Rout
 mkdir -p $ROUT
-echo "$RWD"
 
+if ${data_normalization} || ${pcascores} || ${select_observables} || ${flowsom} || ${flowsom_validation} || ${heatmaps} || ${runtsne} || ${plottsne} || ${plottsne_expr} || ${frequencies} || ${expression}
+then
+  echo "$RWD"
+fi
 
 ### Data normalization
 if ${data_normalization}; then

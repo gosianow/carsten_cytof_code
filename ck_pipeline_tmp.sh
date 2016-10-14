@@ -14,7 +14,7 @@ data_normalization=false
 pcascores=false
 select_observables=false
 flowsom=false
-flowsom_validation=true
+flowsom_validation=false
 heatmaps=false
 runtsne=false
 plottsne=false
@@ -23,6 +23,11 @@ frequencies=false
 expression=false
 cluster_merging=false
 cluster_extracting=false
+fcs_saving=true
+cytokines_bimatrix=false
+pd1_bimatrix=false
+cytokines_expression=false
+pd1_expression=false
 
 ## global parameters
 tsne_pmin=1500
@@ -333,6 +338,26 @@ do
   ./Analysis_block_2_cluster_merging.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cluster_merging ${cluster_merging} --heatmaps ${heatmaps} --plottsne ${plottsne} --frequencies ${frequencies} --expression ${expression} --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust} --prefix_merging ${prefix_merging[$i]} --file_merging ${file_merging[$i]}
 done
 
+
+# --------------------------------------------------
+# FCS (transformed with arcsineh and arcsineh01) saving for CK_2016-06-29_02_CD4 and CK_2016-06-29_02_CD8
+# Then one can define the thresholds for positive cytokines
+# --------------------------------------------------
+
+
+### FCS saving
+if ${fcs_saving}; then
+
+  for i in 0 1
+  do
+    echo "02_fcs_saving"
+    RWD=$RWD_MAIN/${data_dir[$i]}
+    ROUT=$RWD/Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' save_prefix='${prefix_data[$i]}${prefix_panel[$i]}' save_outdir='060_dumpfcs' path_metadata='${METADATA}/${file_metadata}' path_panel='${PANELS}/${file_panel[$i]}'" $RCODE/02_fcs_saving.R $ROUT/02_fcs_saving.Rout
+    tail $ROUT/02_fcs_saving.Rout
+  done
+
+fi
 
 
 # --------------------------------------------------
