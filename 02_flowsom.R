@@ -139,6 +139,9 @@ freq_clust <- table(clust)
 
 # make data frame with labels
 labels <- data.frame(cluster = sort(unique(clust)), label = sort(unique(clust)), counts = as.numeric(freq_clust))
+labels$proportions <- round(labels$counts/sum(labels$counts) * 100, 2)
+
+
 write.table(labels, file = file.path(outdir, paste0(prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 

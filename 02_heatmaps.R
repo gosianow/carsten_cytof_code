@@ -162,12 +162,6 @@ colnames(e) <- fcs_panel$Antigen
 
 a <- aggregate(e, by = list(clust), FUN = aggregate_fun)
 
-mlab <- match(a$Group.1, labels$cluster)
-rownames(a) <- labels$label[mlab]
-
-colnames(a)[1] <- "cluster"
-
-
 # get cluster frequencies
 freq_clust <- table(clust)
 
@@ -290,23 +284,23 @@ if(any(grepl("extra_", args))){
   
   common_cells <- intersect(clustering[, "cell_id"], expr_extra[, "cell_id"])
   
-  e <- expr_extra[expr_extra[, "cell_id"] %in% common_cells, fcs_colnames]
-  clust <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
+  e.ex <- expr_extra[expr_extra[, "cell_id"] %in% common_cells, fcs_colnames]
+  clust.ex <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
   
   # ------------------------------------------------------------
   # Get the median expression
   # ------------------------------------------------------------
   
-  colnames(e) <- fcs_panel$Antigen
+  colnames(e.ex) <- fcs_panel$Antigen
   
-  a <- aggregate(e, by = list(clust), FUN = aggregate_fun)
+  a.ex <- aggregate(e.ex, by = list(clust.ex), FUN = aggregate_fun)
   
   # ------------------------------------------------------------
   # pheatmaps of median expression
   # ------------------------------------------------------------
   
   ### Use all markers for plotting
-  expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
+  expr <- as.matrix(a.ex[, fcs_panel$Antigen[c(scols, xcols)]])
   
   labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
   labels_col <- colnames(expr)
@@ -347,20 +341,20 @@ if(any(grepl("extra_", args))){
 
 plotting_wrapper <- function(e, suffix){
   
-  df <- data.frame(e, clust = factor(clust))
+  df <- data.frame(e, clust = clust, check.names = FALSE)
   dfm <- melt(df, id.vars = c("clust"))
   
-  dfm$clust <- factor(dfm$clust, labels = labels$label)
+  dfm$clust <- factor(dfm$clust, levels = labels$cluster[cluster_rows$order], labels = paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")[cluster_rows$order])
+
+  ggp <- ggplot(dfm, aes(x=value, y = ..scaled..)) +
+    geom_density(adjust=1, fill = "blue", alpha = 0.3) +
+    facet_grid(clust ~ variable, scales = "free") +
+    xlab("Marker expression") +
+    ylab("Scaled density") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 8), strip.text = element_text(size = 9)) 
   
-  ## with free scales using facet_wrap 
-  dfm$variable_clust <- interaction(dfm$variable, dfm$clust, lex.order = FALSE)
-  
-  ggp <- ggplot(dfm, aes(x=value)) +
-    geom_density(adjust=1, fill = "black", alpha = 0.3) +
-    facet_wrap(~ variable_clust, nrow = nlevels(dfm$clust), scales = "free_y") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 6), strip.text = element_text(size = 9))
-  
-  pdf(file.path(outdir, paste0(prefix, "distrosfree", suffix, ".pdf")), w = ncol(e)*3/2, h = nrow(labels)*3/2)
+  pdf(file.path(outdir, paste0(prefix, "distros", suffix, ".pdf")), w = ncol(e)*1.8, h = nrow(labels)*1.6)
   print(ggp)
   dev.off()
   
@@ -369,13 +363,13 @@ plotting_wrapper <- function(e, suffix){
 }
 
 
-# ## Expression, included observables
-# plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
-# 
-# ## Expression, excluded observables
-# if(length(xcols) > 0){
-#   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
-# }
+## Expression, included observables
+plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
+
+## Expression, excluded observables
+if(length(xcols) > 0){
+  plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
+}
 
 
 

@@ -160,12 +160,13 @@ saveRDS(el_out, file.path(outdir, paste0(prefix, "expr_norm.rds")))
 
 plotting_wrapper <- function(e, suffix){
   
-  df <- data.frame(samp = samp, e)
+  df <- data.frame(samp = samp, e, check.names = FALSE)
   dfm <- melt(df, id.var = "samp")
   
   ggp <- ggplot(dfm, aes(x=value)) + 
     geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
     facet_wrap(~ variable, nrow = 4, scales = "free") +
+    theme_bw() +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
   pdf(file.path(outdir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e)*2/3, h = 10)
@@ -175,7 +176,8 @@ plotting_wrapper <- function(e, suffix){
   
   ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
     geom_density(adjust = 1) + 
-    facet_wrap(~ variable, nrow = 3, scales = "free") +
+    facet_wrap(~ variable, nrow = 4, scales = "free") +
+    theme_bw() +
     theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
     guides(color = guide_legend(nrow = 2)) +
     scale_color_manual(values = color_values)

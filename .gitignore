@@ -1,5 +1,7 @@
 # Ignore everything
 *
+# ...even if they are in subdirectories
+!*/
 
 # But not these files...
 !.gitignore
@@ -7,8 +9,3 @@
 !*.R
 !*.sh
 
-# ...even if they are in subdirectories
-!*/
-
-# Ignore tmp files
-*_tmp*.sh

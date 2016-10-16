@@ -104,9 +104,6 @@ if ${pd1}; then
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_pd1main}raw_' expr_outdir='070_pd1_expression' path_data='070_pd1_expression/${prefix_pd1main}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='070_pd1_expression/${prefix_pd1main}clustering_observables.xls' path_clustering='070_pd1_expression/${prefix_pd1main}clustering.xls'  path_clustering_labels='070_pd1_expression/${prefix_pd1main}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' analysis_type='all'" $RCODE/04_expression.R $ROUT/04_expression.Rout
   tail $ROUT/04_expression.Rout
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_pd1main}raw_' expr_outdir='070_pd1_expression' path_data='070_pd1_expression/${prefix_pd1main}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='070_pd1_expression/${prefix_pd1main}clustering_observables.xls' path_clustering='070_pd1_expression/${prefix_pd1main}clustering.xls'  path_clustering_labels='070_pd1_expression/${prefix_pd1main}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' analysis_type='clust'" $RCODE/04_expression.R $ROUT/04_expression.Rout
-  tail $ROUT/04_expression.Rout
-
 
 fi
 

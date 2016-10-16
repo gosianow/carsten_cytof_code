@@ -86,6 +86,7 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 # get cluster frequencies
 freq_clust <- table(clustm)
 labels$counts <- as.numeric(freq_clust)
+labels$proportions <- round(labels$counts/sum(labels$counts) * 100, 2)
 
 labels
 

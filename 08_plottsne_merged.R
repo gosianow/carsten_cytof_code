@@ -1,8 +1,8 @@
 ##############################################################################
-## <<03_plottsne.R>>
+## <<08_plottsne_merged.R>>
 
 # BioC 3.3
-# Created 28 July 2016
+# Created 16 Oct 2016
 # Updated 
 
 ##############################################################################
@@ -24,18 +24,21 @@ library(coop) # cosine
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# tsnep_prefix='23_01_pca1_cl20_raw_'
-# tsnep_outdir='040_tsnemaps'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_rtsne_out='040_tsnemaps/23_01_pca1_raw_rtsne_out.rda'
-# path_rtsne_data='040_tsnemaps/23_01_pca1_raw_rtsne_data.xls'
-# path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
+# tsnep_prefix='23m6_29m4_'
+# tsnep_outdir='08_tsnemaps_merged'
+# 
+# path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+# path_rtsne_out='08_tsnemaps_merged/23m6_29m4_rtsne_out.rda'
+# path_rtsne_data='08_tsnemaps_merged/23m6_29m4_rtsne_data.xls'
+# path_clustering=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/030_heatmaps/23_01_pca1_merging6_clustering.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/030_heatmaps/29_01_pca1_merging4_clustering.xls')
+# path_clustering_labels=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/030_heatmaps/23_01_pca1_merging6_clustering_labels.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/030_heatmaps/29_01_pca1_merging4_clustering_labels.xls')
 # tsne_cmin=1000
 # tsne_distse=1
 # pdf_width=15
 # pdf_height=10
+# data_name=c('data23','data29')
+
 
 ##############################################################################
 # Read in the arguments
@@ -64,19 +67,53 @@ if(!file.exists(outdir))
 # Load metadata
 # ------------------------------------------------------------
 
-md <- read.xls(path_metadata, stringsAsFactors=FALSE)
+md <- lapply(1:length(data_name), function(i){
+  
+  path <- path_metadata[i]
+  md <- read.xls(path, stringsAsFactors=FALSE)
+  md$data <- data_name[i]
+  md
+  
+})
+
+md <- rbind.fill(md)
 
 # ------------------------------------------------------------
 # Load cluster data
 # ------------------------------------------------------------
 
 ## clustering
-clustering <- read.table(path_clustering, header = TRUE, sep = "\t", as.is = TRUE)
+clustering <- lapply(1:length(data_name), function(i){
+  
+  clustering <- read.table(path_clustering[i], header = TRUE, sep = "\t", as.is = TRUE)
+  return(clustering)
+  
+})
+
+clustering <- rbind.fill(clustering)
+
+clustering$cell_id <- paste0(clustering$cell_id, "-", clustering$sample_id)
 
 clust <- clustering[, "cluster"]
 
+
+
 ## clustering labels
-labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
+labels <- lapply(1:length(data_name), function(i){
+  
+  labels <- read.table(path_clustering_labels[i], header = TRUE, sep = "\t", as.is = TRUE)
+  return(labels[, c("cluster", "label")])
+  
+})
+
+labels <- rbind.fill(labels)
+labels <- unique(labels)
+
+### clusters must have identical labels in data 23 and 29
+if(any(table(labels$cluster) > 1) || any(table(labels$label) > 1))
+  stop("Clusters must have identical labels in merged data sets!!!")
+
+
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
 
@@ -144,7 +181,6 @@ ggdf$cluster <- factor(ggdf$cluster, levels = levels(labels$label))
 
 
 # skipp the "drop" cluster
-
 ggdf <- ggdf[ggdf$cluster != "drop", ]
 ggdf$cluster <- factor(ggdf$cluster)
 
@@ -325,5 +361,5 @@ sessionInfo()
 
 
 ################################
-### 03_plottsne done!
+### 08_plottsne_merged.R done!
 ################################

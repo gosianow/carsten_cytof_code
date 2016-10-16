@@ -238,7 +238,7 @@ for(i in 1:nlevels(ggdf$day)){
 }
 
 # ------------------------------------
-# plot all clusters in one pdf; colors per response; separate pdf for base and tx; boxplots
+# plot all clusters in one pdf; colors per response; separate pdf for base and tx; boxplots + points
 
 days <- levels(ggdf$day)
 
@@ -270,13 +270,16 @@ for(i in 1:nlevels(ggdf$day)){
   
 }
 
+# ------------------------------------
+# plot all clusters in one pdf; colors per response; separate pdf for base and tx; boxplots 
+
 for(i in 1:nlevels(ggdf$day)){
   # i = 1
   
   df <- ggdf[ggdf$day == days[i], , drop = FALSE]
   
   ggp <- ggplot(df) +
-    geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 1, position = position_dodge(width = 0.9)) +
+    geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 1, position = position_dodge(width = 1)) +
     theme_bw() +
     ylab("Frequency") +
     xlab("") +

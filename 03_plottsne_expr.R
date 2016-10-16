@@ -147,17 +147,17 @@ for(i in 1:length(marker_selection)){
   ### Plot of tsne
   
   ## facet per group
-  ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = marker_selection)) +
-    geom_point(size=1) +
-    facet_wrap(~ group) +
-    labs(x = "tSNE 1", y="tSNE 2")+ 
-    theme_bw() +
-    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
-    scale_colour_gradientn(marker_selection[i], colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100))
-  
-  pdf(file.path(outdir, paste0(prefix, gsub("[[:punct:]]", "", marker_selection[i]), "_tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)                 
-  print(ggp)
-  dev.off()
+  # ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = marker_selection)) +
+  #   geom_point(size=1) +
+  #   facet_wrap(~ group) +
+  #   labs(x = "tSNE 1", y="tSNE 2")+ 
+  #   theme_bw() +
+  #   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
+  #   scale_colour_gradientn(marker_selection[i], colours = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(100))
+  # 
+  # pdf(file.path(outdir, paste0(prefix, gsub("[[:punct:]]", "", marker_selection[i]), "_tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)                 
+  # print(ggp)
+  # dev.off()
   
   
   ## one plot 
@@ -191,17 +191,17 @@ ggdf$group <- md$condition[mm]
 ### Plot of tsne
 
 ## facet per group
-ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = sample)) +
-  geom_point(size=1) +
-  facet_wrap(~ group) +
-  labs(x = "tSNE 1", y="tSNE 2")+ 
-  theme_bw() +
-  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
-  scale_color_manual(values = color_samples)
-
-pdf(file.path(outdir, paste0(prefix, "sample_tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)    
-print(ggp)
-dev.off()
+# ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = sample)) +
+#   geom_point(size=1) +
+#   facet_wrap(~ group) +
+#   labs(x = "tSNE 1", y="tSNE 2")+ 
+#   theme_bw() +
+#   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold")) +
+#   scale_color_manual(values = color_samples)
+# 
+# pdf(file.path(outdir, paste0(prefix, "sample_tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)    
+# print(ggp)
+# dev.off()
 
 
 ## one plot 
