@@ -109,15 +109,15 @@ if ${pd1}; then
   prefix_pd1="pd1_"
   prefix_clust="cl${nmetaclusts}_"
 
-  # ### Create the bimatrix
-  # echo "07_pd1_bimatrix"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pd1_prefix='${prefix_pd1main}' pd1_outdir='070_pd1' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}' path_cytokines_cutoffs='${PANELS}/${file_cytokines_cutoffs}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')" $RCODE/07_pd1_bimatrix.R $ROUT/07_pd1_bimatrix.Rout
-  # tail $ROUT/07_pd1_bimatrix.Rout
+  ### Create the bimatrix
+  echo "07_pd1_bimatrix"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pd1_prefix='${prefix_pd1main}' pd1_outdir='070_pd1_bimatrix' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}' path_cytokines_cutoffs='${PANELS}/${file_cytokines_cutoffs}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')" $RCODE/07_pd1_bimatrix.R $ROUT/07_pd1_bimatrix.Rout
+  tail $ROUT/07_pd1_bimatrix.Rout
 
 
   ### Frequency analysis of PD1+ and PD1-
   echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1}' freq_outdir='070_pd1' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 
@@ -128,19 +128,19 @@ if ${pd1}; then
 
   ### FlowSOM clustering of bimatrix
   echo "02_flowsom"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' flowsom_outdir='070_pd1' path_data='070_pd1/${prefix_pd1main}${prefix_pd1type}bimatrix.txt' path_clustering_observables='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' flowsom_outdir='070_pd1_bimatrix' path_data='070_pd1/${prefix_pd1main}${prefix_pd1type}bimatrix.txt' path_clustering_observables='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
   tail $ROUT/02_flowsom.Rout
 
 
   ### Heatmaps
   echo "02_heatmaps"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' heatmap_outdir='070_pd1' path_data='070_pd1/${prefix_pd1main}${prefix_pd1type}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_observables.xls' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls'  path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_pd1main}${prefix_pd1}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' heatmap_outdir='070_pd1_bimatrix' path_data='070_pd1/${prefix_pd1main}${prefix_pd1type}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_observables.xls' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls'  path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_pd1main}${prefix_pd1}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
   ### Frequency analysis of cytokines
   echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' freq_outdir='070_pd1' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 
@@ -156,7 +156,7 @@ if ${pd1}; then
 
   ### Cluster merging
   echo "02_cluster_merging"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' merging_outdir='070_pd1' path_cluster_merging='${file_merging_pd1}' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' merging_outdir='070_pd1_bimatrix' path_cluster_merging='${file_merging_pd1}' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
   tail $ROUT/02_cluster_merging.Rout
 
 
@@ -171,23 +171,20 @@ if ${pd1}; then
 
   ### Heatmaps of merged clusters
   echo "02_heatmaps"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' heatmap_outdir='070_pd1' path_data='070_pd1/${prefix_pd1main}${prefix_pd1type}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='070_pd1/${prefix_pd1main}${prefix_pd1type}clustering_observables.xls' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls'  path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' path_marker_selection='${prefix_pd1main}${prefix_pd1type}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' heatmap_outdir='070_pd1_bimatrix' path_data='070_pd1/${prefix_pd1main}${prefix_pd1type}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='070_pd1/${prefix_pd1main}${prefix_pd1type}clustering_observables.xls' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls'  path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' path_marker_selection='${prefix_pd1main}${prefix_pd1type}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
   ### tSNE plot with bimatrix clusters (based on raw data)
   echo "03_plottsne"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}raw_' tsnep_outdir='070_pd1' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}raw_' tsnep_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
   tail $ROUT/03_plottsne.Rout
 
 
   ### Get cluster frequencies
   echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' freq_outdir='070_pd1' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
-
-
-
 
 
 

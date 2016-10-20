@@ -178,7 +178,6 @@ if ${heatmaps}; then
 
 fi
 
-
 ### Run tSNE
 if ${runtsne}; then
   echo "03_runtsne"
@@ -189,7 +188,6 @@ if ${runtsne}; then
 
 fi
 
-
 ### Plot tSNE
 if ${plottsne}; then
   echo "03_plottsne"
@@ -199,6 +197,7 @@ if ${plottsne}; then
   tail $ROUT/03_plottsne.Rout
 
 fi
+
 
 ### Plot tSNE with marker expression as a heat
 if ${plottsne_expr}; then

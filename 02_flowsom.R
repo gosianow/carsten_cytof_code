@@ -35,6 +35,8 @@ library(ConsensusClusterPlus)
 # Read in the arguments
 ##############################################################################
 
+rm(list = ls())
+
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
@@ -46,6 +48,8 @@ print(args)
 
 setwd(rwd)
 rand_seed <- 1234
+
+linkage <- "average"
 
 prefix <- flowsom_prefix
 outdir <- flowsom_outdir
@@ -105,7 +109,7 @@ pdf(file.path(outdir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, he
 
 results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
   maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
-  plot = NULL, verbose = FALSE, clusterAlg = "hc", distance = "euclidean", seed = rand_seed_consensus)
+  plot = NULL, verbose = FALSE, clusterAlg = "hc", innerLinkage = linkage, finalLinkage = linkage, distance = "euclidean", seed = rand_seed_consensus)
 
 dev.off()
 

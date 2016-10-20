@@ -120,13 +120,13 @@ subs <- mapply(function(u,v) {
 cells2keep <- c(unlist(subs))
 
 
-
-### Run tSNE
-
 et_sub <- et[cells2keep, ]
 
+
+
+### Run tSNE
 set.seed(rand_seed)
-rtsne_out <- Rtsne(et_sub, pca = FALSE, verbose = TRUE)
+rtsne_out <- Rtsne(et_sub, perplexity = 30, pca = FALSE, max_iter = 1000, verbose = TRUE)
 
 
 # Save rtsne results
@@ -137,6 +137,8 @@ write.table(rtsne_data, file.path(outdir, paste0(prefix, "rtsne_data.xls")), sep
 
 
 save(rtsne_out, file = file.path(outdir, paste0(prefix, "rtsne_out.rda")))
+
+
 
 
 

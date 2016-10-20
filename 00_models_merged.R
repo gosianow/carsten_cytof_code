@@ -42,6 +42,9 @@ fit_lm_interglht <- function(data, md, method = "lm"){
     if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf)))
       return(out)
     
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs))
+      return(out)
     
     switch(method, 
       lm = {
@@ -146,6 +149,9 @@ fit_lmer_interglht <- function(data, md){
     if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf)))
       return(out)
     
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs))
+      return(out)
     
     fit_tmp <- lmer(y ~ response + data_day + response:data_day + (1|patient_id), data = data_tmp)
     
@@ -212,7 +218,7 @@ fit_lmer_interglht <- function(data, md){
 
 fit_glm_interglht <- function(data, md, family = "binomial"){
   
-  ntot <- colSums(data[, md$shortname, drop = FALSE])
+  ntot <- colSums(data[, md$shortname, drop = FALSE], na.rm = TRUE)
   
   ### Fit the GLM
   fit <- lapply(1:nrow(data), function(i){
@@ -222,11 +228,11 @@ fit_glm_interglht <- function(data, md, family = "binomial"){
     NAs <- is.na(y)
     data_tmp <- data.frame(y = as.numeric(y)[!NAs], total = as.numeric(ntot), md[!NAs, c("day", "response", "data", "data_day")])
     
-    mm <- model.matrix(y ~ response + data + day + response:data + response:day, data = data_tmp)
-    mm <- model.matrix(y ~ response + data_day + response:data_day, data = data_tmp)
-    
-    mm[!grepl("HD", md$shortname), !grepl("HD", colnames(mm))]
-    colnames(mm)
+    # mm <- model.matrix(y ~ response + data + day + response:data + response:day, data = data_tmp)
+    # mm <- model.matrix(y ~ response + data_day + response:data_day, data = data_tmp)
+    # 
+    # mm[!grepl("HD", md$shortname), !grepl("HD", colnames(mm))]
+    # colnames(mm)
     
     ## create contrasts
     contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
@@ -244,6 +250,10 @@ fit_glm_interglht <- function(data, md, family = "binomial"){
     rownames(out) <- contrast_names
     
     if(sum(y[!NAs] > 0) < 10)
+      return(out)
+    
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs))
       return(out)
     
     
@@ -336,7 +346,7 @@ fit_glm_interglht <- function(data, md, family = "binomial"){
 
 fit_glmer_interglht <- function(data, md, family = "binomial"){
   
-  ntot <- colSums(data[, md$shortname, drop = FALSE])
+  ntot <- colSums(data[, md$shortname, drop = FALSE], na.rm = TRUE)
   
   ### Fit the GLM
   fit <- lapply(1:nrow(data), function(i){
@@ -363,6 +373,10 @@ fit_glmer_interglht <- function(data, md, family = "binomial"){
     rownames(out) <- contrast_names
     
     if(sum(y[!NAs] > 0) < 10)
+      return(out)
+    
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs))
       return(out)
     
     

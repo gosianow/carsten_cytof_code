@@ -35,16 +35,27 @@ library(tools)
 # 
 # path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models_merged.R'
 
+
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4'
+freq_prefix='23CD4m2cm3_29CD4m3cm2_'
+freq_outdir='08_cytokines_merged'
+path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_02.xlsx')
+path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2/060_cytokines_bimatrix/23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cytmerging3_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging/060_cytokines_bimatrix/29CD4_02CD4_pca1_merging3_Tmem_cytCM_raw2_cytmerging2_counts.xls')
+data_name=c('data23','data29')
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models_merged.R'
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
@@ -110,27 +121,30 @@ names(color_samples) <- md$shortname
 # ---------------------------------------
 
 freq <- lapply(1:length(data_name), function(i){
-  
+  # i = 1
   path <- path_counts[i]
   freq <- read.table(path, header = TRUE, sep = "\t", as.is = TRUE)
-  freq
+  freq[, -which(colnames(freq) == "cluster")]
   
 })
 
-freq_out <- Reduce(function(...) merge(..., by = c("cluster", "label"), all=TRUE, sort = FALSE), freq)
+freq_out <- Reduce(function(...) merge(..., by = c("label"), all=TRUE, sort = FALSE), freq)
 
 freq_out <- freq_out[freq_out$label != "drop", , drop = FALSE]
+freq_out$cluster <- 1:nrow(freq_out)
 
-if(any(!complete.cases(freq_out)))
-  stop(paste0("Files: ", paste(basename(path_counts), collapse = ", "), " have different clusters!!!"))
+freq_out <- freq_out[, c("cluster", "label", md$shortname)]
 
+# if(any(!complete.cases(freq_out)))
+#   stop(paste0("Files: ", paste(basename(path_counts), collapse = ", "), " have different clusters!!!"))
+if(all(!complete.cases(freq_out)))
+  stop("There is no common cluster in the merged data sets!")
 
 prop_out <- freq_out
-prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname]))
+prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE))
 
 
-labels <- freq_out[, c("cluster", "label")]
-labels <- labels[order(labels$cluster, decreasing = FALSE), ]
+labels <- data.frame(cluster = freq_out$cluster, label = freq_out$label)
 labels$label <- factor(labels$label, levels = unique(labels$label))
 
 
@@ -139,7 +153,7 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 ### Plot frequencies
 # ------------------------------------------------------------
 
-ggdf <- melt(prop_out, id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
+ggdf <- melt(prop_out[complete.cases(freq_out), , drop = FALSE], id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
 
 ## use labels as clusters
 ggdf$cluster <- factor(ggdf$label, levels = labels$label)
@@ -398,7 +412,9 @@ for(k in models2fit){
   
   ### normalize the expression
   ass_freq_out <- freq_out
-  ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
+  ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
+  
+  ass_freq_out <- ass_freq_out[complete.cases(ass_freq_out), , drop = FALSE]
   
   expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
   th <- 2.5
@@ -415,7 +431,7 @@ for(k in models2fit){
   legend_breaks = seq(from = -round(th), to = round(th), by = 1)
   
   ### add p-value info
-  expr_all <- merge(pvs, expr_norm, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+  expr_all <- merge(expr_norm, pvs, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
   
   
   # -----------------------------
@@ -509,7 +525,7 @@ for(k in models2fit){
   which_top_pvs <- rep(TRUE, nrow(expr_all))
   which(which_top_pvs)
   
-  if(sum(which_top_pvs) > 0) {
+  if(sum(which_top_pvs) > 0){
     
     expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
     

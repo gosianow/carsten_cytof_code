@@ -2,8 +2,91 @@
 # Author: Robert Bruggner / bruggner@stanford.edu
 # Compatible with Citrus version 0.8
 
+# ==================================================================================================
+# Prepare the FCS files
+# ==================================================================================================
+
+# library("citrus")
+# citrus.checkFileParameterConsistencyUI()
+
+### First, generate  panel3.csv file from CK_panels/panel3.csv
+
+
+# library("cytofCore")
+# cytofCore.updatePanel(fcsFolder = "/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/0_citrus", templateFile = "/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/0_citrus/panel3.csv")
+
+### Split base and tx samples from relabeled/ into relabeled_base/ and relabeled_tx/ and remove HD samples
+
+# ==================================================================================================
+# Run citrus
+# ==================================================================================================
+
+library(gdata)
+library(limma)
+library(citrus)
+
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03'
+path_clustering_observables='030_heatmaps/23_03_pca1_clustering_observables.xls'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx'
+citrus_outdir='citrusOutput_1000'
+fileSampleSize=1000
+
+# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+# path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
+# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+
+
+##############################################################################
+# Read in the arguments
+##############################################################################
+
 rm(list = ls())
-library("citrus",lib.loc=NULL)
+
+args <- (commandArgs(trailingOnly = TRUE))
+for (i in 1:length(args)) {
+  eval(parse(text = args[[i]]))
+}
+
+cat(args, fill = TRUE)
+
+##############################################################################
+
+
+setwd(rwd)
+
+outdir <- citrus_outdir
+
+if( !file.exists(outdir) ) 
+  dir.create(outdir)
+
+
+# ------------------------------------------------------------
+# Load clustering_observables
+# ------------------------------------------------------------
+
+clustering_observables <- read.table(path_clustering_observables, header = TRUE, sep = "\t", as.is = TRUE)
+
+clust_observ <- clustering_observables[clustering_observables$clustering_observable, "mass"]
+
+# ------------------------------------------------------------
+# Load metadata
+# ------------------------------------------------------------
+
+md <- read.xls(path_metadata, stringsAsFactors=FALSE)
+
+# add more info about samples
+cond_split <- strsplit2(md$condition, "_")
+colnames(cond_split) <- c("day", "response")
+
+md[, c("day", "response")] <- cond_split
+md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+md$day <- factor(md$day, levels = c("base", "tx"))
+md$patient_id <- factor(md$patient_id)
+
+
+# ------------------------------------------------------------
+# Set citrus parameters
+# ------------------------------------------------------------
 
 # Use this line to limit the number of threads used by clustering
 # Rclusterpp.setThreads(1);
@@ -11,29 +94,29 @@ options("mc.cores"=1);
 
 family = "classification"
 
-# Change if you want to run from command line
-# dataDirectory = "../"
-dataDirectory = "/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/0_citrus/relabeled_base"
+dataDirectory = paste0(rwd, "/0_citrus/relabeled_base")
 
-outputDirectory = file.path(dataDirectory,"citrusOutput")
+outputDirectory = file.path(dataDirectory, outdir)
 
 
+clusteringColumns = clust_observ
 
-clusteringColumns = c("Yb174Di", "Yb170Di", "Gd155Di", "Nd145Di", "Nd146Di", "Gd160Di", "Eu153Di", "Yb176Di", "Yb172Di", "Ho165Di", "Bi209Di", "Tm169Di", "Yb171Di")
+transformColumns = clust_observ
 
-transformColumns = c("Yb174Di", "Yb170Di", "Gd155Di", "Nd145Di", "Nd146Di", "Gd160Di", "Eu153Di", "Yb176Di", "Yb172Di", "Ho165Di", "Bi209Di", "Tm169Di", "Yb171Di")
 transformCofactor = 5
-
 scaleColumns = c(NULL)
-
 
 minimumClusterSizePercent = 0.05
 modelTypes = c("pamr")
-fileSampleSize = 1000
+fileSampleSize = fileSampleSize
 nFolds = 1
 featureType = c("abundances")
-fileList = data.frame(defaultCondition=c("Base_Live_CK_Panel1_BASE_2016-06-23_1_live_NR1.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_NR2.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_NR3.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_NR4.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_NR5.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_R1.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_R2.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_R3.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_R4.fcs","Base_Live_CK_Panel1_BASE_2016-06-23_1_live_R5.fcs"))
-labels = as.factor(c("NR","NR","NR","NR","NR","R","R","R","R","R"))
+
+
+files_keep <- md$day == "base" & md$response %in% c("NR", "R")
+
+fileList = data.frame(defaultCondition = md[files_keep, "filename"])
+labels = factor(md[files_keep, "response"])
 
 
 
@@ -109,8 +192,15 @@ cvPoints <- names(citrus.regressionResults[[1]]$differentialFeatures)
 
 
 for(cvPoint in cvPoints){
+  # cvPoint <- "cv.1se"
+  print(cvPoint)
   
-  clusterIds <- as.numeric(citrus.regressionResults[[1]]$differentialFeatures[[cvPoint]]$clusters)
+  cluster_tmp <- citrus.regressionResults[[1]]$differentialFeatures[[cvPoint]]
+  
+  if(class(cluster_tmp) == "character")
+    clusterIds <- as.numeric(cluster_tmp["clusters"])
+  if(class(cluster_tmp) == "list")
+    clusterIds <- as.numeric(cluster_tmp$clusters)
   
   ### Some cells belong to multiple clusters...!!!
   # cvClusters <- clusterMembership[clusterIds]
@@ -161,12 +251,12 @@ for(cvPoint in cvPoints){
 
 
 
-# Large enough clusters
-citrus.clustering <- citrus.foldClustering$allClustering
-
-largeEnoughClusters = citrus.selectClusters(citrus.clustering)
-
-sapply(clusterMembership[largeEnoughClusters],length)
+### Large enough clusters
+# citrus.clustering <- citrus.foldClustering$allClustering
+# 
+# largeEnoughClusters = citrus.selectClusters(citrus.clustering)
+# 
+# sapply(clusterMembership[largeEnoughClusters],length)
 
 
 # ==================================================================================================
@@ -174,64 +264,20 @@ sapply(clusterMembership[largeEnoughClusters],length)
 # ==================================================================================================
 
 
-load(paste0(dataDirectory, "/citrusOutput/citrusClustering.rData"))
-
-o <- citrus.foldClustering$allClustering$clustering$order
-
-mergeOrder <- citrus.foldClustering$allClustering$clustering$merge
-
-
-clusterMembership <- citrus.foldClustering$allClustering$clusterMembership
-
-
-table(sapply(clusterMembership, length))
-
-length(clusterMembership)
-length(unlist(clusterMembership))
-
-
-
-
-# ==================================================================================================
-### Examples
-
-# Where the data lives
-dataDirectory = file.path(system.file(package = "citrus"),"extdata","example1")
-
-# Create list of files to be analyzed
-fileList = data.frame("unstim"=list.files(dataDirectory,pattern=".fcs"))
-
-# Read the data
-citrus.combinedFCSSet = citrus.readFCSSet(dataDirectory,fileList)
-
-# List of columns to be used for clustering
-clusteringColumns = c("Red","Blue")
-
-# Cluster data
-citrus.clustering = citrus.cluster(citrus.combinedFCSSet,clusteringColumns)
-
-# Plot clusters
-citrus.plotClusters(clusterIds=c(19998,19997),clusterAssignments=citrus.clustering$clusterMembership,citrus.combinedFCSSet,clusteringColumns)
-
-
-citrus.plotClusters(clusterIds=c(1, 2),clusterAssignments=citrus.clustering$clusterMembership,citrus.combinedFCSSet,clusteringColumns)
-
-
-
-# Large enough clusters
-largeEnoughClusters = citrus.selectClusters(citrus.clustering)
-
-# Create graph for plotting
-hierarchyGraph = citrus.createHierarchyGraph(citrus.clustering,selectedClusters=largeEnoughClusters)
-
-
-# Create matrix of variables to plot (in this case, cluster medians)
-clusterMedians = t(sapply(largeEnoughClusters,citrus:::.getClusterMedians,clusterAssignments=citrus.clustering$clusterMembership,data=citrus.combinedFCSSet$data,clusterCols=clusteringColumns))
-rownames(clusterMedians) = largeEnoughClusters
-colnames(clusterMedians) = clusteringColumns
-
-# Plot Clustering Hierarchy - Uncomment and Specify an output file
-citrus.plotClusteringHierarchy(outputFile="citrus.pdf",clusterColors=clusterMedians,graph=hierarchyGraph$graph,layout=hierarchyGraph$layout,plotSize=hierarchyGraph$plotSize)
+# load(paste0(dataDirectory, "/citrusOutput/citrusClustering.rData"))
+# 
+# o <- citrus.foldClustering$allClustering$clustering$order
+# 
+# mergeOrder <- citrus.foldClustering$allClustering$clustering$merge
+# 
+# 
+# clusterMembership <- citrus.foldClustering$allClustering$clusterMembership
+# 
+# 
+# table(sapply(clusterMembership, length))
+# 
+# length(clusterMembership)
+# length(unlist(clusterMembership))
 
 
 
@@ -242,6 +288,6 @@ citrus.plotClusteringHierarchy(outputFile="citrus.pdf",clusterColors=clusterMedi
 
 
 
-
-
-
+################################
+### 0_runCitrus.R done!
+################################

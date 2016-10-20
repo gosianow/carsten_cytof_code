@@ -59,6 +59,8 @@ print(args)
 
 setwd(rwd)
 
+linkage <- "average"
+
 prefix <- heatmap_prefix
 outdir <- heatmap_outdir
 
@@ -181,7 +183,7 @@ write.table(clusters_out, file.path(outdir, paste0(prefix, "clusters.xls")), sep
 expr <- as.matrix(a[, fcs_panel$Antigen[scols]])
 rownames(expr) <- labels$label
 
-cluster_rows <- hclust(dist(expr), method = "average")
+cluster_rows <- hclust(dist(expr), method = linkage)
 
 
 ### Use all markers for plotting
@@ -363,13 +365,13 @@ plotting_wrapper <- function(e, suffix){
 }
 
 
-## Expression, included observables
-plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
-
-## Expression, excluded observables
-if(length(xcols) > 0){
-  plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
-}
+# ## Expression, included observables
+# plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
+# 
+# ## Expression, excluded observables
+# if(length(xcols) > 0){
+#   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
+# }
 
 
 
