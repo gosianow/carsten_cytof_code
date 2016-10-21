@@ -37,12 +37,15 @@ library(gtools) # for logit
 # Read in the arguments
 ##############################################################################
 
+rm(list = ls())
+
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
+
 
 ##############################################################################
 
@@ -69,7 +72,9 @@ colnames(cond_split) <- c("day", "response")
 
 md[, c("day", "response")] <- cond_split
 md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+md$response <- factor(md$response)
 md$day <- factor(md$day, levels = c("base", "tx"))
+md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
 
 
@@ -245,33 +250,84 @@ for(i in 1:nlevels(ggdf$day)){
 
 source(path_fun_models)
 
-# models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht", "test_wilcoxon", "glmmadmb_fixed_betabinomial_interglht", "glmmadmb_fixed_beta_interglht")
+levels(md$day)
+levels(md$response)
 
-models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht", "test_wilcoxon", "glmmadmb_fixed_betabinomial_interglht", "glmmadmb_fixed_beta_interglht")
 
-# x <- seq(0, 1, 0.01)
-# plot(x, logit(x), type = "l")
-# lines(x, asin(sqrt(x)), col = "blue")
-# lines(x, asin(x), col = "red")
-# lines(x, sqrt(x), col = "green")
+if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R", "HD"))){
+  ## create formulas
+  formula_lm <- y ~ response + day + response:day
+  formula_lmer <- y ~ response + day + response:day + (1|patient_id)
+  
+  formula_glm_binomial <- cbind(y, total-y) ~ response + day + response:day
+  formula_glm_beta <- y/total ~ response + day + response:day
+  formula_glmer_binomial <- y/total ~ response + day + response:day + (1|patient_id)
+  
+  ## create contrasts
+  contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
+  k0 <- c(0, 1, 0, 0, 1/2, 0) # NR vs R
+  k1 <- c(0, 1, 0, 0, 0, 0) # NR vs R in base
+  k2 <- c(0, 1, 0, 0, 1, 0) # NR vs R in tx
+  k3 <- c(0, 0, 0, 0, 1, 0) # whether NR vs R is different in base and tx
+  K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
+  rownames(K) <- contrast_names
+  
+  ### p-value for sorting the output
+  pval_name <- "pval_NRvsR"
+  ### p-value for plotting the pheatmap2
+  adjpval_name <- "adjp_NRvsR"
+  ### p-value for plotting the pheatmap3
+  adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+  
+  
+}else if(identical(levels(md$day), "base") && identical(levels(md$response), c("NR", "R", "HD"))){
+  ## create formulas
+  formula_lm <- y ~ response
+  formula_lmer <- y ~ response + (1|patient_id)
+  
+  formula_glm_binomial <- cbind(y, total-y) ~ response
+  formula_glm_beta <- y/total ~ response
+  formula_glmer_binomial <- y/total ~ response + (1|patient_id)
+  
+  ## create contrasts
+  contrast_names <- c("NRvsR_base")
+  k1 <- c(0, 1, 0) # NR vs R in base
+  K <- matrix(k1, nrow = 1, byrow = TRUE)
+  rownames(K) <- contrast_names
+  
+  ### p-value for sorting the output
+  pval_name <- "pval_NRvsR_base"
+  ### p-value for plotting the pheatmap2
+  adjpval_name <- NULL
+  ### p-value for plotting the pheatmap3
+  adjpval_name_list <- "adjp_NRvsR_base"
+  
+}else{
+  stop("Metadata does not fit to any the models that are specified !!!")  
+}
+
+
+models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "test_wilcoxon", "glmmadmb_fixed_betabinomial_interglht", "glmmadmb_fixed_beta_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht")
+
 
 for(k in models2fit){
   # k = "glmer_logit_interglht"
+  print(k)
   
   switch(k,
     glm_binomial_interglht = {
       # Fit a GLM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "binomial")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "binomial", formula = formula_glm_binomial, K = K)
       
     }, 
     glm_quasibinomial_interglht = {
       # Fit a GLM quasibinomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "quasibinomial")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "quasibinomial", formula = formula_glm_binomial, K = K)
       
     },
     glmer_binomial_interglht = {
       # Fit a GLMM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "binomial")
+      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "binomial", formula = formula_glmer_binomial, K = K)
       
     },
     lmer_logit_interglht = {
@@ -279,7 +335,7 @@ for(k in models2fit){
       logit_freq_out <- freq_out
       logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))
       ## Be carefull about Inf and -Inf for prop = 0, 1
-      fit_out <- fit_lmer_interglht(data = logit_freq_out, md)
+      fit_out <- fit_lmer_interglht(data = logit_freq_out, md, formula = formula_lmer, K = K)
       
     },
     lmer_arcsinesqrt_interglht = {
@@ -287,20 +343,14 @@ for(k in models2fit){
       ass_freq_out <- freq_out
       ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
       
-      fit_out <- fit_lmer_interglht(data = ass_freq_out, md)
+      fit_out <- fit_lmer_interglht(data = ass_freq_out, md, formula = formula_lmer, K = K)
       
     },
     glmmadmb_fixed_beta_interglht = {
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "beta")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "beta", formula = formula_glm_beta, K = K)
     },
     glmmadmb_fixed_betabinomial_interglht = {
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "betabinomial")
-    },
-    glmmadmb_mixed_beta_interglht = {
-      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "beta")
-    },
-    glmmadmb_mixed_betabinomial_interglht = {
-      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "betabinomial")
+      fit_out <- fit_glm_interglht(data = freq_out, md, family = "betabinomial", formula = formula_glm_binomial, K = K)
     },
     test_wilcoxon = {
       
@@ -319,23 +369,23 @@ for(k in models2fit){
   pvs <- data.frame(freq_out[, c("cluster", "label")], fit_out[["pvals"]])
   coeffs <- data.frame(freq_out[, c("cluster", "label")], fit_out[["coeffs"]])
   
-  oo <- order(pvs$pval_NRvsR, decreasing = FALSE)
-  pvs <- pvs[oo, ]
-  coeffs <- coeffs[oo, ]
+  oo <- order(pvs[, pval_name], decreasing = FALSE)
+  pvs <- pvs[oo, , drop = FALSE]
+  coeffs <- coeffs[oo, , drop = FALSE]
   
   ## save the results
   write.table(pvs, file=file.path(outdir, paste0(prefix, "frequencies_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   write.table(coeffs, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   
-  table(pvs$adjp_NRvsR < 0.05, useNA = "always")
-  table(pvs$adjp_NRvsR_base < 0.05, useNA = "always")
-  table(pvs$adjp_NRvsR_tx < 0.05, useNA = "always")
-  table(pvs$adjp_NRvsR_basevstx < 0.05, useNA = "always")
-  
-  table(pvs$pval_NRvsR < 0.05, useNA = "always")
-  table(pvs$pval_NRvsR_base < 0.05, useNA = "always")
-  table(pvs$pval_NRvsR_tx < 0.05, useNA = "always")
-  table(pvs$pval_NRvsR_basevstx < 0.05, useNA = "always")
+  # table(pvs$adjp_NRvsR < 0.05, useNA = "always")
+  # table(pvs$adjp_NRvsR_base < 0.05, useNA = "always")
+  # table(pvs$adjp_NRvsR_tx < 0.05, useNA = "always")
+  # table(pvs$adjp_NRvsR_basevstx < 0.05, useNA = "always")
+  # 
+  # table(pvs$pval_NRvsR < 0.05, useNA = "always")
+  # table(pvs$pval_NRvsR_base < 0.05, useNA = "always")
+  # table(pvs$pval_NRvsR_tx < 0.05, useNA = "always")
+  # table(pvs$pval_NRvsR_basevstx < 0.05, useNA = "always")
   
   
   # ----------------------------------------
@@ -349,10 +399,10 @@ for(k in models2fit){
   expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
   th <- 2.5
   
-  day <- levels(md$day)
+  days <- levels(md$day)
   
   ### Normalized to mean = 0 and sd = 1 per day
-  for(i in day){
+  for(i in days){
     # i = "base"
     expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   }
@@ -367,13 +417,16 @@ for(k in models2fit){
   # -----------------------------
   ### Plot one heatmap with R vs NR
   
-  adjpval_name <- "adjp_NRvsR"
-  
   ## group the expression by cluster
-  expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+  if(is.null(adjpval_name)){
+    which_top_pvs <- FALSE
+  }else{
+    expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+    
+    which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
+    which(which_top_pvs)
+  }
   
-  which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
-  which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0) {
     
@@ -403,7 +456,7 @@ for(k in models2fit){
   # -----------------------------
   ### Plot two heatmaps with R vs NR for base and tx
   
-  for(i in c("base", "tx")){
+  for(i in levels(md$day)){
     # i = "base"
     
     adjpval_name <- paste0("adjp_NRvsR_", i)
@@ -445,13 +498,14 @@ for(k in models2fit){
   # -----------------------------
   ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
   
-  adjpval_name <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+  ## group the expression by cluster and order by adjpval
+  for(i in length(adjpval_name_list):1){
+    expr_all <- expr_all[order(expr_all[, adjpval_name_list[i]]), , drop = FALSE]
+  }
   
-  ## group the expression by cluster
-  expr_all <- expr_all[order(expr_all[, adjpval_name[1]], expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]], expr_all$label), , drop = FALSE]
   
-  # which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name])) == 0
-  # which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name])) < length(adjpval_name)
+  # which_top_pvs <- rowSums(expr_all[, adjpval_name_list] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name_list])) == 0
+  # which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name_list])) < length(adjpval_name_list)
   which_top_pvs <- rep(TRUE, nrow(expr_all))
   which(which_top_pvs)
   
@@ -477,7 +531,7 @@ for(k in models2fit){
     pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap3", suffix, ".pdf")))
     
     
-    pvs_heat <- expr_heat[, adjpval_name, drop = FALSE]
+    pvs_heat <- expr_heat[, adjpval_name_list, drop = FALSE]
     
     labels_col <- colnames(pvs_heat)
     gaps_col <- NULL
@@ -494,11 +548,12 @@ for(k in models2fit){
   # Plot coefficients NRvsR for base and tx (to show that they correlate)
   # ----------------------------------------
   
-  adjpval_name <- "adjp_NRvsR_basevstx"
   
-  ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
-  
-  if(sum(complete.cases(ggdf)) > 0){
+  if("adjp_NRvsR_basevstx" %in% colnames(pvs)){
+    
+    adjpval_name <- "adjp_NRvsR_basevstx"
+    
+    ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
     
     limmin <- min(ggdf, na.rm = TRUE)
     limmax <- max(ggdf, na.rm = TRUE)

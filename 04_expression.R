@@ -35,16 +35,31 @@ library(pheatmap)
 # path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 # analysis_type='all'
 
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-03-23_01'
+expr_prefix='0323_01_pca1_merging_raw_'
+expr_outdir='080_expression'
+path_data='010_data/0323_01_expr_raw.rds'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_0323_01.xlsx'
+path_clustering_observables='030_heatmaps/0323_01_pca1_clustering_observables.xls'
+path_clustering='030_heatmaps/0323_01_pca1_merging_clustering.xls'
+path_clustering_labels='030_heatmaps/0323_01_pca1_merging_clustering_labels.xls'
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+analysis_type='clust'
+
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
+
 
 ##############################################################################
 
@@ -92,7 +107,9 @@ colnames(cond_split) <- c("day", "response")
 
 md[, c("day", "response")] <- cond_split
 md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+md$response <- factor(md$response)
 md$day <- factor(md$day, levels = c("base", "tx"))
+md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
 
 
@@ -192,11 +209,6 @@ if(analysis_type == "clust"){
   
 }
 
-
-# ------------------------------------------------------------
-# Get the median expression for cells from all the clusters
-# ------------------------------------------------------------
-
 if(analysis_type == "all"){
   
   colnames(e) <- fcs_panel$Antigen
@@ -282,44 +294,94 @@ dev.off()
 
 source(path_fun_models)
 
+levels(md$day)
+levels(md$response)
+
+
+if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R", "HD"))){
+  ## create formulas
+  formula_lm <- y ~ response + day + response:day
+  formula_lmer <- y ~ response + day + response:day + (1|patient_id)
+  
+  ## create contrasts
+  contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
+  k0 <- c(0, 1, 0, 0, 1/2, 0) # NR vs R
+  k1 <- c(0, 1, 0, 0, 0, 0) # NR vs R in base
+  k2 <- c(0, 1, 0, 0, 1, 0) # NR vs R in tx
+  k3 <- c(0, 0, 0, 0, 1, 0) # whether NR vs R is different in base and tx
+  K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
+  rownames(K) <- contrast_names
+  
+  ### p-value for sorting the output
+  pval_name <- "pval_NRvsR"
+  ### p-value for plotting the pheatmap2
+  adjpval_name <- "adjp_NRvsR"
+  ### p-value for plotting the pheatmap3
+  adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+  
+  
+}else if(identical(levels(md$day), "base") && identical(levels(md$response), c("NR", "R", "HD"))){
+  ## create formulas
+  formula_lm <- y ~ response
+  formula_lmer <- y ~ response + (1|patient_id)
+  
+  ## create contrasts
+  contrast_names <- c("NRvsR_base")
+  k1 <- c(0, 1, 0) # NR vs R in base
+  K <- matrix(k1, nrow = 1, byrow = TRUE)
+  rownames(K) <- contrast_names
+  
+  ### p-value for sorting the output
+  pval_name <- "pval_NRvsR_base"
+  ### p-value for plotting the pheatmap2
+  adjpval_name <- NULL
+  ### p-value for plotting the pheatmap3
+  adjpval_name_list <- "adjp_NRvsR_base"
+  
+}else{
+  stop("Metadata does not fit to any the models that are specified !!!")  
+}
+
+
 
 ### Prepare the matrix with data (rows - markers X clusters; columns - samples)
 
 expr <- a
-
 exprm <- melt(expr, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
-
 exprc <- dcast(exprm, cluster + label + marker ~ sample, value.var = "expr")
 
-models2fit <- c("rlm_interglht", "lm_interglht", "lmer_interglht", "test_wilcoxon")
+models2fit <- c("rlm_interglht", "lm_interglht", "test_wilcoxon", "lmer_interglht")
+
 
 for(k in models2fit){
-  # k = "lmer_interglht"
+  # k = "lm_interglht"
+  print(k)
+  
   
   switch(k,
     lm_interglht = {
       
       # Fit a LM with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_lm_interglht(data = exprc, md, method = "lm")
+      fit_out <- fit_lm_interglht(data = exprc, md, method = "lm", formula = formula_lm, K = K)
       
     }, 
     lmer_interglht = {
       
       # Fit a lmer with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_lmer_interglht(data = exprc, md)
+      fit_out <- fit_lmer_interglht(data = exprc, md, formula = formula_lmer, K = K)
       
-    },
-    test_wilcoxon = {
-      fit_out <- test_wilcoxon(data = exprc, md)
     },
     lmrob_interglht = {
       ## Problems with running lmrob!!!
-      fit_out <- fit_lm_interglht(data = exprc, md, method = "lmrob")
+      fit_out <- fit_lm_interglht(data = exprc, md, method = "lmrob", formula = formula_lm, K = K)
     },
     rlm_interglht = {
-      fit_out <- fit_lm_interglht(data = exprc, md, method = "rlm")
+      fit_out <- fit_lm_interglht(data = exprc, md, method = "rlm", formula = formula_lm, K = K)
+    },
+    test_wilcoxon = {
+      fit_out <- test_wilcoxon(data = exprc, md)
     }
-    
+  
   )
   
   
@@ -330,23 +392,14 @@ for(k in models2fit){
   pvs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["pvals"]])
   coeffs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["coeffs"]])
   
-  oo <- order(pvs$pval_NRvsR, decreasing = FALSE)
-  pvs <- pvs[oo, ]
-  coeffs <- coeffs[oo, ]
+  oo <- order(pvs[, pval_name], decreasing = FALSE)
+  pvs <- pvs[oo, , drop = FALSE]
+  coeffs <- coeffs[oo, , drop = FALSE]
   
   ## save the results
   write.table(pvs, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   write.table(coeffs, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   
-  table(pvs$adjp_NRvsR < 0.05, useNA = "always")
-  table(pvs$adjp_NRvsR_base < 0.05, useNA = "always")
-  table(pvs$adjp_NRvsR_tx < 0.05, useNA = "always")
-  table(pvs$adjp_NRvsR_basevstx < 0.05, useNA = "always")
-  
-  table(pvs$pval_NRvsR < 0.05, useNA = "always")
-  table(pvs$pval_NRvsR_base < 0.05, useNA = "always")
-  table(pvs$pval_NRvsR_tx < 0.05, useNA = "always")
-  table(pvs$pval_NRvsR_basevstx < 0.05, useNA = "always")
   
   # ----------------------------------------
   # Plot a heatmap of significant cases
@@ -356,10 +409,10 @@ for(k in models2fit){
   expr_norm <- exprc[, c("cluster", "label", "marker", md[md$response != "HD", "shortname"])]
   th <- 2.5
   
-  day <- levels(md$day)
+  days <- levels(md$day)
   
   ### Normalized to mean = 0 and sd = 1 per day
-  for(i in day){
+  for(i in days){
     # i = "base"
     expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   }
@@ -370,42 +423,26 @@ for(k in models2fit){
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
   
-  # -----------------------------
-  ### Plot one heatmap with R vs NR
   
-  adjpval_name <- "adjp_NRvsR"
+  
+  # -----------------------------
+  ### Plot one heatmap with base and tx
   
   ## group the expression by cluster
-  expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
+  if(is.null(adjpval_name)){
+    which_top_pvs <- FALSE
+  }else{
+    expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
+    
+    which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
+    which(which_top_pvs)
+  }
   
-  which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
-  which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0) {
+    print("Plot pheatmap2")
     
     expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
-    
-    # -----------------------------
-    ## order the samples by NR and R
-    
-    samples2plot <- md[md$response %in% c("NR", "R"), ]
-    samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
-    
-    ## gap in the heatmap 
-    gaps_col <- sum(grepl("_NR", samples2plot))
-    gaps_row <- unique(cumsum(table(expr_heat$label)))
-    gaps_row <- gaps_row[gaps_row > 0]
-    if(length(gaps_row) == 1) 
-      gaps_row <- NULL
-    
-    ## expression scaled by row
-    expr <- expr_heat[ , samples2plot, drop = FALSE]
-    
-    labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
-    labels_col <- colnames(expr)
-    
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap1", suffix, ".pdf")))
-    
     
     # -----------------------------
     ## order the samples by base and tx
@@ -432,9 +469,9 @@ for(k in models2fit){
   
   
   # -----------------------------
-  ### Plot two heatmaps with R vs NR for base and tx
+  ### Plot heatmaps with R vs NR for base and tx
   
-  for(i in c("base", "tx")){
+  for(i in levels(md$day)){
     # i = "tx"
     
     adjpval_name <- paste0("adjp_NRvsR_", i)
@@ -446,6 +483,7 @@ for(k in models2fit){
     which(which_top_pvs)
     
     if(sum(which_top_pvs) > 0){
+      print(paste0("Plot pheatmap_", i))
       
       expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
       
@@ -479,15 +517,19 @@ for(k in models2fit){
   # -----------------------------
   ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
   
-  adjpval_name <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+  ## group the expression by cluster and order by adjpval
+  for(i in length(adjpval_name_list):1){
+    expr_all <- expr_all[order(expr_all[, adjpval_name_list[i]]), , drop = FALSE]
+  }
   
-  ## group the expression by cluster
-  expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name[1]], expr_all[, adjpval_name[2]], expr_all[, adjpval_name[3]]), , drop = FALSE]
+  expr_all <- expr_all[order(expr_all$label), , drop = FALSE]
   
-  which_top_pvs <- rowSums(expr_all[, adjpval_name] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name])) < length(adjpval_name)
+  # which_top_pvs <- rowSums(expr_all[, adjpval_name_list, drop = FALSE] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name_list, drop = FALSE])) < length(adjpval_name_list)
+  which_top_pvs <- rep(TRUE, nrow(expr_all))
   which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0) {
+    print("Plot pheatmap3")
     
     expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
     
@@ -511,7 +553,7 @@ for(k in models2fit){
     
     pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3", suffix, ".pdf")))
     
-    pvs_heat <- expr_heat[, adjpval_name, drop = FALSE]
+    pvs_heat <- expr_heat[, adjpval_name_list, drop = FALSE]
     
     labels_col <- colnames(pvs_heat)
     gaps_col <- NULL
@@ -527,11 +569,12 @@ for(k in models2fit){
   # Plot coefficients NRvsR for base and tx (to show that they correlate)
   # ----------------------------------------
   
-  adjpval_name <- "adjp_NRvsR_basevstx"
   
-  ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
-  
-  if(sum(complete.cases(ggdf)) > 0){
+  if("adjp_NRvsR_basevstx" %in% colnames(pvs)){
+    
+    adjpval_name <- "adjp_NRvsR_basevstx"
+    
+    ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
     
     limmin <- min(ggdf, na.rm = TRUE)
     limmax <- max(ggdf, na.rm = TRUE)
