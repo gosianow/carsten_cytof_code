@@ -404,7 +404,7 @@ for(k in models2fit){
   ### Normalized to mean = 0 and sd = 1 per day
   for(i in days){
     # i = "base"
-    expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+    expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   }
   
   breaks = seq(from = -th, to = th, length.out = 101)

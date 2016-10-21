@@ -436,8 +436,8 @@ for(k in models2fit){
   # Extract p-values and coeffs
   # ----------------------------------------
   
-  pvs <- data.frame(freq_out[, c("cluster", "label")], fit_out[["pvals"]])
-  coeffs <- data.frame(freq_out[, c("cluster", "label")], fit_out[["coeffs"]])
+  pvs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["pvals"]])
+  coeffs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["coeffs"]])
   
   oo <- order(pvs[, pval_name], decreasing = FALSE)
   pvs <- pvs[oo, , drop = FALSE]
@@ -476,7 +476,7 @@ for(k in models2fit){
   ### Normalized to mean = 0 and sd = 1 per data and day
   for(i in data_days){
     # i = "data23.base"
-    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x))/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
   }
   
   breaks = seq(from = -th, to = th, length.out = 101)
@@ -544,8 +544,9 @@ for(k in models2fit){
       ## order the samples by NR and R
       
       samples2plot <- md[md$response %in% c("NR", "R"), ]
-      samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
-      samples2plot <- samples2plot[grep(i, samples2plot)]
+      samples2plot <- samples2plot[order(samples2plot$response, samples2plot$day), ]
+      samples2plot <- samples2plot[grep(i, samples2plot$day), ]
+      samples2plot <- samples2plot$shortname
       
       ## gap in the heatmap 
       gaps_col <- sum(grepl("_NR", samples2plot))

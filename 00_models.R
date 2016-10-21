@@ -20,8 +20,7 @@ test_wilcoxon <- function(data, md){
   
   ### Fit the LM
   fit <- lapply(1:nrow(data), function(i){
-    # i = 1
-    
+    # i = 25
     y <- data[i, md$shortname]
     NAs <- is.na(y)
     data_tmp <- data.frame(y = as.numeric(y), md)[!NAs, , drop = FALSE]
@@ -30,15 +29,20 @@ test_wilcoxon <- function(data, md){
     colnames(out) <- c("coeff", "pval")
     rownames(out) <- contrast_names
     
+    data_tmp$response <- factor(data_tmp$response)
+    if(nlevels(data_tmp$response) < 2){
+      return(out)
+    }
+    
     ## there must be at least 10 values different than 0
     if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf))){
       return(out)
     }
     
-    for(j in 1:nlevels(md$day)){
-      # j = 1
+    for(j in 1:nlevels(data_tmp$day)){
+      # j = 2
       
-      test_tmp <- wilcox.test(formula = y ~ response, data = data_tmp, subset = md$day == days[j])
+      test_tmp <- wilcox.test(formula = y ~ response, data = data_tmp, subset = data_tmp$day == days[j])
       out[paste0("NRvsR_", days[j]), "pval"] <- test_tmp$p.value
       
     }
@@ -166,7 +170,7 @@ fit_lm_interglht <- function(data, md, method = "lm", formula, K){
   
   colnames(pvals) <- paste0("pval_", movars)
   colnames(coeffs) <- movars
-   
+  
   ## get adjusted p-values
   adjp <- apply(pvals, 2, p.adjust, method = "BH")
   colnames(adjp) <- paste0("adjp_", movars)
@@ -341,7 +345,7 @@ fit_glm_interglht <- function(data, md, family = "binomial", formula, K){
     
     ## fit contrasts one by one
     out <- t(apply(K, 1, function(k){
-
+      
       contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
       summ_tmp <- summary(contr_tmp)
       
