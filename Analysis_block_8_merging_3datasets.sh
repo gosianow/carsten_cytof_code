@@ -26,14 +26,6 @@ while [[ ${1} ]]; do
     expression_merged=${2}
     shift
     ;;
-    --runtsne_merged)
-    runtsne_merged=${2}
-    shift
-    ;;
-    --plottsne_merged)
-    plottsne_merged=${2}
-    shift
-    ;;
     --data_name1)
     data_name1=${2}
     shift
@@ -146,20 +138,6 @@ if ${expression_merged}; then
   echo "08_expression_merged"
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}','${METADATA}/${file_metadata3}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_all.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_all.xls','${RWD_MAIN}/${data_dir3}/080_expression/${prefix_data3}${prefix_panel}${prefix_pca}${prefix_merging3}raw_expr_all.xls') data_name=c('${data_name1}','${data_name2}','${data_name3}') path_fun_models='$RCODE/00_models.R' analysis_type='all'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
   tail $ROUT/08_expression_merged.Rout
-fi
-
-
-if ${runtsne_merged}; then
-  echo "08_runtsne_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsne_prefix='${prefix_data_merging}' tsne_outdir='08_tsnemaps_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}','${METADATA}/${file_metadata3}')  path_data=c('${RWD_MAIN}/${data_dir1}/010_data/${prefix_data1}${prefix_panel}expr_raw.rds','${RWD_MAIN}/${data_dir2}/010_data/${prefix_data2}${prefix_panel}expr_raw.rds','${RWD_MAIN}/${data_dir3}/010_data/${prefix_data3}${prefix_panel}expr_raw.rds') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/030_heatmaps/${prefix_data1}${prefix_panel}${prefix_pca}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/030_heatmaps/${prefix_data2}${prefix_panel}${prefix_pca}clustering_observables.xls','${RWD_MAIN}/${data_dir3}/030_heatmaps/${prefix_data3}${prefix_panel}${prefix_pca}clustering_observables.xls') data_name=c('${data_name1}','${data_name2}','${data_name3}') tsne_pmin=1500" $RCODE/08_runtsne_merged.R $ROUT/08_runtsne_merged.Rout
-  tail $ROUT/08_runtsne_merged.Rout
-fi
-
-
-if ${plottsne_merged}; then
-  echo "08_plottsne_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data_merging}' tsnep_outdir='08_tsnemaps_merged' path_rtsne_out='08_tsnemaps_merged/${prefix_data_merging}rtsne_out.rda' path_rtsne_data='08_tsnemaps_merged/${prefix_data_merging}rtsne_data.xls'  path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}','${METADATA}/${file_metadata3}')  path_clustering=c('${RWD_MAIN}/${data_dir1}/030_heatmaps/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}clustering.xls','${RWD_MAIN}/${data_dir2}/030_heatmaps/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}clustering.xls','${RWD_MAIN}/${data_dir3}/030_heatmaps/${prefix_data3}${prefix_panel}${prefix_pca}${prefix_merging3}clustering.xls') path_clustering_labels=c('${RWD_MAIN}/${data_dir1}/030_heatmaps/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}clustering_labels.xls','${RWD_MAIN}/${data_dir2}/030_heatmaps/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}clustering_labels.xls','${RWD_MAIN}/${data_dir3}/030_heatmaps/${prefix_data3}${prefix_panel}${prefix_pca}${prefix_merging3}clustering_labels.xls') data_name=c('${data_name1}','${data_name2}','${data_name3}') pdf_width=15 pdf_height=10" $RCODE/08_plottsne_merged.R $ROUT/08_plottsne_merged.Rout
-  tail $ROUT/08_plottsne_merged.Rout
 fi
 
 

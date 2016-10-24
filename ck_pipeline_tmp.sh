@@ -9,10 +9,8 @@ METADATA=$RWD_MAIN/CK_metadata
 PANELS=$RWD_MAIN/CK_panels
 
 ## Define which analysis to re-run
-frequencies_merged=true
+frequencies_merged=false
 expression_merged=true
-runtsne_merged=false
-plottsne_merged=false
 
 ###############################################################################################################
 # Merging data 23 and 29 and 03-23 for panel 1
@@ -44,7 +42,7 @@ prefix_merging3="merging_"
 prefix_data_merging="23m6_29m4_0323m_"
 
 
-# ./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --runtsne_merged ${runtsne_merged} --plottsne_merged ${plottsne_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
+./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
 
 
 ###############################################################################################################
@@ -77,7 +75,7 @@ prefix_merging3="merging_"
 prefix_data_merging="23m4_29m2_0323m_"
 
 
-./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --runtsne_merged ${runtsne_merged} --plottsne_merged ${plottsne_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
+./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
 
 
 ###############################################################################################################
@@ -110,7 +108,7 @@ prefix_merging3="merging_"
 prefix_data_merging="23CD4m4_29CD4m4_0323CD4m_"
 
 
-./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --runtsne_merged ${runtsne_merged} --plottsne_merged ${plottsne_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
+./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
 
 ###############################################################################################################
 # Merging data 23 and 29 and 03-23 for panel 1 CD8
@@ -142,7 +140,7 @@ prefix_merging3="merging_"
 prefix_data_merging="23CD8m3_29CD8m3_0323CD4m_"
 
 
-./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --runtsne_merged ${runtsne_merged} --plottsne_merged ${plottsne_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
+./Analysis_block_8_merging_3datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_name3 ${data_name3} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --data_dir3 ${data_dir3} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --file_metadata3 ${file_metadata3} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_data3 ${prefix_data3} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_merging3 ${prefix_merging3} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
 
 
 

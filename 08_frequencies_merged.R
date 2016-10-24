@@ -139,7 +139,7 @@ prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shor
 
 labels <- data.frame(cluster = freq_out$cluster, label = freq_out$label)
 labels$label <- factor(labels$label, levels = unique(labels$label))
-
+labels
 
 
 # ------------------------------------------------------------
@@ -341,7 +341,7 @@ if(identical(levels(md$data), c("data23", "data29")) && identical(levels(md$day)
   ### p-value for sorting the output
   pval_name <- "pval_NRvsR"
   ### p-value for plotting the pheatmap2
-  adjpval_name <- "adjp_NRvsR"
+  adjpval_name2 <- "adjp_NRvsR"
   ### p-value for plotting the pheatmap3
   adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
   
@@ -368,7 +368,7 @@ if(identical(levels(md$data), c("data23", "data29")) && identical(levels(md$day)
   ### p-value for sorting the output
   pval_name <- "pval_NRvsR"
   ### p-value for plotting the pheatmap2
-  adjpval_name <- "adjp_NRvsR"
+  adjpval_name2 <- "adjp_NRvsR"
   ### p-value for plotting the pheatmap3
   adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
   
@@ -476,7 +476,17 @@ for(k in models2fit){
   ### Normalized to mean = 0 and sd = 1 per data and day
   for(i in data_days){
     # i = "data23.base"
-    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ 
+      sdx <- sd(x, na.rm = TRUE)
+      if(sdx == 0)
+        x <- (x-mean(x, na.rm = TRUE))
+      else 
+        x <- (x-mean(x, na.rm = TRUE))/sdx
+      
+      x[x > th] <- th
+      x[x < -th] <- -th
+      
+      return(x)}))
   }
   
   breaks = seq(from = -th, to = th, length.out = 101)
@@ -490,6 +500,7 @@ for(k in models2fit){
   ### Plot one heatmap with R vs NR
   
   ## group the expression by cluster
+  adjpval_name <- adjpval_name2
   expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
   
   which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])

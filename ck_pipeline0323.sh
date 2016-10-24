@@ -19,8 +19,8 @@ heatmaps=false
 runtsne=false
 plottsne=false
 plottsne_expr=false
-frequencies=false # do not run frequency analysis because models are specified for base and tx
-expression=false # do not run expression analysis because models are specified for base and tx
+frequencies=false
+expression=false
 cluster_merging=false
 cluster_extracting=false
 

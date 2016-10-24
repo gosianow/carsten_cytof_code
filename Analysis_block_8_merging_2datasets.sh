@@ -126,6 +126,10 @@ if ${expression_merged}; then
   echo "08_expression_merged"
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_all.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_all.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' analysis_type='all'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
   tail $ROUT/08_expression_merged.Rout
+
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_clust.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_clust.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' analysis_type='clust'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
+  tail $ROUT/08_expression_merged.Rout
+
 fi
 
 

@@ -315,7 +315,7 @@ if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), 
   ### p-value for sorting the output
   pval_name <- "pval_NRvsR"
   ### p-value for plotting the pheatmap2
-  adjpval_name <- "adjp_NRvsR"
+  adjpval_name2 <- "adjp_NRvsR"
   ### p-value for plotting the pheatmap3
   adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
   
@@ -334,7 +334,7 @@ if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), 
   ### p-value for sorting the output
   pval_name <- "pval_NRvsR_base"
   ### p-value for plotting the pheatmap2
-  adjpval_name <- NULL
+  adjpval_name2 <- NULL
   ### p-value for plotting the pheatmap3
   adjpval_name_list <- "adjp_NRvsR_base"
   
@@ -414,7 +414,17 @@ for(k in models2fit){
   ### Normalized to mean = 0 and sd = 1 per day
   for(i in days){
     # i = "base"
-    expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ x <- (x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+    expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ 
+      sdx <- sd(x, na.rm = TRUE)
+      if(sdx == 0)
+        x <- (x-mean(x, na.rm = TRUE))
+      else 
+        x <- (x-mean(x, na.rm = TRUE))/sdx
+      
+      x[x > th] <- th
+      x[x < -th] <- -th
+      
+      return(x)}))
   }
   
   breaks = seq(from = -th, to = th, length.out = 101)
@@ -429,9 +439,10 @@ for(k in models2fit){
   ### Plot one heatmap with base and tx
   
   ## group the expression by cluster
-  if(is.null(adjpval_name)){
+  if(is.null(adjpval_name2)){
     which_top_pvs <- FALSE
   }else{
+    adjpval_name <- adjpval_name2
     expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
