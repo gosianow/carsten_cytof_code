@@ -25,29 +25,16 @@ library(tools)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
-# expr_prefix='23m6_29m4_'
-# expr_outdir='08_expression_merged'
-# 
-# path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
-# path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_raw_expr_all.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_raw_expr_all.xls')
-# data_name=c('data23','data29')
-# 
-# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-# analysis_type='all'
-
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29_0323/01'
-expr_prefix='23m6_29m4_0323m'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
+expr_prefix='23m6_29m4_'
 expr_outdir='08_expression_merged'
 
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_0323_01.xlsx')
-path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_raw_expr_clust.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_raw_expr_clust.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-03-23_01/080_expression/0323_01_pca1_merging_raw_expr_clust.xls')
-data_name=c('data23','data29','data0323')
+path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_raw_expr_all.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_raw_expr_all.xls')
+data_name=c('data23','data29')
 
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-analysis_type='clust'
-
-
+analysis_type='all'
 
 ##############################################################################
 # Read in the arguments
@@ -123,6 +110,10 @@ names(color_groups) <- colors$condition
 color_samples <- md$color
 names(color_samples) <- md$shortname
 
+colors <- unique(md[, c("response", "color")])
+color_response <- colors$color
+names(color_response) <- colors$response
+
 
 # ------------------------------------------------------------
 # Load expression data
@@ -161,6 +152,9 @@ a <- a[a$label %in% labels_keep, , drop = FALSE]
 mm <- match(a$label, labels$label)
 
 a <- cbind(cluster = labels$cluster[mm], a)
+
+markers_ordered <- colnames(a)[!colnames(a) %in% c("cluster", "label", "sample")]
+
 
 # -----------------------------------------------------------------------------
 ### Plot expression per cluster
@@ -211,12 +205,12 @@ for(i in 1:nlevels(ggdf$cluster)){
     theme_bw() +
     ylab("Expression") +
     xlab("") +
-    theme(axis.text.x = element_text(size=10, face="bold"), 
-      axis.title.y = element_text(size=12, face="bold"), 
-      panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), 
-      panel.border = element_blank(), 
-      axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
+    theme(axis.text.x = element_text(size=10, face="bold"),
+      axis.title.y = element_text(size=12, face="bold"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_blank(),
+      axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"),
       axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
       legend.position = "right") +
     scale_color_manual(values = color_groups)
@@ -227,6 +221,76 @@ pdf(file.path(outdir, paste0(prefix, "expr_", out_name, ".pdf")), w = 18, h = 12
 for(i in seq(length(ggp)))
   print(ggp[[i]])
 dev.off()
+
+
+# -----------------------------------------------------------------------------
+# Prepare the matrix with data (rows - markers X clusters; columns - samples)
+# Plot a heatmap with clustered samples
+# -----------------------------------------------------------------------------
+
+
+expr <- a
+exprm <- melt(expr, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
+exprc <- dcast(exprm, cluster + label + marker ~ sample, value.var = "expr")
+
+
+### normalize the expression
+expr_norm <- exprc[, c("cluster", "label", "marker", md[md$response != "HD", "shortname"])]
+th <- 2.5
+
+data_days <- levels(md$data_day)
+
+### Normalized to mean = 0 and sd = 1 per data and day
+for(i in data_days){
+  # i = "data23.base"
+  expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ 
+    sdx <- sd(x, na.rm = TRUE)
+    if(sdx == 0)
+      x <- (x-mean(x, na.rm = TRUE))
+    else 
+      x <- (x-mean(x, na.rm = TRUE))/sdx
+    
+    x[x > th] <- th
+    x[x < -th] <- -th
+    
+    return(x)}))
+}
+
+# ### Normalize to mean = 0 per data and day
+# for(i in data_day){
+#   # i = "data23.base"
+#   expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- x-mean(x); return(x)}))
+# }
+# ### Normalize to sd = 1 for all samples
+# expr_norm[, md[md$response != "HD", "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD", "shortname"], drop = FALSE], 1, function(x){ x <- x/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
+
+
+breaks = seq(from = -th, to = th, length.out = 101)
+legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+
+if(analysis_type == "all"){
+  
+  expr_heat <- expr_norm
+  rownames(expr_heat) <- expr_heat$marker
+  
+  expr_heat <- expr_heat[markers_ordered, ]
+  expr <- expr_heat[, md[md$response != "HD", "shortname"]]
+  
+  labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker) 
+  labels_col <- colnames(expr)
+  
+  annotation_col <- data.frame(response = factor(md[md$response != "HD", "response"]))
+  rownames(annotation_col) <- md[md$response != "HD", "shortname"]
+  
+  annotation_colors <- list(response = color_response[levels(annotation_col$response)])
+  
+  cluster_cols <- hclust(dist(t(expr)), method = "ward.D2")
+  cluster_rows <- hclust(dist(expr), method = "ward.D2")
+  
+  pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = cluster_cols, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "expr_", out_name,  "_pheatmap_colclust", suffix, ".pdf")))
+  
+}
+
 
 
 
@@ -286,16 +350,11 @@ if(identical(levels(md$data), c("data23", "data29")) && identical(levels(md$day)
   adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
   
 }else{
-  stop("Metadata does not fit to any the models that are specified !!!")  
+  stop("Metadata does not fit to any the models that are specified !!!")
 }
 
 
-
-### Prepare the matrix with data (rows - markers X clusters; columns - samples)
-
-expr <- a
-exprm <- melt(expr, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
-exprc <- dcast(exprm, cluster + label + marker ~ sample, value.var = "expr")
+### Fit all the models
 
 models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
 
@@ -309,7 +368,7 @@ for(k in models2fit){
       # Fit a LM with interactions + test contrasts with multcomp pckg
       fit_out <- fit_lm_interglht(data = exprc, md, method = "lm", formula = formula_lm, K = K)
       
-    }, 
+    },
     lmer_interglht = {
       
       # Fit a lmer with interactions + test contrasts with multcomp pckg
@@ -349,7 +408,7 @@ for(k in models2fit){
   # table(pvs$adjp_NRvsR_base < 0.05, useNA = "always")
   # table(pvs$adjp_NRvsR_tx < 0.05, useNA = "always")
   # table(pvs$adjp_NRvsR_basevstx < 0.05, useNA = "always")
-  # 
+  #
   # table(pvs$pval_NRvsR < 0.05, useNA = "always")
   # table(pvs$pval_NRvsR_base < 0.05, useNA = "always")
   # table(pvs$pval_NRvsR_tx < 0.05, useNA = "always")
@@ -358,39 +417,6 @@ for(k in models2fit){
   # ----------------------------------------
   # Plot a heatmap of significant cases
   # ----------------------------------------
-  
-  ### normalize the expression
-  expr_norm <- exprc[, c("cluster", "label", "marker", md[md$response != "HD", "shortname"])]
-  th <- 2.5
-  
-  data_days <- levels(md$data_day)
-  
-  ### Normalized to mean = 0 and sd = 1 per data and day
-  for(i in data_days){
-    # i = "data23.base"
-    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ 
-      sdx <- sd(x, na.rm = TRUE)
-      if(sdx == 0)
-        x <- (x-mean(x, na.rm = TRUE))
-      else 
-        x <- (x-mean(x, na.rm = TRUE))/sdx
-      
-      x[x > th] <- th
-      x[x < -th] <- -th
-      
-      return(x)}))
-  }
-  
-  # ### Normalize to mean = 0 per data and day
-  # for(i in data_day){
-  #   # i = "data23.base"
-  #   expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ x <- x-mean(x); return(x)}))
-  # }
-  # ### Normalize to sd = 1 for all samples
-  # expr_norm[, md[md$response != "HD", "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD", "shortname"], drop = FALSE], 1, function(x){ x <- x/sd(x); x[x > th] <- th; x[x < -th] <- -th; return(x)}))
-  
-  breaks = seq(from = -th, to = th, length.out = 101)
-  legend_breaks = seq(from = -round(th), to = round(th), by = 1)
   
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
@@ -415,17 +441,17 @@ for(k in models2fit){
     samples2plot <- md[md$response %in% c("NR", "R"), ]
     samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
     
-    ## gap in the heatmap 
+    ## gap in the heatmap
     gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
     gaps_row <- unique(cumsum(table(expr_heat$label)))
     gaps_row <- gaps_row[gaps_row > 0]
-    if(length(gaps_row) == 1) 
+    if(length(gaps_row) == 1)
       gaps_row <- NULL
     
-    ## expression 
+    ## expression
     expr <- expr_heat[ , samples2plot, drop = FALSE]
     
-    labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
+    labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")")
     labels_col <- colnames(expr)
     
     pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap2", suffix, ".pdf")))
@@ -460,17 +486,17 @@ for(k in models2fit){
       samples2plot <- samples2plot$shortname[order(samples2plot$response, samples2plot$day)]
       samples2plot <- samples2plot[grep(i, samples2plot)]
       
-      ## gap in the heatmap 
+      ## gap in the heatmap
       gaps_col <- sum(grepl("_NR", samples2plot))
       gaps_row <- unique(cumsum(table(expr_heat$label)))
       gaps_row <- gaps_row[gaps_row > 0]
-      if(length(gaps_row) == 1) 
+      if(length(gaps_row) == 1)
         gaps_row <- NULL
       
       ## expression
       expr <- expr_heat[ , samples2plot, drop = FALSE]
       
-      labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")") 
+      labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")")
       labels_col <- colnames(expr)
       
       pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap_", i, suffix, ".pdf")))
@@ -503,17 +529,17 @@ for(k in models2fit){
     samples2plot <- md[md$response %in% c("NR", "R"), ]
     samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
     
-    ## gap in the heatmap 
+    ## gap in the heatmap
     gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
     gaps_row <- unique(cumsum(table(expr_heat$label)))
     gaps_row <- gaps_row[gaps_row > 0]
-    if(length(gaps_row) == 1) 
+    if(length(gaps_row) == 1)
       gaps_row <- NULL
     
-    ## expression 
+    ## expression
     expr <- expr_heat[ , samples2plot, drop = FALSE]
     
-    labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker) 
+    labels_row <- paste0(expr_heat$label, "/ ", expr_heat$marker)
     labels_col <- colnames(expr)
     
     pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_pheatmap3", suffix, ".pdf")))
@@ -550,7 +576,7 @@ for(k in models2fit){
       geom_abline(intercept = 0, slope = 1) +
       coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
       theme_bw() +
-      theme(axis.text = element_text(size=14), 
+      theme(axis.text = element_text(size=14),
         axis.title = element_text(size=14, face="bold"))
     
     pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_", k, "_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
