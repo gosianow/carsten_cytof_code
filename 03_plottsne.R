@@ -94,12 +94,6 @@ gg_color_hue <- function(n) {
   hcl(h=hues, l=60 , c=100)[1:n]
 }
 
-# # colors for 20 clusters 
-# color_ramp <- c(colorRampPalette(brewer.pal(12,"Paired"))(12)[-c(11)],  gg_color_hue(max(1, nlevels(labels$label)-11)) )
-# 
-# colors_tsne <- color_ramp[1:nlevels(labels$label)]
-# names(colors_tsne) <- levels(labels$label)
-
 # ------------------------------ 
 # color blind palette
 

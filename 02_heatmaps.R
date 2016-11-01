@@ -48,24 +48,28 @@ library(ConsensusClusterPlus)
 # Read in the arguments
 ##############################################################################
 
+rm(list = ls())
+
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
 setwd(rwd)
-
-linkage <- "average"
 
 prefix <- heatmap_prefix
 outdir <- heatmap_outdir
 
 if(!file.exists(outdir)) 
   dir.create(outdir)
+
+if(all(!grepl("linkage=", args))){
+  linkage <- "average"
+}
 
 # ------------------------------------------------------------
 # Load data
