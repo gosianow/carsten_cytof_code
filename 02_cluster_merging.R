@@ -70,18 +70,22 @@ clust <- clustering[, "cluster"]
 # Get new merged clustering
 # ------------------------------------------------------------
 
-# new clustering
-clustm <- factor(clust, levels = cm$old_cluster)
-levels(clustm) <- cm$new_cluster
-clustm <- as.numeric(as.character(clustm))
-
-
 # new labels
 labels <- unique(cm[,c("new_cluster","label")])
 colnames(labels) <- c("cluster", "label")
 
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
+
+if(sum(duplicated(labels$label)) > 0 | sum(duplicated(labels$cluster)) > 0)
+  stop("Wrong merging file")
+
+
+# new clustering
+clustm <- factor(clust, levels = cm$old_cluster)
+levels(clustm) <- cm$new_cluster
+clustm <- as.numeric(as.character(clustm))
+
 
 # get cluster frequencies
 freq_clust <- table(clustm)
@@ -90,8 +94,6 @@ labels$proportions <- round(labels$counts/sum(labels$counts) * 100, 2)
 
 labels
 
-if(sum(duplicated(labels$label)) > 0 | sum(duplicated(labels$cluster)) > 0)
-  stop("Wrong merging file")
 
 
 

@@ -106,6 +106,9 @@ if ${cluster_merging}; then
   echo "02_cluster_merging"
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}' merging_outdir='030_heatmaps' path_cluster_merging='${file_merging}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
   tail $ROUT/02_cluster_merging.Rout
+
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' codes_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}' codes_outdir='030_heatmaps' path_codes='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}codes.xls' pdf_width=15 pdf_height=10 path_cluster_merging='${file_merging}'" $RCODE/02_som_codes.R $ROUT/02_som_codes.Rout
+  tail $ROUT/02_som_codes.Rout
 fi
 
 if [ ! -e "$RWD/030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls" ]; then
