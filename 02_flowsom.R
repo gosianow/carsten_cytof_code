@@ -20,6 +20,8 @@ library(ConsensusClusterPlus)
 library(igraph)
 library(RColorBrewer)
 library(pheatmap)
+library(cytofkit)
+
 
 ##############################################################################
 # Test arguments
@@ -180,7 +182,8 @@ write.table(labels, file = file.path(outdir, paste0(prefix, "clustering_labels.x
 
 
 
-### Plot codes
+### Plot codes as a heatmap
+
 rownames(data) <- 1:nrow(data)
 data_order <- match(colnames(data), clustering_observables$mass)
 
@@ -194,10 +197,7 @@ annotation_row <- data.frame(cluster = factor(fsom_mc))
 rownames(annotation_row) <- 1:nrow(data)
 
 
-pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "codes.pdf")))
-
-
-
+pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "codes_pheatmap.pdf")))
 
 
 
@@ -207,7 +207,7 @@ pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, clu
 # -------------------------------------
 
 
-adjacency <- stats::dist(fsom$codes, method = "euclidean")
+adjacency <- stats::dist(data, method = "euclidean")
 
 fullGraph <- igraph::graph.adjacency(as.matrix(adjacency), mode = "undirected", weighted = TRUE)
 
@@ -226,14 +226,63 @@ vertex_sizes[vertex_sizes < 2] <- 2
 
 vertex_colors <- colors_clusters[as.character(fsom_mc)]
 
-pdf(file.path(outdir, paste0(prefix, "MST.pdf")), width = 7, height = 7)
+pdf(file.path(outdir, paste0(prefix, "codes_mst.pdf")), width = 7, height = 7)
 
 igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_colors, edge.lty = lty)
 
 dev.off()
 
 
+# -------------------------------------
+# Dimention reduction 
+# -------------------------------------
 
+dr <- list()
+
+set.seed(rand_seed)
+dr[["isomap"]] <- cytofkit::cytof_dimReduction(data, method="isomap")
+set.seed(rand_seed)
+dr[["tsne"]] <- cytofkit::cytof_dimReduction(data, method="tsne", perplexity = 20, tsneSeed = rand_seed)
+set.seed(rand_seed)
+dr[["diffusion"]] <- cytofkit::cytof_dimReduction(data, method="diffusionmap")
+set.seed(rand_seed)
+dr[["pca"]] <- cytofkit::cytof_dimReduction(data, method="pca")
+
+dr[["graph"]] <- MST_l
+
+dr_methods <- names(dr)
+
+for(i in 1:length(dr)){
+  # i = 1
+  
+  dr_data <- data.frame(dr[[i]])
+  colnames(dr_data) <- c("dim1", "dim2")
+  
+  dr_data$cluster <- factor(fsom_mc)
+  dr_data$size <- as.numeric(vertex_sizes/10)
+  
+  ggdf <- dr_data
+  
+  ggp <- ggplot(ggdf,  aes(x = dim1, y = dim2, color = cluster, size = size)) +
+    geom_point(alpha = 0.7) +
+    labs(x = "dim1", y="dim2") + 
+    theme_bw() +
+    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+    scale_color_manual(values = colors_clusters[as.character(fsom_mc)]) +
+    guides(colour = guide_legend(override.aes = list(size = 5)))
+  
+  pdf(file.path(outdir, paste0(prefix, "codes_", dr_methods[[i]], ".pdf")), width = 9, height = 7)                 
+  print(ggp)
+  dev.off()
+  
+}
+
+
+
+
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
 
 
 # -------------------------------------
@@ -270,7 +319,7 @@ write.table(labels, file = file.path(outdir, paste0(prefix, "hc_clustering_label
 
 vertex_colors <- colors_clusters[as.character(fsom_ct)]
 
-pdf(file.path(outdir, paste0(prefix, "hc_MST.pdf")), width = 7, height = 7)
+pdf(file.path(outdir, paste0(prefix, "hc_codes_mst.pdf")), width = 7, height = 7)
 
 igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_colors, edge.lty = lty)
 
@@ -292,7 +341,7 @@ annotation_row <- data.frame(cluster = factor(fsom_ct))
 rownames(annotation_row) <- 1:nrow(data)
 
 
-pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "hc_codes.pdf")))
+pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "hc_codes_pheatmap.pdf")))
 
 
 
