@@ -3,7 +3,7 @@
 
 # BioC 3.3
 # Created 27 July 2016
-# Updated 25 Aug 2016
+# Updated 2 Nov 2016
 
 ##############################################################################
 Sys.time()
@@ -25,13 +25,13 @@ library(gtools) # for logit
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# freq_prefix='23_01_pca1_merging6_'
-# freq_outdir='050_frequencies'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
-# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+freq_prefix='23_01_pca1_merging6_'
+freq_outdir='050_frequencies'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
+path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 
 ##############################################################################
 # Read in the arguments

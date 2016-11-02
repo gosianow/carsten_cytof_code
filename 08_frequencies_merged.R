@@ -25,15 +25,17 @@ library(tools)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
-# freq_prefix='23m6_29m4_'
-# freq_outdir='08_frequencies_merged'
-# 
-# path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
-# path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_counts.xls')
-# data_name=c('data23','data29')
-# 
-# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models_merged.R'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
+freq_prefix='23m6_29m4_'
+freq_outdir='08_frequencies_merged_2responses'
+
+path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_counts.xls')
+data_name=c('data23','data29')
+
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
+
 
 ##############################################################################
 # Read in the arguments
@@ -61,7 +63,6 @@ outdir <- freq_outdir
 if(!file.exists(outdir)) 
   dir.create(outdir)
 
-source(path_fun_models)
 
 # ------------------------------------------------------------
 # Load metadata
@@ -347,68 +348,16 @@ for(i in 1:nlevels(ggdf$day)){
 # Test for frequency differences between groups
 # ------------------------------------------------------------
 
+
+### Load functions fitting models
 source(path_fun_models)
+### Load formulas that are fit in the models - this function may change the md object!!!
+source(path_fun_formulas)
 
 levels(md$data)
 levels(md$day)
 levels(md$response)
 
-
-if(identical(levels(md$data), c("data23", "data29")) && identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R", "HD"))){
-  ## create formulas
-  formula_lm <- y ~ response + data_day + response:data_day
-  formula_lmer <- y ~ response + data_day + response:data_day + (1|patient_id)
-
-  formula_glm_binomial <- cbind(y, total-y) ~ response + data_day + response:data_day
-  formula_glm_beta <- y/total ~ response + data_day + response:data_day
-  formula_glmer_binomial <- y/total ~ response + data_day + response:data_day + (1|patient_id)
-
-  ## create contrasts
-  contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
-  k1 <- c(0, 1, 0, 0, 0, 0, 0, 0, 1/2, 0, 0, 0) # NR vs R in base
-  k2 <- c(0, 1, 0, 0, 0, 0, 1/2, 0, 0, 0, 1/2, 0) # NR vs R in tx
-  k0 <- (k1 + k2) / 2 # NR vs R
-  k3 <- c(0, 0, 0, 0, 0, 0, 1/2, 0, 0, 0, 1/2, 0) # whether NR vs R is different in base and tx
-  K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
-  rownames(K) <- contrast_names
-
-  ### p-value for sorting the output
-  pval_name <- "pval_NRvsR"
-  ### p-value for plotting the pheatmap2
-  adjpval_name2 <- "adjp_NRvsR"
-  ### p-value for plotting the pheatmap3
-  adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
-
-
-}else if(identical(levels(md$data), c("data23", "data29", "data0323")) && identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R", "HD"))){
-
-  ## create formulas
-  formula_lm <- y ~ response + data_day + response:data_day
-  formula_lmer <- y ~ response + data_day + response:data_day + (1|patient_id)
-
-  formula_glm_binomial <- cbind(y, total-y) ~ response + data_day + response:data_day
-  formula_glm_beta <- y/total ~ response + data_day + response:data_day
-  formula_glmer_binomial <- y/total ~ response + data_day + response:data_day + (1|patient_id)
-
-  ## create contrasts
-  contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
-  k1 <- c(0, 1, 0, 0, 0, 0, 0, 0, 0, 1/3, 0, 0, 0, 1/3, 0) # NR vs R in base
-  k2 <- c(0, 1, 0, 0, 0, 0, 0, 1/2, 0, 0, 0, 1/2, 0, 0, 0) # NR vs R in tx - there is no tx in data 0323
-  k0 <- (k1 + k2) / 2 # NR vs R
-  k3 <- c(0, 0, 0, 0, 0, 0, 0, 1/2, 0, 0, 0, 1/2, 0, 0, 0) # whether NR vs R is different in base and tx - interaction terms
-  K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
-  rownames(K) <- contrast_names
-
-  ### p-value for sorting the output
-  pval_name <- "pval_NRvsR"
-  ### p-value for plotting the pheatmap2
-  adjpval_name2 <- "adjp_NRvsR"
-  ### p-value for plotting the pheatmap3
-  adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
-
-}else{
-  stop("Metadata does not fit to any the models that are specified !!!")
-}
 
 
 models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_logit_interglht", "lmer_arcsinesqrt_interglht", "glmmadmb_fixed_betabinomial_interglht", "glmmadmb_fixed_beta_interglht")

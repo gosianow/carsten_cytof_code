@@ -290,58 +290,58 @@ for(i in 1:length(dr)){
 # -------------------------------------
 
 
-fsom_hc <- hclust(dist(data), method = linkage)
-
-fsom_ct <- cutree(fsom_hc, k)
-
-clust_hc <- fsom_ct[fsom$mapping[,1]]
-
-
-# Save clustering results
-
-clust_out <- data.frame(cluster = clust_hc, cell_id = cell_id, sample_id = samp, stringsAsFactors = FALSE)
-write.table(clust_out, file = file.path(outdir, paste0(prefix, "hc_clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
-# get cluster frequencies
-freq_clust <- table(clust_hc)
-
-# make data frame with labels
-labels <- data.frame(cluster = sort(unique(clust_hc)), label = sort(unique(clust_hc)), counts = as.numeric(freq_clust))
-labels$proportions <- round(labels$counts/sum(labels$counts) * 100, 2)
-
-
-write.table(labels, file = file.path(outdir, paste0(prefix, "hc_clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
-
-### Plot MST
-
-vertex_colors <- colors_clusters[as.character(fsom_ct)]
-
-pdf(file.path(outdir, paste0(prefix, "hc_codes_mst.pdf")), width = 7, height = 7)
-
-igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_colors, edge.lty = lty)
-
-dev.off()
-
-
-
-### Plot codes
-rownames(data) <- 1:nrow(data)
-data_order <- match(colnames(data), clustering_observables$mass)
-
-color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
-labels_col <- clustering_observables$marker[1:length(data_order)]
-labels_row <- 1:nrow(data)
-annotation_colors <- list(cluster = colors_clusters)  
-
-cluster_rows <- fsom_hc
-annotation_row <- data.frame(cluster = factor(fsom_ct))
-rownames(annotation_row) <- 1:nrow(data)
-
-
-pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "hc_codes_pheatmap.pdf")))
+# fsom_hc <- hclust(dist(data), method = linkage)
+# 
+# fsom_ct <- cutree(fsom_hc, k)
+# 
+# clust_hc <- fsom_ct[fsom$mapping[,1]]
+# 
+# 
+# # Save clustering results
+# 
+# clust_out <- data.frame(cluster = clust_hc, cell_id = cell_id, sample_id = samp, stringsAsFactors = FALSE)
+# write.table(clust_out, file = file.path(outdir, paste0(prefix, "hc_clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+# 
+# 
+# # get cluster frequencies
+# freq_clust <- table(clust_hc)
+# 
+# # make data frame with labels
+# labels <- data.frame(cluster = sort(unique(clust_hc)), label = sort(unique(clust_hc)), counts = as.numeric(freq_clust))
+# labels$proportions <- round(labels$counts/sum(labels$counts) * 100, 2)
+# 
+# 
+# write.table(labels, file = file.path(outdir, paste0(prefix, "hc_clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+# 
+# 
+# 
+# ### Plot MST
+# 
+# vertex_colors <- colors_clusters[as.character(fsom_ct)]
+# 
+# pdf(file.path(outdir, paste0(prefix, "hc_codes_mst.pdf")), width = 7, height = 7)
+# 
+# igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_colors, edge.lty = lty)
+# 
+# dev.off()
+# 
+# 
+# 
+# ### Plot codes
+# rownames(data) <- 1:nrow(data)
+# data_order <- match(colnames(data), clustering_observables$mass)
+# 
+# color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
+# labels_col <- clustering_observables$marker[1:length(data_order)]
+# labels_row <- 1:nrow(data)
+# annotation_colors <- list(cluster = colors_clusters)  
+# 
+# cluster_rows <- fsom_hc
+# annotation_row <- data.frame(cluster = factor(fsom_ct))
+# rownames(annotation_row) <- 1:nrow(data)
+# 
+# 
+# pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "hc_codes_pheatmap.pdf")))
 
 
 
