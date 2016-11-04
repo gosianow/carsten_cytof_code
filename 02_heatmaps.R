@@ -65,7 +65,7 @@ prefix <- heatmap_prefix
 outdir <- heatmap_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 if(all(!grepl("linkage=", args))){
   linkage <- "average"

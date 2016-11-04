@@ -56,7 +56,7 @@ suffix <- ""
 outdir <- cytokines_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 # ------------------------------------------------------------
 # Load data

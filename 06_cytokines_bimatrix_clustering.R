@@ -1,9 +1,9 @@
 ##############################################################################
-## <<02_flowsom.R>>
+## <<06_cytokines_bimatrix_clustering.R>>
 
 # BioC 3.3
 # Created 27 July 2016
-# Updated 24 Aug 2016
+# Updated 3 Nov 2016
 
 ##############################################################################
 Sys.time()
@@ -16,24 +16,19 @@ library(gplots)
 library(ggplot2)
 library(plyr)
 library(reshape2)
-library(ConsensusClusterPlus)
-library(igraph)
-library(RColorBrewer)
 library(pheatmap)
-library(cytofkit)
-
+library(RColorBrewer)
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-flowsom_prefix='23_01_pca1_cl20_'
-flowsom_outdir='030_heatmaps'
-path_data='010_data/23_01_expr_raw.rds'
-path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
-rand_seed_consensus=123
-nmetaclusts=20
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+clust_prefix='23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl16_'
+clust_outdir='060_cytokines_bimatrix/01_clustering'
+path_data='060_cytokines_bimatrix/01_clustering/23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_bimatrix.txt'
+path_clustering_observables='060_cytokines_bimatrix/01_clustering/23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_clustering_observables.xls'
+som_dim=4
 
 ##############################################################################
 # Read in the arguments
@@ -53,36 +48,11 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 setwd(rwd)
 rand_seed <- 1234
 
-prefix <- flowsom_prefix
-outdir <- flowsom_outdir
+prefix <- clust_prefix
+outdir <- clust_outdir
 
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
-
-if(all(!grepl("linkage=", args))){
-  linkage <- "average"
-}
-
-
-# ------------------------------------------------------------
-# Colors for MST maps
-# ------------------------------------------------------------
-
-# ggplot palette
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length=n+1)
-  hcl(h=hues, l=60 , c=100)[1:n]
-}
-
-# ------------------------------ 
-# color blind palette
-
-colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
-color_ramp <- c(colors_muted, gg_color_hue(max(1, nmetaclusts - length(colors_muted))))
-
-colors_clusters <- color_ramp[1:nmetaclusts]
-names(colors_clusters) <- 1:nmetaclusts
-
 
 # ------------------------------------------------------------
 # Load data
@@ -129,40 +99,15 @@ ef <- as.matrix(e[, scols])
 # -------------------------------------
 
 set.seed(rand_seed)
-fsom <- FlowSOM::SOM(ef)
+fsom <- FlowSOM::SOM(ef, xdim = som_dim, ydim = som_dim)
 
 
-# -------------------------------------
-# metaClustering_consensus 
-# -------------------------------------
-# consensus clustering that is reproducible with seed
-
-### Sometimes not all the codes are used in mapping
 data <- fsom$codes
-k <- nmetaclusts
 
-pdf(file.path(outdir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 7)
-
-results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
-  maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
-  plot = NULL, verbose = FALSE, clusterAlg = "hc", innerLinkage = linkage, finalLinkage = "average", distance = "euclidean", seed = rand_seed_consensus)
-
-dev.off()
-
-
-# get cluster ids
-fsom_mc <- results[[k]]$consensusClass
-fsom_mc_tree <- results[[k]]$consensusTree
-
-clust <- fsom_mc[fsom$mapping[,1]]
+clust <- fsom$mapping[,1]
 
 
 ### Save clustering results
-
-
-save(fsom, file = file.path(outdir, paste0(prefix, "fsom.rda")))
-save(fsom_mc, file = file.path(outdir, paste0(prefix, "fsom_mc.rda")))
-
 
 clust_out <- data.frame(cluster = clust, cell_id = cell_id, sample_id = samp, stringsAsFactors = FALSE)
 write.table(clust_out, file = file.path(outdir, paste0(prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
@@ -177,6 +122,7 @@ labels$proportions <- round(labels$counts/sum(labels$counts) * 100, 2)
 
 
 write.table(labels, file = file.path(outdir, paste0(prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
 
 
 ### Code sizes
@@ -197,12 +143,12 @@ data_order <- match(colnames(data), clustering_observables$mass)
 
 color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
 labels_col <- clustering_observables$marker[1:length(data_order)]
-annotation_colors <- list(cluster = colors_clusters)  
+annotation_colors <- NA
 
-cluster_rows <- fsom_mc_tree
+cluster_rows <- hclust(dist(data), method = "ward.D2")
+
 labels_row <- paste0(rownames(data), "  ( ", format(code_sizes_full, big.mark=",", scientific=FALSE), " )")
-annotation_row <- data.frame(cluster = factor(fsom_mc))
-rownames(annotation_row) <- rownames(data)
+annotation_row <- NA
 
 
 pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "codes_pheatmap.pdf")))
@@ -211,7 +157,7 @@ pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, clu
 ### Save codes
 
 
-codes <- data.frame(code_id = rownames(data), cluster = fsom_mc, size = code_sizes_full, data)
+codes <- data.frame(code_id = rownames(data), cluster = 1:nrow(data), size = code_sizes_full, data)
 
 write.table(codes, file = file.path(outdir, paste0(prefix, "codes.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
@@ -258,5 +204,5 @@ sessionInfo()
 
 
 ################################
-### 02_flowsom done!
+### 06_cytokines_bimatrix_clustering done!
 ################################

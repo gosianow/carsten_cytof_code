@@ -70,7 +70,7 @@ outdir <- expr_outdir
 suffix <- ""
 
 if( !file.exists(outdir) ) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 source(path_fun_models)
 
@@ -350,7 +350,7 @@ expr <- a
 exprm <- melt(expr, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
 exprc <- dcast(exprm, cluster + label + marker ~ sample, value.var = "expr")
 
-models2fit <- c("rlm_interglht", "lm_interglht", "test_wilcoxon", "lmer_interglht")
+models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
 
 
 for(k in models2fit){

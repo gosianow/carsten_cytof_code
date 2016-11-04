@@ -56,7 +56,7 @@ suffix <- ""
 outdir <- freq_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 source(path_fun_models)
 
@@ -87,6 +87,9 @@ levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
 
 color_groups <- colors$color
 names(color_groups) <- colors$condition
+
+color_groupsb <- adjustcolor(color_groups, alpha = 0.3)
+names(color_groupsb) <- colors$condition
 
 color_samples <- md$color
 names(color_samples) <- md$shortname
@@ -172,76 +175,31 @@ ggds$day <- factor(ggds$day)
 
 
 # ------------------------------------
-### plot each cluster as a separate page in the pdf file
-ggp <- list()
-clusters <- levels(ggdf$cluster)
+# plot all clusters in one pdf; colors per group; boxplots + points
 
-for(i in 1:nlevels(ggdf$cluster)){
-  # i = 1
-  
-  df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
-  ds <- ggds[ggds$cluster == clusters[i], , drop = FALSE]
-  
-  ggp[[i]] <- ggplot(df, aes(x = group, y = prop, color = group)) +
-    geom_jitter(size=2.5, shape = 17, width = 0.5, height = 0) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), color='black', width=0.4) +
-    geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), color='black', width=0.25) +
-    ggtitle(clusters[i]) +
-    theme_bw() +
-    ylab("Frequency") +
-    xlab("") +
-    theme(axis.text.x = element_text(size=12, face="bold"), 
-      axis.title.y = element_text(size=12, face="bold"), 
-      panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), 
-      panel.border = element_blank(), 
-      axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
-      axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
-      legend.position = "none") +
-    scale_color_manual(values = color_groups)
-  
-}
 
-pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w=5, h=4, onefile=TRUE)
-for(i in seq(length(ggp)))
-  print(ggp[[i]])
+ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group, fill = group)) +
+  geom_boxplot(outlier.colour = NA) +
+  geom_point(size = 2, shape = 16, alpha = 0.8, position = position_jitterdodge(jitter.width = 2, jitter.height = 0, dodge.width = 0.7)) +
+  theme_bw() +
+  ylab("Frequency") +
+  xlab("") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
+    axis.title.y = element_text(size=12, face="bold"), 
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(), 
+    axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
+    axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
+    legend.title = element_blank(), legend.position = "right", legend.key = element_blank()) +
+  guides(color = guide_legend(ncol = 1)) +
+  scale_color_manual(values = color_groups) +
+  scale_fill_manual(values = color_groupsb) +
+  facet_wrap(~ day)
+
+pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 1, h=4)
+print(ggp)
 dev.off()
-
-
-# ------------------------------------
-# plot all clusters in one pdf; colors per group; points; separate pdf for base and tx
-
-days <- levels(ggdf$day)
-
-for(i in 1:nlevels(ggdf$day)){
-  # i = 1
-  
-  df <- ggdf[ggdf$day == days[i], , drop = FALSE]
-  ds <- ggds[ggds$day == days[i], , drop = FALSE]
-  
-  ggp <- ggplot(df, aes(x = cluster, y = prop, color = group)) +
-    geom_point(size=2, shape = 16, alpha = 0.8, position = position_jitterdodge(jitter.width = 3, jitter.height = 0, dodge.width = 0.7)) +
-    geom_errorbar(data=ds, aes(x=cluster, y=mean, ymin=mean, ymax=mean), width=0.4, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7), size = 1) +
-    geom_errorbar(data=ds, aes(x=cluster, y=mean, ymin=mean-sd, ymax=mean+sd), width=0.25, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7), size = 1) +
-    theme_bw() +
-    ylab("Frequency") +
-    xlab("") +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size=12, face="bold"), 
-      axis.title.y = element_text(size=12, face="bold"), 
-      panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), 
-      panel.border = element_blank(), 
-      axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
-      axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-      legend.title = element_blank(), legend.position = "right", legend.key = element_blank()) +
-    guides(color = guide_legend(ncol = 1)) +
-    scale_color_manual(values = color_groups)
-  
-  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_", days[i] ,".pdf")), w=7, h=4)
-  print(ggp)
-  dev.off()
-  
-}
 
 
 # ------------------------------------------------------------
@@ -307,7 +265,7 @@ if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), 
 }
 
 
-models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "test_wilcoxon", "glmmadmb_fixed_betabinomial_interglht", "glmmadmb_fixed_beta_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht")
+models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht", "lm_arcsinesqrt_interglht", "lm_logit_interglht")
 
 
 for(k in models2fit){
@@ -338,12 +296,28 @@ for(k in models2fit){
       fit_out <- fit_lmer_interglht(data = logit_freq_out, md, formula = formula_lmer, K = K)
       
     },
+    lm_logit_interglht = {
+      
+      logit_freq_out <- freq_out
+      logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))
+      ## Be carefull about Inf and -Inf for prop = 0, 1
+      fit_out <- fit_lm_interglht(data = logit_freq_out, md, formula = formula_lm, K = K)
+      
+    },
     lmer_arcsinesqrt_interglht = {
       
       ass_freq_out <- freq_out
       ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
       
       fit_out <- fit_lmer_interglht(data = ass_freq_out, md, formula = formula_lmer, K = K)
+      
+    },
+    lm_arcsinesqrt_interglht = {
+      
+      ass_freq_out <- freq_out
+      ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname])))))
+      
+      fit_out <- fit_lm_interglht(data = ass_freq_out, md, formula = formula_lm, K = K)
       
     },
     glmmadmb_fixed_beta_interglht = {

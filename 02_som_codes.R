@@ -63,7 +63,7 @@ suffix <- ""
 outdir <- codes_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 rand_seed <- 1234
 
@@ -171,7 +171,7 @@ layout <- MST_l
 lty <- 1
 
 vertex_sizes <- code_sizes/max(code_sizes) * 10
-vertex_sizes[vertex_sizes < 2] <- 2
+# vertex_sizes[vertex_sizes < 2] <- 2
 
 ### Plot MST
 

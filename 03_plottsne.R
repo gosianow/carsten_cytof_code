@@ -57,7 +57,7 @@ suffix <- ""
 outdir <- tsnep_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 
 # ------------------------------------------------------------

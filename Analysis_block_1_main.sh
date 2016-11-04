@@ -164,15 +164,15 @@ if ${flowsom}; then
   tail $ROUT/02_som_codes.Rout
 fi
 
-### FlowSOM clustering based on raw data - ward.D2 linkage
-# if ${flowsom}; then
-#   echo "02_flowsom"
-#   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_' flowsom_outdir='030_heatmaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=${rand_seed_consensus} linkage='ward.D2'" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
-#   tail $ROUT/02_flowsom.Rout
-#
-#   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' codes_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_' codes_outdir='030_heatmaps' path_codes='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_codes.xls' pdf_width=15 pdf_height=10" $RCODE/02_som_codes.R $ROUT/02_som_codes.Rout
-#   tail $ROUT/02_som_codes.Rout
-# fi
+## FlowSOM clustering based on raw data - ward.D2 linkage
+if ${flowsom}; then
+  echo "02_flowsom"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_' flowsom_outdir='030_heatmaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=${rand_seed_consensus} linkage='ward.D2'" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
+  tail $ROUT/02_flowsom.Rout
+
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' codes_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_' codes_outdir='030_heatmaps' path_codes='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_codes.xls' pdf_width=15 pdf_height=10" $RCODE/02_som_codes.R $ROUT/02_som_codes.Rout
+  tail $ROUT/02_som_codes.Rout
+fi
 
 ### FlowSOM validation
 if ${flowsom_validation}; then
@@ -189,13 +189,13 @@ if ${heatmaps}; then
   tail $ROUT/02_heatmaps.Rout
 fi
 
-### Heatmaps - ward.D2 linkage
-# if ${heatmaps}; then
-#   echo "02_heatmaps"
-#   # based on raw data
-#   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_raw_' heatmap_outdir='030_heatmaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds'    path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering_labels.xls' path_marker_selection='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_marker_selection.txt' aggregate_fun='median' pheatmap_palette='YlGnBu' pheatmap_palette_rev=FALSE pheatmap_scale=TRUE extra_path_data='010_data/${prefix_data}${prefix_panel}expr_norm.rds' extra_pheatmap_palette='RdYlBu' extra_pheatmap_palette_rev=TRUE extra_suffix='_norm' linkage='ward.D2'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-#   tail $ROUT/02_heatmaps.Rout
-# fi
+## Heatmaps - ward.D2 linkage
+if ${heatmaps}; then
+  echo "02_heatmaps"
+  # based on raw data
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_raw_' heatmap_outdir='030_heatmaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds'    path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering_labels.xls' path_marker_selection='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_marker_selection.txt' aggregate_fun='median' pheatmap_palette='YlGnBu' pheatmap_palette_rev=FALSE pheatmap_scale=TRUE extra_path_data='010_data/${prefix_data}${prefix_panel}expr_norm.rds' extra_pheatmap_palette='RdYlBu' extra_pheatmap_palette_rev=TRUE extra_suffix='_norm' linkage='ward.D2'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+fi
 
 ### Run tSNE
 if ${runtsne}; then
@@ -214,13 +214,13 @@ if ${plottsne}; then
 fi
 
 
-### Plot tSNE - ward.D2 linkage
-# if ${plottsne}; then
-#   echo "03_plottsne"
-#   ### Based on raw data
-#   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_raw_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering_labels.xls'  pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
-#   tail $ROUT/03_plottsne.Rout
-# fi
+## Plot tSNE - ward.D2 linkage
+if ${plottsne}; then
+  echo "03_plottsne"
+  ### Based on raw data
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_raw_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering_labels.xls'  pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  tail $ROUT/03_plottsne.Rout
+fi
 
 
 ### Plot tSNE with marker expression as a heat
@@ -236,7 +236,15 @@ fi
 ### Get cluster frequencies
 if ${frequencies}; then
   echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' freq_outdir='050_frequencies' path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' freq_outdir='050_frequencies_auto' path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  tail $ROUT/04_frequencies.Rout
+fi
+
+
+### Get cluster frequencies - ward.D2 linkage
+if ${frequencies}; then
+  echo "04_frequencies"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_' freq_outdir='050_frequencies_auto' path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}wD2_clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 fi
 
