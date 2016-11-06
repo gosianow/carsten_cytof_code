@@ -10,7 +10,7 @@ PANELS=$RWD_MAIN/CK_panels
 
 ## Define which analysis to re-run
 frequencies_merged=false
-expression_merged=false
+expression_merged=true
 runtsne_merged=false
 plottsne_merged=false
 cytokines_merging=false

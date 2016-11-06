@@ -139,10 +139,8 @@ code_sizes_full[names(code_sizes)] <- as.numeric(code_sizes)
 ### Plot codes as a heatmap
 rownames(data) <- 1:nrow(data)
 
-data_order <- match(colnames(data), clustering_observables$mass)
-
 color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
-labels_col <- clustering_observables$marker[1:length(data_order)]
+labels_col <- clustering_observables[clustering_observables$clustering_observable, "marker"]
 annotation_colors <- NA
 
 cluster_rows <- hclust(dist(data), method = "ward.D2")
@@ -151,7 +149,7 @@ labels_row <- paste0(rownames(data), "  ( ", format(code_sizes_full, big.mark=",
 annotation_row <- NA
 
 
-pheatmap(data[, data_order], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "codes_pheatmap.pdf")))
+pheatmap(data[, clustering_observables[clustering_observables$clustering_observable, "mass"]], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "codes_pheatmap.pdf")))
 
 
 ### Save codes

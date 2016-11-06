@@ -369,13 +369,13 @@ plotting_wrapper <- function(e, suffix){
 }
 
 
-# ## Expression, included observables
-# plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
-# 
-# ## Expression, excluded observables
-# if(length(xcols) > 0){
-#   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
-# }
+## Expression, included observables
+plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
+
+## Expression, excluded observables
+if(length(xcols) > 0){
+  plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
+}
 
 
 

@@ -24,16 +24,18 @@ library(pheatmap)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# expr_prefix='23_01_pca1_merging6_raw_'
-# expr_outdir='080_expression'
-# path_data='010_data/23_01_expr_raw.rds'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
-# path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
-# path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-# analysis_type='all'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+expr_prefix='23_01_pca1_merging6_raw_'
+expr_outdir='080_expression'
+path_data='010_data/23_01_expr_raw.rds'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
+path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
+path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+analysis_type='all'
+
+
 
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-03-23_01'
 expr_prefix='0323_01_pca1_merging_raw_'
@@ -72,7 +74,6 @@ suffix <- ""
 if( !file.exists(outdir) ) 
   dir.create(outdir, recursive = TRUE)
 
-source(path_fun_models)
 
 if(!analysis_type %in% c("clust", "all"))
   stop("analysis_type must be 'all' or 'clust'!")
@@ -111,7 +112,6 @@ md$response <- factor(md$response)
 md$day <- factor(md$day, levels = c("base", "tx"))
 md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
-
 
 
 ### Colors 

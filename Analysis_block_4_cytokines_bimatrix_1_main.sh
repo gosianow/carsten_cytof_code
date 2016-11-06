@@ -103,27 +103,10 @@ if ${cytokines_bimatrix_main}; then
   prefix_cytokines="${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_"
   prefix_clust="cl${nmetaclusts}_"
 
-  ### Create the bimatrix
+  ## Create the bimatrix
   # echo ">>> 06_cytokines_bimatrix"
   # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${prefix_cytokines}' cytokines_outdir='060_cytokines_bimatrix/01_clustering' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}' path_cytokines_cutoffs='${PANELS}/${file_cytokines_cutoffs}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')" $RCODE/06_cytokines_bimatrix.R $ROUT/06_cytokines_bimatrix.Rout
   # tail $ROUT/06_cytokines_bimatrix.Rout
-
-
-  # ### FlowSOM clustering of bimatrix
-  # echo ">>> 02_flowsom"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' flowsom_prefix='${prefix_cytokines}${prefix_clust}' flowsom_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' nmetaclusts=${nmetaclusts} rand_seed_consensus=1234" $RCODE/02_flowsom.R $ROUT/02_flowsom.Rout
-  # tail $ROUT/02_flowsom.Rout
-  #
-  # ### Plot the codes of FlowSOM
-  # echo ">>> 02_som_codes"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' codes_prefix='${prefix_cytokines}${prefix_clust}' codes_outdir='060_cytokines_bimatrix/01_clustering' path_codes='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}codes.xls' pdf_width=15 pdf_height=10" $RCODE/02_som_codes.R $ROUT/02_som_codes.Rout
-  # tail $ROUT/02_som_codes.Rout
-  #
-  # ### Heatmaps
-  # echo ">>> 02_heatmaps"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_clust}' heatmap_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls'  path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-  # tail $ROUT/02_heatmaps.Rout
-
 
   ### Clustering of bimatrix based on SOM only
   echo ">>> 06_cytokines_bimatrix_clustering"
