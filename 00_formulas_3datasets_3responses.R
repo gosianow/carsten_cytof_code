@@ -20,7 +20,7 @@ if(identical(levels(md$data), c("data23", "data29", "data0323")) && identical(le
   rownames(K) <- contrast_names
   
   ### p-value for sorting the output
-  pval_name <- "pval_NRvsR"
+  pval_name1 <- "pval_NRvsR"
   ### p-value for plotting the pheatmap2
   adjpval_name2 <- "adjp_NRvsR"
   pval_name2 <- "pval_NRvsR"

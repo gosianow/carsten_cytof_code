@@ -105,12 +105,8 @@ if ${cytokines_bimatrix_cluster_merging}; then
   mkdir -p $ROUT
   echo "$RWD"
 
-  ### Analysis based on different cutoffs for base and tx
   prefix_cytokines="${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_"
   prefix_clust="cl${nmetaclusts}_"
-
-
-
 
 
   if [ ! -e "$RWD/${file_merging_cyt}" ]; then
@@ -120,32 +116,32 @@ if ${cytokines_bimatrix_cluster_merging}; then
 
 
   ### Cluster merging
-  echo "02_cluster_merging"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_cytokines}${prefix_merging_cyt}' merging_outdir='060_cytokines_bimatrix' path_cluster_merging='${file_merging_cyt}' path_clustering='060_cytokines_bimatrix/${prefix_cytokines}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+  echo ">>> 02_cluster_merging"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_cytokines}${prefix_merging_cyt}' merging_outdir='060_cytokines_bimatrix/01_clustering' path_cluster_merging='${file_merging_cyt}' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
   tail $ROUT/02_cluster_merging.Rout
 
 
-  if [ ! -e "$RWD/060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering.xls" ]; then
-    echo "File '$RWD/060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' does NOT exist!"
+  if [ ! -e "$RWD/060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls" ]; then
+    echo "File '$RWD/060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' does NOT exist!"
     exit
   fi
 
 
   ### Heatmaps of merged clusters
-  echo "02_heatmaps"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_merging_cyt}' heatmap_outdir='060_cytokines_bimatrix' path_data='060_cytokines_bimatrix/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines_bimatrix/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering.xls'  path_clustering_labels='060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  echo ">>> 02_heatmaps"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_merging_cyt}' heatmap_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls'  path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
   ### tSNE plot with bimatrix clusters (based on raw data)
-  echo "03_plottsne"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_cytokines}${prefix_merging_cyt}raw_' tsnep_outdir='060_cytokines_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  echo ">>> 03_plottsne"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_cytokines}${prefix_merging_cyt}raw_' tsnep_outdir='060_cytokines_bimatrix/02_tsne' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
   tail $ROUT/03_plottsne.Rout
 
 
   ### Get cluster frequencies
-  echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='060_cytokines_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines_bimatrix/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  echo ">>> 04_frequencies"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='060_cytokines_bimatrix/03_frequencies' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 

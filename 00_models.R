@@ -110,7 +110,11 @@ fit_lm_interglht <- function(data, md, method = "lm", formula, K){
     if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf)))
       return(out)
     
-    
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs))
+      return(out)
+      
+      
     switch(method, 
       lm = {
         fit_tmp <- lm(formula, data = data_tmp)
@@ -204,6 +208,10 @@ fit_lmer_interglht <- function(data, md, formula, K){
     rownames(out) <- contrast_names
     
     if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf)))
+      return(out)
+    
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs))
       return(out)
     
     fit_tmp <- lmer(formula, data = data_tmp)

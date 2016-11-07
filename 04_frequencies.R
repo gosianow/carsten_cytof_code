@@ -231,11 +231,13 @@ if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), 
   rownames(K) <- contrast_names
   
   ### p-value for sorting the output
-  pval_name <- "pval_NRvsR"
+  pval_name1 <- "pval_NRvsR"
   ### p-value for plotting the pheatmap2
   adjpval_name2 <- "adjp_NRvsR"
+  pval_name2 <- "pval_NRvsR"
   ### p-value for plotting the pheatmap3
   adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+  pval_name_list <- c("pval_NRvsR", "pval_NRvsR_base", "pval_NRvsR_tx", "pval_NRvsR_basevstx")
   
   
 }else if(identical(levels(md$day), "base") && identical(levels(md$response), c("NR", "R", "HD"))){
@@ -254,11 +256,13 @@ if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), 
   rownames(K) <- contrast_names
   
   ### p-value for sorting the output
-  pval_name <- "pval_NRvsR_base"
+  pval_name1 <- "pval_NRvsR_base"
   ### p-value for plotting the pheatmap2
   adjpval_name2 <- NULL
+  pval_name2 <- NULL
   ### p-value for plotting the pheatmap3
   adjpval_name_list <- "adjp_NRvsR_base"
+  pval_name_list <- "pval_NRvsR_base"
   
 }else{
   stop("Metadata does not fit to any the models that are specified !!!")  
@@ -343,23 +347,13 @@ for(k in models2fit){
   pvs <- data.frame(freq_out[, c("cluster", "label")], fit_out[["pvals"]])
   coeffs <- data.frame(freq_out[, c("cluster", "label")], fit_out[["coeffs"]])
   
-  oo <- order(pvs[, pval_name], decreasing = FALSE)
+  oo <- order(pvs[, pval_name1], decreasing = FALSE)
   pvs <- pvs[oo, , drop = FALSE]
   coeffs <- coeffs[oo, , drop = FALSE]
   
   ## save the results
   write.table(pvs, file=file.path(outdir, paste0(prefix, "frequencies_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   write.table(coeffs, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-  
-  # table(pvs$adjp_NRvsR < 0.05, useNA = "always")
-  # table(pvs$adjp_NRvsR_base < 0.05, useNA = "always")
-  # table(pvs$adjp_NRvsR_tx < 0.05, useNA = "always")
-  # table(pvs$adjp_NRvsR_basevstx < 0.05, useNA = "always")
-  # 
-  # table(pvs$pval_NRvsR < 0.05, useNA = "always")
-  # table(pvs$pval_NRvsR_base < 0.05, useNA = "always")
-  # table(pvs$pval_NRvsR_tx < 0.05, useNA = "always")
-  # table(pvs$pval_NRvsR_basevstx < 0.05, useNA = "always")
   
   
   # ----------------------------------------
@@ -406,7 +400,8 @@ for(k in models2fit){
     which_top_pvs <- FALSE
   }else{
     adjpval_name <- adjpval_name2
-    expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+    pval_name <- pval_name2
+    expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
@@ -445,9 +440,10 @@ for(k in models2fit){
     # i = "base"
     
     adjpval_name <- paste0("adjp_NRvsR_", i)
+    pval_name <- paste0("pval_NRvsR_", i)
     
     ## group the expression by cluster
-    expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+    expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
@@ -484,8 +480,8 @@ for(k in models2fit){
   ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
   
   ## group the expression by cluster and order by adjpval
-  for(i in length(adjpval_name_list):1){
-    expr_all <- expr_all[order(expr_all[, adjpval_name_list[i]]), , drop = FALSE]
+  for(i in length(pval_name_list):1){
+    expr_all <- expr_all[order(expr_all[, pval_name_list[i]]), , drop = FALSE]
   }
   
   

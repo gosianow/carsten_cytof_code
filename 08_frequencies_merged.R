@@ -336,7 +336,7 @@ for(k in models2fit){
   pvs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["pvals"]])
   coeffs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["coeffs"]])
   
-  oo <- order(pvs[, pval_name], decreasing = FALSE)
+  oo <- order(pvs[, pval_name1], decreasing = FALSE)
   pvs <- pvs[oo, , drop = FALSE]
   coeffs <- coeffs[oo, , drop = FALSE]
   
@@ -388,6 +388,7 @@ for(k in models2fit){
   
   ## group the expression by cluster
   adjpval_name <- adjpval_name2
+  pval_name <- pval_name2
   expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
   
   which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
@@ -478,7 +479,7 @@ for(k in models2fit){
   ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
   
   ## group the expression by cluster and order by adjpval
-  for(i in length(adjpval_name_list):1){
+  for(i in length(pval_name_list):1){
     expr_all <- expr_all[order(expr_all[, pval_name_list[i]]), , drop = FALSE]
   }
   
