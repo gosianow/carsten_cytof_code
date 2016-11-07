@@ -99,6 +99,8 @@ md <- rbind.fill(md)
 # ------------------------------------------------------------
 # Load clustering_observables
 # ------------------------------------------------------------
+# Use a union of observalbles used in each dataset
+
 
 clustering_observables <- lapply(1:length(data_name), function(i){
   

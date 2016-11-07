@@ -201,7 +201,7 @@ ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group, shape = data, fill
   scale_fill_manual(values = color_groupsb) +
   facet_wrap(~ day)
 
-pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = 12, h = 4)
+pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 3, h = 4)
 print(ggp)
 dev.off()
 
@@ -234,7 +234,7 @@ for(i in 1:nlevels(ggdf$day)){
     scale_color_manual(values = color_groups) +
     scale_fill_manual(values = color_groupsb)
   
-  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = 6, h = 4)
+  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = nlevels(ggdf$cluster)/2 + 3, h = 4)
   print(ggp)
   dev.off()
   
@@ -244,6 +244,7 @@ for(i in 1:nlevels(ggdf$day)){
 # ------------------------------------------------------------
 # Test for frequency differences between groups
 # ------------------------------------------------------------
+## The model functions do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
 
 
 ### Load functions fitting models
