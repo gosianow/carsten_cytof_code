@@ -31,8 +31,10 @@ if(identical(levels(md$data), c("data23", "data29")) && identical(levels(md$day)
   pval_name <- "pval_NRvsR"
   ### p-value for plotting the pheatmap2
   adjpval_name2 <- "adjp_NRvsR"
+  pval_name2 <- "pval_NRvsR"
   ### p-value for plotting the pheatmap3
   adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
+  pval_name_list <- c("pval_NRvsR", "pval_NRvsR_base", "pval_NRvsR_tx", "pval_NRvsR_basevstx")
   
 }else{
   

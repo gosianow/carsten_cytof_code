@@ -61,7 +61,7 @@ suffix <- ""
 outdir <- freq_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 
 # ------------------------------------------------------------
@@ -149,7 +149,7 @@ labels
 
 
 # ------------------------------------------------------------
-### Plot frequencies
+# Plot frequencies
 # ------------------------------------------------------------
 
 ggdf <- melt(prop_out[complete.cases(freq_out), , drop = FALSE], id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
@@ -344,16 +344,6 @@ for(k in models2fit){
   write.table(pvs, file=file.path(outdir, paste0(prefix, "frequencies_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   write.table(coeffs, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   
-  # table(pvs$adjp_NRvsR < 0.05, useNA = "always")
-  # table(pvs$adjp_NRvsR_base < 0.05, useNA = "always")
-  # table(pvs$adjp_NRvsR_tx < 0.05, useNA = "always")
-  # table(pvs$adjp_NRvsR_basevstx < 0.05, useNA = "always")
-  #
-  # table(pvs$pval_NRvsR < 0.05, useNA = "always")
-  # table(pvs$pval_NRvsR_base < 0.05, useNA = "always")
-  # table(pvs$pval_NRvsR_tx < 0.05, useNA = "always")
-  # table(pvs$pval_NRvsR_basevstx < 0.05, useNA = "always")
-  
   
   # ----------------------------------------
   # Plot a heatmap of significant cases - transform proportions with arcsin-sqrt so the dispersion is the same for low and high props.
@@ -398,7 +388,7 @@ for(k in models2fit){
   
   ## group the expression by cluster
   adjpval_name <- adjpval_name2
-  expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+  expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
   
   which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
   which(which_top_pvs)
@@ -442,9 +432,10 @@ for(k in models2fit){
     print(paste0("Plot pheatmap_", i))
     
     adjpval_name <- paste0("adjp_NRvsR_", i)
+    pval_name <- paste0("pval_NRvsR_", i)
     
     ## group the expression by cluster
-    expr_all <- expr_all[order(expr_all[, adjpval_name]), , drop = FALSE]
+    expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
@@ -488,7 +479,7 @@ for(k in models2fit){
   
   ## group the expression by cluster and order by adjpval
   for(i in length(adjpval_name_list):1){
-    expr_all <- expr_all[order(expr_all[, adjpval_name_list[i]]), , drop = FALSE]
+    expr_all <- expr_all[order(expr_all[, pval_name_list[i]]), , drop = FALSE]
   }
   
   
