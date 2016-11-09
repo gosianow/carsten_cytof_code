@@ -32,6 +32,16 @@ path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01
 path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
 path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
+
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03all2_myeloid_merging3'
+freq_prefix='29mye_03_pca1_cl5_'
+freq_outdir='050_frequencies_auto'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03all2.xlsx'
+path_clustering='030_heatmaps/29mye_03_pca1_cl5_clustering.xls'
+path_clustering_labels='030_heatmaps/29mye_03_pca1_cl5_clustering_labels.xls'
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
 
 ##############################################################################
 # Read in the arguments
@@ -145,6 +155,28 @@ write.table(freq_out, file=file.path(outdir, paste0(prefix, "counts.xls")), row.
 
 
 
+# ---------------------------------------
+# Keep only those samples that have enough cells 
+# ---------------------------------------
+
+min_cells <- 200
+
+table_samp <- colSums(freq_out[md$shortname], na.rm = TRUE)
+names(table_samp) <- md$shortname
+
+keep_samps <- names(table_samp)[which(table_samp > min_cells)]
+
+prop_out <- prop_out[, colnames(prop_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
+freq_out <- freq_out[, colnames(freq_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
+
+md <- md[md$shortname %in% keep_samps, , drop = FALSE]
+
+## drop unused levels
+md$response <- factor(md$response)
+md$day <- factor(md$day)
+md$patient_id <- factor(md$patient_id)
+
+
 # ------------------------------------------------------------
 ### Plot frequencies
 # ------------------------------------------------------------
@@ -205,68 +237,19 @@ dev.off()
 # ------------------------------------------------------------
 # Test for frequency differences between groups
 # ------------------------------------------------------------
+## The model functions do not anlyse a cluster with NAs; 
+## For merged data it means such cluster was not present in all the datasets
+## For expression data clusters with no cells are skipped
 
+
+### Load functions fitting models
 source(path_fun_models)
+### Load formulas that are fit in the models - this function may change the md object!!!
+source(path_fun_formulas)
 
 levels(md$day)
 levels(md$response)
 
-
-if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R", "HD"))){
-  ## create formulas
-  formula_lm <- y ~ response + day + response:day
-  formula_lmer <- y ~ response + day + response:day + (1|patient_id)
-  
-  formula_glm_binomial <- cbind(y, total-y) ~ response + day + response:day
-  formula_glm_beta <- y/total ~ response + day + response:day
-  formula_glmer_binomial <- y/total ~ response + day + response:day + (1|patient_id)
-  
-  ## create contrasts
-  contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
-  k0 <- c(0, 1, 0, 0, 1/2, 0) # NR vs R
-  k1 <- c(0, 1, 0, 0, 0, 0) # NR vs R in base
-  k2 <- c(0, 1, 0, 0, 1, 0) # NR vs R in tx
-  k3 <- c(0, 0, 0, 0, 1, 0) # whether NR vs R is different in base and tx
-  K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
-  rownames(K) <- contrast_names
-  
-  ### p-value for sorting the output
-  pval_name1 <- "pval_NRvsR"
-  ### p-value for plotting the pheatmap2
-  adjpval_name2 <- "adjp_NRvsR"
-  pval_name2 <- "pval_NRvsR"
-  ### p-value for plotting the pheatmap3
-  adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
-  pval_name_list <- c("pval_NRvsR", "pval_NRvsR_base", "pval_NRvsR_tx", "pval_NRvsR_basevstx")
-  
-  
-}else if(identical(levels(md$day), "base") && identical(levels(md$response), c("NR", "R", "HD"))){
-  ## create formulas
-  formula_lm <- y ~ response
-  formula_lmer <- y ~ response + (1|patient_id)
-  
-  formula_glm_binomial <- cbind(y, total-y) ~ response
-  formula_glm_beta <- y/total ~ response
-  formula_glmer_binomial <- y/total ~ response + (1|patient_id)
-  
-  ## create contrasts
-  contrast_names <- c("NRvsR_base")
-  k1 <- c(0, 1, 0) # NR vs R in base
-  K <- matrix(k1, nrow = 1, byrow = TRUE)
-  rownames(K) <- contrast_names
-  
-  ### p-value for sorting the output
-  pval_name1 <- "pval_NRvsR_base"
-  ### p-value for plotting the pheatmap2
-  adjpval_name2 <- NULL
-  pval_name2 <- NULL
-  ### p-value for plotting the pheatmap3
-  adjpval_name_list <- "adjp_NRvsR_base"
-  pval_name_list <- "pval_NRvsR_base"
-  
-}else{
-  stop("Metadata does not fit to any the models that are specified !!!")  
-}
 
 
 models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_arcsinesqrt_interglht", "lmer_logit_interglht", "lm_arcsinesqrt_interglht", "lm_logit_interglht")

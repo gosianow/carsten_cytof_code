@@ -117,7 +117,7 @@ if ${pd1}; then
 
   ### Frequency analysis of PD1+ and PD1-
   echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 
@@ -140,7 +140,7 @@ if ${pd1}; then
 
   ### Frequency analysis of cytokines
   echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_clust}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 
@@ -183,7 +183,7 @@ if ${pd1}; then
 
   ### Get cluster frequencies
   echo "04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}' freq_outdir='070_pd1_bimatrix' path_metadata='${METADATA}/${file_metadata}'  path_clustering='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering.xls' path_clustering_labels='070_pd1/${prefix_pd1main}${prefix_pd1type}${prefix_merging_pd1}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 

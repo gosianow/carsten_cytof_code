@@ -29,16 +29,25 @@ library(reshape2)
 # path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03all_myeloid_merging3'
+data_prefix='29mye_03_'
+data_outdir='010_data'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03all.xlsx'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel3.xlsx'
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
+
 
 ##############################################################################
 
@@ -52,7 +61,9 @@ prefix <- data_prefix
 
 fcsDir <- "010_cleanfcs"
 outdir <- data_outdir
-if( !file.exists(outdir) ) dir.create(outdir)
+
+if(!file.exists(outdir)) 
+  dir.create(outdir, recursive = TRUE)
 
 
 # ------------------------------------------------------------
@@ -110,7 +121,7 @@ fcs_panel <- data.frame(fcs_colname = fcs_colnames, Isotope = panel$Isotope[m], 
 # --------------------------------------------------------------------------
 
 
-# arc-sin-h the columns specific 
+# arc-sin-h the columns specific
 fcsT <- lapply(fcs, function(u) {
   e <- exprs(u)
   e[,cols] <- asinh( e[,cols] / 5 )
@@ -159,36 +170,36 @@ saveRDS(el_out, file.path(outdir, paste0(prefix, "expr_norm.rds")))
 
 
 plotting_wrapper <- function(e, suffix){
-  
+
   df <- data.frame(samp = samp, e, check.names = FALSE)
   dfm <- melt(df, id.var = "samp")
-  
-  ggp <- ggplot(dfm, aes(x=value)) + 
-    geom_density(adjust = 1, fill = "black", alpha = 0.3) + 
+
+  ggp <- ggplot(dfm, aes(x=value)) +
+    geom_density(adjust = 1, fill = "black", alpha = 0.3) +
     facet_wrap(~ variable, nrow = 4, scales = "free") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
-  
+
   pdf(file.path(outdir, paste0(prefix, "distrosmer", suffix,".pdf")), w = ncol(e)*2/3, h = 10)
   print(ggp)
   dev.off()
-  
-  
-  ggp <- ggplot(dfm, aes(x=value, color = samp)) + 
-    geom_density(adjust = 1) + 
+
+
+  ggp <- ggplot(dfm, aes(x=value, color = samp)) +
+    geom_density(adjust = 1) +
     facet_wrap(~ variable, nrow = 4, scales = "free") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.title = element_blank(), legend.position = "bottom") +
     guides(color = guide_legend(nrow = 2)) +
     scale_color_manual(values = color_values)
-  
+
   pdf(file.path(outdir, paste0(prefix, "distrosgrp", suffix,".pdf")), w = ncol(e)*2/3, h = 11)
   print(ggp)
   dev.off()
-  
-  
+
+
   return(NULL)
-  
+
 }
 
 
@@ -210,8 +221,35 @@ plotting_wrapper(e = el, suffix = "_norm")
 
 
 
+# ------------------------------------------------------------
+# Plot number of cells per sample
+# ------------------------------------------------------------
+
+samp <- factor(samp, levels = md$shortname)
+
+cell_table <- table(samp)
+
+cell_counts <- rep(0, nrow(md))
+names(cell_counts) <- md$shortname
+
+cell_counts[names(cell_table)] <- as.numeric(cell_table)
 
 
+ggdf <- data.frame(sample_id = factor(names(cell_counts), levels = md$shortname), cell_counts = cell_counts)
+
+
+ggp <- ggplot(ggdf, aes(x = sample_id, y = cell_counts, fill = sample_id)) +
+  geom_bar(stat="identity") +
+  geom_text(aes(label = cell_counts), hjust=0.5, vjust=-0.5, size = 3) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none") +
+  scale_fill_manual(values = color_values, drop=FALSE) +
+  scale_x_discrete(drop=FALSE)
+
+
+pdf(file.path(outdir, paste0(prefix, "cell_counter.pdf")), w = nlevels(ggdf$sample_id)/3 + 2, h = 5)
+print(ggp)
+dev.off()
 
 
 

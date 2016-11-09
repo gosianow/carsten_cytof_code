@@ -78,7 +78,7 @@ if ${cluster_extracting}; then
   mkdir -p $ROUT
   echo "$RWD"
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' extract_outdir='${RWD_MAIN}/${extract_dir}/010_cleanfcs'  path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' extract_cluster='${extract_cluster}'" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' extract_outdir='${RWD_MAIN}/${extract_dir}/010_cleanfcs'  path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' extract_cluster=${extract_cluster}" $RCODE/02_cluster_extracting.R $ROUT/02_cluster_extracting.Rout
   tail $ROUT/02_cluster_extracting.Rout
 
 

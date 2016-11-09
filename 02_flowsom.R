@@ -129,7 +129,7 @@ ef <- as.matrix(e[, scols])
 # -------------------------------------
 
 set.seed(rand_seed)
-fsom <- FlowSOM::SOM(ef)
+fsom <- FlowSOM::SOM(ef, rlen = 10)
 
 
 # -------------------------------------

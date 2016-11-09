@@ -164,6 +164,24 @@ a <- cbind(cluster = labels$cluster[mm], a)
 markers_ordered <- colnames(a)[!colnames(a) %in% c("cluster", "label", "sample")]
 
 
+
+# ---------------------------------------
+# Keep only those samples that have enough cells 
+# ---------------------------------------
+
+keep_samps <- unique(a$sample[!rowSums(is.na(a[, markers_ordered, drop = FALSE])) == length(markers_ordered)])
+
+a <- a[a$sample %in% keep_samps, , drop = FALSE]
+
+md <- md[md$shortname %in% keep_samps, , drop = FALSE]
+
+## drop unused levels
+md$response <- factor(md$response)
+md$day <- factor(md$day)
+md$patient_id <- factor(md$patient_id)
+
+
+
 # -----------------------------------------------------------------------------
 ### Plot expression per cluster
 # -----------------------------------------------------------------------------
@@ -321,6 +339,10 @@ if(analysis_type == "all"){
 # -----------------------------------------------------------------------------
 # Test for marker expression differences between groups overall and per cluster
 # -----------------------------------------------------------------------------
+## The model functions do not anlyse a cluster with NAs; 
+## For merged data it means such cluster was not present in all the datasets
+## For expression data clusters with no cells are skipped
+
 
 ### Load functions fitting models
 source(path_fun_models)

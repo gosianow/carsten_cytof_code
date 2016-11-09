@@ -29,16 +29,25 @@ library(RColorBrewer)
 # path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03all2_myeloid_merging3'
+pcas_prefix='29mye_03_'
+pcas_outdir='020_pcascores'
+path_data='010_data/29mye_03_expr_raw.rds'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03all2.xlsx'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel3.xlsx'
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
@@ -47,7 +56,9 @@ setwd(rwd)
 prefix <- pcas_prefix
 
 outdir <- pcas_outdir
-if( !file.exists(outdir) ) dir.create(outdir)
+
+if( !file.exists(outdir) ) 
+  dir.create(outdir, recursive = TRUE)
 
 # ------------------------------------------------------------
 # Load data
@@ -64,6 +75,7 @@ if(grepl(".rds", path_data)){
 samp <- expr[, "sample_id"]
 fcs_colnames <- colnames(expr)[!grepl("cell_id|sample_id", colnames(expr))]
 e <- expr[, fcs_colnames]
+
 
 # ------------------------------------------------------------
 # Load metadata
@@ -95,9 +107,16 @@ fcs_panel <- data.frame(fcs_colname = fcs_colnames, Isotope = panel$Isotope[m], 
 # plot marginal distributions
 # --------------------------------------------------------------------------
 
+min_samp <- nrow(md)
+  
+  
+
 doPRINCOMP <- function(z, ncomp=3) {
   # z = es[[1]]; ncomp=3
-
+  
+  if(nrow(z) < min_samp)
+    return(rep(NA, ncol(z)))
+  
   ## Score by Levine
   pr <- prcomp(z, center = TRUE, scale. = FALSE)  # default is to center but not scale
 
@@ -112,7 +131,7 @@ doPRINCOMP <- function(z, ncomp=3) {
 es <- split(e, samp)
 
 prs <- sapply(es, doPRINCOMP)
-rmprs <- rowMeans(prs)
+rmprs <- rowMeans(prs, na.rm = TRUE)
 
 prs <- data.frame(mass = fcs_panel$fcs_colname, marker = fcs_panel$Antigen, avg_score = rmprs, round(prs, 4))
 
@@ -276,11 +295,17 @@ es <- split(e, samp)
 ### Plot the fraction of variance that is explained by PCs
 
 pc_frac_expl <- sapply(es, function(z){
+  # z = es[[1]]
+  
+  if(nrow(z) < min_samp)
+    return(rep(NA, ncol(z)))
   
   pr <- prcomp(z, center = TRUE, scale. = FALSE)
-  cumsum(pr$sdev^2) / sum(pr$sdev^2)
+  
+  cumsum(pr$sdev^2) / sum(pr$sdev^2, na.rm = TRUE)
   
 })
+
 
 pc_frac_expl <- data.frame(NoPC = 1:nrow(pc_frac_expl), pc_frac_expl)
 
@@ -310,6 +335,9 @@ ncomp=3
 
 score_levine <- sapply(es, function(z){
   
+  if(nrow(z) < min_samp)
+    return(rep(NA, ncol(z)))
+  
   pr <- prcomp(z, center = TRUE, scale. = FALSE)
   rowSums (outer( rep(1, ncol(z)), pr$sdev[1:ncomp]^2 ) * abs(pr$rotation[,1:ncomp]) )
   
@@ -335,6 +363,9 @@ dev.off()
 
 ### max
 score_levine_max <- sapply(es, function(z){
+  
+  if(nrow(z) < min_samp)
+    return(rep(NA, ncol(z)))
   
   pr <- prcomp(z, center = TRUE, scale. = FALSE)
   rowSums (outer( rep(1, ncol(z)), pr$sdev^2 ) * abs(pr$rotation) )
@@ -387,6 +418,9 @@ ncomp=3
 
 score_ss <- sapply(es, function(z){
   
+  if(nrow(z) < min_samp)
+    return(rep(NA, ncol(z)))
+  
   pr <- prcomp(z, center = TRUE, scale. = FALSE)
   rowSums (outer( rep(1, ncol(z)), pr$sdev[1:ncomp]^2 ) * pr$rotation[,1:ncomp]^2 )
   
@@ -413,6 +447,9 @@ dev.off()
 
 ### max
 score_ss_max <- sapply(es, function(z){
+  
+  if(nrow(z) < min_samp)
+    return(rep(NA, ncol(z)))
   
   pr <- prcomp(z, center = TRUE, scale. = FALSE)
   rowSums (outer( rep(1, ncol(z)), pr$sdev^2 ) * pr$rotation^2 )
@@ -460,6 +497,9 @@ dev.off()
 
 ## scale = TRUE
 score_ss_scalet <- sapply(es, function(z){
+  
+  if(nrow(z) < min_samp)
+    return(rep(NA, ncol(z)))
   
   pr <- prcomp(z, center = TRUE, scale. = TRUE)
   rowSums (outer( rep(1, ncol(z)), pr$sdev[1:ncomp]^2 ) * pr$rotation[,1:ncomp]^2 )

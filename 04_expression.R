@@ -33,6 +33,7 @@ path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
 path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
 path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
 analysis_type='all'
 
 
@@ -46,6 +47,7 @@ path_clustering_observables='030_heatmaps/0323_01_pca1_clustering_observables.xl
 path_clustering='030_heatmaps/0323_01_pca1_merging_clustering.xls'
 path_clustering_labels='030_heatmaps/0323_01_pca1_merging_clustering_labels.xls'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
 analysis_type='clust'
 
 
@@ -187,8 +189,16 @@ if("avg_score" %in% colnames(clustering_observables)){
 
 
 # ------------------------------------------------------------
-# Get the median expression per cluster
+# Get the median expression per cluster, and if sample has not enough cells, set expression to NA
 # ------------------------------------------------------------
+
+min_cells <- 200
+
+table_samp <- table(samp)
+
+keep_samps <- names(table_samp)[which(table_samp > min_cells)]
+
+
 
 if(analysis_type == "clust"){
   
@@ -203,6 +213,8 @@ if(analysis_type == "clust"){
   
   a <- a[, c("cluster", "label", "sample", fcs_panel$Antigen[c(scols, xcols)])]
   a$label <- factor(a$label, levels = labels$label)
+  
+  a[!a$sample %in% keep_samps, fcs_panel$Antigen[c(scols, xcols)]] <- NA
   
   ### Save the median expression per cluster and sample
   write.table(a, file.path(outdir, paste0(prefix, "expr_clust.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
@@ -223,14 +235,31 @@ if(analysis_type == "all"){
   a <- a[, c("cluster", "label", "sample", fcs_panel$Antigen[c(scols, xcols)])]
   a$label <- factor(a$label)
   
+  a[!a$sample %in% keep_samps, fcs_panel$Antigen[c(scols, xcols)]] <- NA
+  
   ### Save the median expression per cluster and sample
   write.table(a, file.path(outdir, paste0(prefix, "expr_all.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
 }
 
 
+# ---------------------------------------
+# Keep only those samples that have enough cells 
+# ---------------------------------------
+
+
+a <- a[a$sample %in% keep_samps, , drop = FALSE]
+
+md <- md[md$shortname %in% keep_samps, , drop = FALSE]
+
+## drop unused levels
+md$response <- factor(md$response)
+md$day <- factor(md$day)
+md$patient_id <- factor(md$patient_id)
+
+
 # -----------------------------------------------------------------------------
-### Plot expression per cluster
+# Plot expression per cluster
 # -----------------------------------------------------------------------------
 
 
@@ -291,57 +320,18 @@ dev.off()
 # -----------------------------------------------------------------------------
 # Test for marker expression differences between groups overall and per cluster 
 # -----------------------------------------------------------------------------
+## The model functions do not anlyse a cluster with NAs; 
+## For merged data it means such cluster was not present in all the datasets
+## For expression data clusters with no cells are skipped
 
+
+### Load functions fitting models
 source(path_fun_models)
+### Load formulas that are fit in the models - this function may change the md object!!!
+source(path_fun_formulas)
 
 levels(md$day)
 levels(md$response)
-
-
-if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R", "HD"))){
-  ## create formulas
-  formula_lm <- y ~ response + day + response:day
-  formula_lmer <- y ~ response + day + response:day + (1|patient_id)
-  
-  ## create contrasts
-  contrast_names <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_basevstx")
-  k0 <- c(0, 1, 0, 0, 1/2, 0) # NR vs R
-  k1 <- c(0, 1, 0, 0, 0, 0) # NR vs R in base
-  k2 <- c(0, 1, 0, 0, 1, 0) # NR vs R in tx
-  k3 <- c(0, 0, 0, 0, 1, 0) # whether NR vs R is different in base and tx
-  K <- matrix(c(k0, k1, k2, k3), nrow = 4, byrow = TRUE)
-  rownames(K) <- contrast_names
-  
-  ### p-value for sorting the output
-  pval_name <- "pval_NRvsR"
-  ### p-value for plotting the pheatmap2
-  adjpval_name2 <- "adjp_NRvsR"
-  ### p-value for plotting the pheatmap3
-  adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_NRvsR_basevstx")
-  
-  
-}else if(identical(levels(md$day), "base") && identical(levels(md$response), c("NR", "R", "HD"))){
-  ## create formulas
-  formula_lm <- y ~ response
-  formula_lmer <- y ~ response + (1|patient_id)
-  
-  ## create contrasts
-  contrast_names <- c("NRvsR_base")
-  k1 <- c(0, 1, 0) # NR vs R in base
-  K <- matrix(k1, nrow = 1, byrow = TRUE)
-  rownames(K) <- contrast_names
-  
-  ### p-value for sorting the output
-  pval_name <- "pval_NRvsR_base"
-  ### p-value for plotting the pheatmap2
-  adjpval_name2 <- NULL
-  ### p-value for plotting the pheatmap3
-  adjpval_name_list <- "adjp_NRvsR_base"
-  
-}else{
-  stop("Metadata does not fit to any the models that are specified !!!")  
-}
-
 
 
 ### Prepare the matrix with data (rows - markers X clusters; columns - samples)
@@ -392,7 +382,7 @@ for(k in models2fit){
   pvs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["pvals"]])
   coeffs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["coeffs"]])
   
-  oo <- order(pvs[, pval_name], decreasing = FALSE)
+  oo <- order(pvs[, pval_name1], decreasing = FALSE)
   pvs <- pvs[oo, , drop = FALSE]
   coeffs <- coeffs[oo, , drop = FALSE]
   
@@ -443,7 +433,8 @@ for(k in models2fit){
     which_top_pvs <- FALSE
   }else{
     adjpval_name <- adjpval_name2
-    expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
+    pval_name <- pval_name2
+    expr_all <- expr_all[order(expr_all$label, expr_all[, pval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
@@ -486,9 +477,10 @@ for(k in models2fit){
     # i = "tx"
     
     adjpval_name <- paste0("adjp_NRvsR_", i)
+    pval_name <- paste0("pval_NRvsR_", i)
     
     ## group the expression by cluster
-    expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
+    expr_all <- expr_all[order(expr_all$label, expr_all[, pval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
@@ -529,8 +521,8 @@ for(k in models2fit){
   ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
   
   ## group the expression by cluster and order by adjpval
-  for(i in length(adjpval_name_list):1){
-    expr_all <- expr_all[order(expr_all[, adjpval_name_list[i]]), , drop = FALSE]
+  for(i in length(pval_name_list):1){
+    expr_all <- expr_all[order(expr_all[, pval_name_list[i]]), , drop = FALSE]
   }
   
   expr_all <- expr_all[order(expr_all$label), , drop = FALSE]

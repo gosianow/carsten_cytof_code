@@ -148,6 +148,33 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 labels
 
 
+# ---------------------------------------
+# Keep only those samples that have enough cells 
+# ---------------------------------------
+
+min_cells <- 200
+
+table_samp <- colSums(freq_out[md$shortname], na.rm = TRUE)
+names(table_samp) <- md$shortname
+
+keep_samps <- names(table_samp)[which(table_samp > min_cells)]
+
+
+prop_out <- prop_out[, colnames(prop_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
+freq_out <- freq_out[, colnames(freq_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
+
+md <- md[md$shortname %in% keep_samps, , drop = FALSE]
+
+
+## drop unused levels
+md$response <- factor(md$response)
+md$day <- factor(md$day)
+md$patient_id <- factor(md$patient_id)
+md$data <- factor(md$data)
+md$data_day <- factor(md$data_day)
+
+
+
 # ------------------------------------------------------------
 # Plot frequencies
 # ------------------------------------------------------------
@@ -244,7 +271,9 @@ for(i in 1:nlevels(ggdf$day)){
 # ------------------------------------------------------------
 # Test for frequency differences between groups
 # ------------------------------------------------------------
-## The model functions do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+## The model functions do not anlyse a cluster with NAs; 
+## For merged data it means such cluster was not present in all the datasets
+## For expression data clusters with no cells are skipped
 
 
 ### Load functions fitting models

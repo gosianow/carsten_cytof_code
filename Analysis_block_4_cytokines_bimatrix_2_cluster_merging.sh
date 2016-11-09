@@ -141,7 +141,7 @@ if ${cytokines_bimatrix_cluster_merging}; then
 
   ### Get cluster frequencies
   echo ">>> 04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='060_cytokines_bimatrix/03_frequencies' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='060_cytokines_bimatrix/03_frequencies' path_metadata='${METADATA}/${file_metadata}'  path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 

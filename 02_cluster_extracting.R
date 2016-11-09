@@ -40,12 +40,15 @@ library(reshape2)
 # Read in the arguments
 ##############################################################################
 
+rm(list = ls())
+
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
+
 
 ##############################################################################
 
@@ -99,13 +102,18 @@ clust <- labels$label[mlab]
 clustList <- split(clust, factor(clustering[, "sample_id"], levels = names(fcs)))
 
 
-writeOutCluster <- function(u,v,z, keep="CD4", outdir) {
+writeOutCluster <- function(u, v, z, keep, outdir) {
   # u - cluster; v - flowFrame; z - original filename
   
   fn <- file.path(outdir, basename(z))
-  out <- v[u==keep, ]
+  
+  # out <- v[u == keep, ]
   # out <- v[grep(keep, u), ]
+  out <- v[u %in% keep, ]
+  
   write.FCS(out, fn)
+  
+  return(NULL)
   
 }
 
