@@ -41,8 +41,7 @@ tsne_pmin=1500
 # --------------------------------------------------
 
 # -----------------------------
-### CD4 - EM + CM cluster
-### CD8 - CM
+### CD8 - CM + naive
 # -----------------------------
 
 DATA=23
@@ -58,8 +57,8 @@ file_panel=('panel2CD4.xlsx' 'panel2CD8.xlsx')
 prefix_panel=('02CD4_' '02CD8_')
 
 prefix_merging=('merging2_' 'merging2_')
-clsubset=("c('EM','CM')" "c('CM')")
-prefix_clsubset=('EM_CM_' 'CM_')
+clsubset=("c('EM','CM')" "c('CM','naive')")
+prefix_clsubset=('EM_CM_' 'CM_naive_')
 file_cytokines_cutoffs=('panel2CD4_23_cytokines_CM.xlsx' 'panel2CD8_23_cytokines_CM.xlsx')
 prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
 
@@ -67,17 +66,15 @@ prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
 som_dim=(5 5)
 nmetaclusts=(25 25)
 
-for i in 0 1
+for i in 1 # run only for CD8
 do
   ./Analysis_block_4_cytokines_bimatrix_1_main.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cytokines_bimatrix_main ${cytokines_bimatrix_main} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --som_dim ${som_dim[$i]} --nmetaclusts ${nmetaclusts[$i]}
 done
 
 
 
-
 # -----------------------------
-### CD4 - EM + CM cluster
-### CD8 - CM
+### CD8 - CM + naive
 # -----------------------------
 
 DATA=29
@@ -92,8 +89,8 @@ prefix_data=('29CD4_' '29CD8_')
 prefix_panel=('02CD4_' '02CD8_')
 
 prefix_merging=('merging3_' 'merging3_') # name of merging from which the Tmem clusters are extracted
-clsubset=("c('EM','CM')" "c('CM')")
-prefix_clsubset=('EM_CM_' 'CM_')
+clsubset=("c('EM','CM')" "c('CM','naive')")
+prefix_clsubset=('EM_CM_' 'CM_naive_')
 file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM.xlsx')
 prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
 
@@ -102,7 +99,7 @@ som_dim=(5 5)
 nmetaclusts=(25 25)
 
 
-for i in 0 1
+for i in 1 # run only for CD8
 do
   ./Analysis_block_4_cytokines_bimatrix_1_main.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cytokines_bimatrix_main ${cytokines_bimatrix_main} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --som_dim ${som_dim[$i]} --nmetaclusts ${nmetaclusts[$i]}
 done

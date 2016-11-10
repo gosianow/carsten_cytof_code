@@ -26,14 +26,14 @@ library(RColorBrewer)
 ##############################################################################
 
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4'
-clust_prefix='23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl16_'
+clust_prefix='23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl36_'
 clust_outdir='10_cytokines_merged/01_clustering'
 
 path_data=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2/060_cytokines_bimatrix/01_clustering/23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_bimatrix.txt','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging/060_cytokines_bimatrix/01_clustering/29CD4_02CD4_pca1_merging3_Tmem_cytCM_raw2_bimatrix.txt')
 path_clustering_observables=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2/060_cytokines_bimatrix/01_clustering/23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_clustering_observables.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging/060_cytokines_bimatrix/01_clustering/29CD4_02CD4_pca1_merging3_Tmem_cytCM_raw2_clustering_observables.xls')
 
 data_name=c('data23','data29')
-som_dim=4
+som_dim=6
 
 
 ##############################################################################
@@ -131,6 +131,7 @@ fsom <- FlowSOM::SOM(ef, xdim = som_dim, ydim = som_dim, rlen = 10, mst = 1)
 
 
 data <- fsom$codes
+rownames(data) <- 1:nrow(data)
 
 clust <- fsom$mapping[,1]
 
@@ -146,20 +147,6 @@ for(i in 1:length(clust_out))
 
 
 
-# make data frame with labels
-
-for(i in 1:length(clust_out)){
-  
-  clust_tmp <- clust_out[[i]]$cluster
-  
-  labels <- data.frame(cluster = sort(unique(clust_tmp)), label = sort(unique(clust_tmp)))
-  
-  write.table(labels, file = file.path(outdir, paste0(prefix, data_name[i], "_", "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
-  
-}
-
-
-
 ### Code sizes
 
 code_sizes <- table(fsom$mapping[, 1]) 
@@ -172,7 +159,7 @@ code_sizes_full[names(code_sizes)] <- as.numeric(code_sizes)
 
 
 ### Plot codes as a heatmap
-rownames(data) <- 1:nrow(data)
+
 
 color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
 labels_col <- clustering_observables[clustering_observables$clustering_observable, "marker"]
@@ -196,6 +183,39 @@ write.table(codes, file = file.path(outdir, paste0(prefix, "codes.xls")), row.na
 
 
 
+# Save data frames with labels
+
+data_new_labels <- data[, clustering_observables[clustering_observables$clustering_observable, "mass"]]
+colnames(data_new_labels) <- clustering_observables[clustering_observables$clustering_observable, "marker"]
+
+### Gent the names of cytokines that are positive in a given cluster
+
+cluster_binames <- apply(data_new_labels, 1, function(x){
+  
+  paste0(rev(colnames(data_new_labels)[x > 0.75]), collapse = "/")
+  
+})
+
+
+code_sizes_prop <- round(code_sizes_full/sum(code_sizes_full)*100, 2)
+
+
+labels <- list()
+
+for(i in 1:length(clust_out)){
+  # i = 2
+  
+  clust_tmp <- clust_out[[i]]$cluster
+  
+  cluster <- sort(unique(clust_tmp))
+  
+  label <- paste0(cluster, " - ", cluster_binames[cluster], " (", code_sizes_prop[cluster], ")")
+  
+  labels[[i]] <- data.frame(cluster = cluster, label = label, stringsAsFactors = FALSE)
+  
+  write.table(labels[[i]], file = file.path(outdir, paste0(prefix, data_name[i], "_", "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+}
 
 
 
@@ -219,13 +239,13 @@ for(i in 1:length(data_name)){
   prop <- t(t(freq) / colSums(freq)) * 100 # proportion of clusters in samples
   
   # use labels as names of clusters
-  mlab <- match(rownames(freq), labels$cluster)
+  mlab <- match(rownames(freq), labels[[i]]$cluster)
   
   
   ### Save the frequencies and proportions
-  prop_out <- data.frame(labels[mlab, c("cluster", "label")], as.data.frame.matrix(prop))
+  prop_out <- data.frame(labels[[i]][mlab, c("cluster", "label")], as.data.frame.matrix(prop))
   
-  freq_out <- data.frame(labels[mlab, c("cluster", "label")], as.data.frame.matrix(freq))
+  freq_out <- data.frame(labels[[i]][mlab, c("cluster", "label")], as.data.frame.matrix(freq))
   
   write.table(prop_out, file=file.path(outdir, paste0(prefix, data_name[i], "_", "frequencies.xls")), row.names=FALSE, quote=FALSE, sep="\t")
   write.table(freq_out, file=file.path(outdir, paste0(prefix, data_name[i], "_", "counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")

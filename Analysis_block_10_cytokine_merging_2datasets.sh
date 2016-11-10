@@ -144,45 +144,29 @@ if ${cytokines_merging_v2}; then
   ### Analysis of cluster frequencies - 3 responses
 
   echo ">>> 08_frequencies_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='10_cytokines_merged/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='10_cytokines_merged/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' pdf_hight=8" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
   tail $ROUT/08_frequencies_merged.Rout
 
   ### Analysis of cluster frequencies - 2 responses
 
   echo ">>> 08_frequencies_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='10_cytokines_merged/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='10_cytokines_merged/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' pdf_hight=8" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
   tail $ROUT/08_frequencies_merged.Rout
 
 
   ### min_freq=0.01
 
-  ### Analysis of cluster frequencies - remove clusters with very low number of cells and re-adjust the p-values with qvalue() - 3 responses
+  ### Analysis of cluster frequencies - remove clusters with very low number of cells and re-adjust the p-values - 3 responses
 
   echo ">>> 08_frequencies_merged_low_freq_out"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}out001_' freq_outdir='10_cytokines_merged/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_pvs='10_cytokines_merged/03_frequencies_auto/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' model2fit='glmer_binomial_interglht' min_freq=0.01" $RCODE/08_frequencies_merged_low_freq_out.R $ROUT/08_frequencies_merged_low_freq_out.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}out001_' freq_outdir='10_cytokines_merged/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_pvs='10_cytokines_merged/03_frequencies_auto/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' model2fit='glmer_binomial_interglht' min_freq=0.01 pdf_hight=8" $RCODE/08_frequencies_merged_low_freq_out.R $ROUT/08_frequencies_merged_low_freq_out.Rout
   tail $ROUT/08_frequencies_merged_low_freq_out.Rout
 
 
-  ### Analysis of cluster frequencies - remove clusters with very low number of cells and re-adjust the p-values with qvalue() - 2 responses
+  ### Analysis of cluster frequencies - remove clusters with very low number of cells and re-adjust the p-values - 2 responses
 
   echo ">>> 08_frequencies_merged_low_freq_out"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}out001_' freq_outdir='10_cytokines_merged/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_pvs='10_cytokines_merged/03_frequencies_auto_2responses/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' model2fit='glmer_binomial_interglht' min_freq=0.01" $RCODE/08_frequencies_merged_low_freq_out.R $ROUT/08_frequencies_merged_low_freq_out.Rout
-  tail $ROUT/08_frequencies_merged_low_freq_out.Rout
-
-
-  ### min_freq=0
-
-  ### Analysis of cluster frequencies - remove clusters with very low number of cells and re-adjust the p-values with qvalue() - 3 responses
-
-  echo ">>> 08_frequencies_merged_low_freq_out"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}out0_' freq_outdir='10_cytokines_merged/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_pvs='10_cytokines_merged/03_frequencies_auto/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' model2fit='glmer_binomial_interglht' min_freq=0" $RCODE/08_frequencies_merged_low_freq_out.R $ROUT/08_frequencies_merged_low_freq_out.Rout
-  tail $ROUT/08_frequencies_merged_low_freq_out.Rout
-
-
-  ### Analysis of cluster frequencies - remove clusters with very low number of cells and re-adjust the p-values with qvalue() - 2 responses
-
-  echo ">>> 08_frequencies_merged_low_freq_out"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}out0_' freq_outdir='10_cytokines_merged/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_pvs='10_cytokines_merged/03_frequencies_auto_2responses/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' model2fit='glmer_binomial_interglht' min_freq=0" $RCODE/08_frequencies_merged_low_freq_out.R $ROUT/08_frequencies_merged_low_freq_out.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}out001_' freq_outdir='10_cytokines_merged/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/10_cytokines_merged/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_pvs='10_cytokines_merged/03_frequencies_auto_2responses/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' model2fit='glmer_binomial_interglht' min_freq=0.01 pdf_hight=8" $RCODE/08_frequencies_merged_low_freq_out.R $ROUT/08_frequencies_merged_low_freq_out.Rout
   tail $ROUT/08_frequencies_merged_low_freq_out.Rout
 
 

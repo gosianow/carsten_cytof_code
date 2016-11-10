@@ -35,7 +35,7 @@ data_name=c('data23','data29')
 
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
-
+pdf_hight=8
 
 ##############################################################################
 # Read in the arguments
@@ -63,6 +63,9 @@ outdir <- freq_outdir
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
 
+if(!any(grepl("pdf_hight=", args))){
+  pdf_hight=4
+}
 
 # ------------------------------------------------------------
 # Load metadata
@@ -228,7 +231,7 @@ ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group, shape = data, fill
   scale_fill_manual(values = color_groupsb) +
   facet_wrap(~ day)
 
-pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 3, h = 4)
+pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 3, h = pdf_hight)
 print(ggp)
 dev.off()
 
@@ -261,7 +264,7 @@ for(i in 1:nlevels(ggdf$day)){
     scale_color_manual(values = color_groups) +
     scale_fill_manual(values = color_groupsb)
   
-  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = nlevels(ggdf$cluster)/2 + 3, h = 4)
+  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = nlevels(ggdf$cluster)/2 + 3, h = pdf_hight)
   print(ggp)
   dev.off()
   

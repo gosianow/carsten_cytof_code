@@ -6,7 +6,7 @@
 # Updated 7 nov 2016
 
 # Remove clusters with very low number of cells and re-adjust the p-values
-# Use qvalue for the p-value adjustment
+# Use qvalue for the p-value adjustment (NOT anymore!!! - problems when there are too few test - the histograms are not uniform and smooth)
 
 ##############################################################################
 Sys.time()
@@ -24,7 +24,6 @@ library(pheatmap)
 library(gtools) # for logit
 library(tools)
 library(qvalue)
-
 
 ##############################################################################
 # Test arguments
@@ -44,7 +43,7 @@ path_pvs='10_cytokines_merged/03_frequencies_auto_2responses/23_29_CD4_02CD4_pca
 
 model2fit='glmer_binomial_interglht'
 min_freq=0.01
-
+pdf_hight=8
 
 ##############################################################################
 # Read in the arguments
@@ -72,6 +71,9 @@ outdir <- freq_outdir
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
 
+if(!any(grepl("pdf_hight=", args))){
+  pdf_hight=4
+}
 
 # ------------------------------------------------------------
 # Load metadata
@@ -224,7 +226,7 @@ ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group, shape = data, fill
   scale_fill_manual(values = color_groupsb) +
   facet_wrap(~ day)
 
-pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 3, h = 4)
+pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 3, h = pdf_hight)
 print(ggp)
 dev.off()
 
@@ -257,7 +259,7 @@ for(i in 1:nlevels(ggdf$day)){
     scale_color_manual(values = color_groups) +
     scale_fill_manual(values = color_groupsb)
   
-  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = nlevels(ggdf$cluster)/2 + 3, h = 4)
+  pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = nlevels(ggdf$cluster)/2 + 3, h = pdf_hight)
   print(ggp)
   dev.off()
   
@@ -271,7 +273,7 @@ for(i in 1:nlevels(ggdf$day)){
 k <- model2fit 
 
 ### p-value for sorting the output
-pval_name <- "pval_NRvsR"
+pval_name1 <- "pval_NRvsR"
 ### p-value for plotting the pheatmap2
 adjpval_name2 <- "adjp_NRvsR"
 pval_name2 <- "pval_NRvsR"
@@ -280,41 +282,58 @@ adjpval_name_list <- c("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", "adjp_N
 pval_name_list <- c("pval_NRvsR", "pval_NRvsR_base", "pval_NRvsR_tx", "pval_NRvsR_basevstx")
 
 # ----------------------------------------
-# Read in the p-values and re-adjust them 
+# Read in the p-values and re-adjust them using qvalue()
+# ----------------------------------------
+
+# pvs <- read.table(path_pvs, header = TRUE, sep = "\t", as.is = TRUE)
+# 
+# pvs <- pvs[pvs$label %in% prop_out$label, , drop = FALSE]
+# pval_colnames <- colnames(pvs)[grep("pval_", colnames(pvs))]
+# 
+# pdf(file.path(outdir, paste0(prefix, "frequencies_", k, "_pvs_hist", suffix, ".pdf")))
+# 
+# for(i in 1:length(pval_colnames)){
+#   # i = 1
+#   ### get q-value object
+#   qobj <- qvalue(pvs[, pval_colnames[i]])
+#   
+#   hist(pvs[, pval_colnames[i]], breaks = 20)
+#   
+#   plot(qobj)
+# 
+#   print(hist(qobj))
+#   
+#   pvs[, gsub("pval_", "adjp_", pval_colnames[i])] <- qobj$qvalues
+#   
+# }
+# 
+# dev.off()
+# 
+# oo <- order(pvs[, pval_name], decreasing = FALSE)
+# pvs <- pvs[oo, , drop = FALSE]
+# 
+# ## save the results
+# write.table(pvs, file=file.path(outdir, paste0(prefix, "frequencies_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+
+# ----------------------------------------
+# Read in the p-values and re-adjust them using qvalue()
 # ----------------------------------------
 
 pvs <- read.table(path_pvs, header = TRUE, sep = "\t", as.is = TRUE)
 
 pvs <- pvs[pvs$label %in% prop_out$label, , drop = FALSE]
 
-
 pval_colnames <- colnames(pvs)[grep("pval_", colnames(pvs))]
 
-
-pdf(file.path(outdir, paste0(prefix, "frequencies_", k, "_pvs_hist", suffix, ".pdf")))
 
 for(i in 1:length(pval_colnames)){
   # i = 1
   
-  # pvs[, gsub("pval_", "adjp_", pval_colnames[i])] <- p.adjust(pvs[, pval_colnames[i]], method = "BH")
-  
-  ### get q-value object
-  qobj <- qvalue(pvs[, pval_colnames[i]])
-  
-  hist(pvs[, pval_colnames[i]], breaks = 20)
-  
-  plot(qobj)
-
-  print(hist(qobj))
-  
-  pvs[, gsub("pval_", "adjp_", pval_colnames[i])] <- qobj$qvalues
+  pvs[, gsub("pval_", "adjp_", pval_colnames[i])] <- p.adjust(pvs[, pval_colnames[i]], method = "BH")
   
 }
 
-dev.off()
-
-
-oo <- order(pvs[, pval_name], decreasing = FALSE)
+oo <- order(pvs[, pval_name1], decreasing = FALSE)
 pvs <- pvs[oo, , drop = FALSE]
 
 ## save the results
