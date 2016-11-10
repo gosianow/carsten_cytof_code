@@ -396,7 +396,7 @@ for(k in models2fit){
   pvs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["pvals"]])
   coeffs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["coeffs"]])
 
-  oo <- order(pvs[, pval_name], decreasing = FALSE)
+  oo <- order(pvs[, pval_name1], decreasing = FALSE)
   pvs <- pvs[oo, , drop = FALSE]
   coeffs <- coeffs[oo, , drop = FALSE]
 
@@ -426,7 +426,8 @@ for(k in models2fit){
 
   ## group the expression by cluster
   adjpval_name <- adjpval_name2
-  expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
+  pval_name <- pval_name2
+  expr_all <- expr_all[order(expr_all$label, expr_all[, pval_name]), , drop = FALSE]
 
   which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
   which(which_top_pvs)
@@ -474,9 +475,10 @@ for(k in models2fit){
     print(paste0("Plot pheatmap_", i))
 
     adjpval_name <- paste0("adjp_NRvsR_", i)
-
+    pval_name <- paste0("pval_NRvsR_", i)
+    
     ## group the expression by cluster
-    expr_all <- expr_all[order(expr_all$label, expr_all[, adjpval_name]), , drop = FALSE]
+    expr_all <- expr_all[order(expr_all$label, expr_all[, pval_name]), , drop = FALSE]
 
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
@@ -522,8 +524,8 @@ for(k in models2fit){
   ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
 
   ## group the expression by cluster and order by adjpval
-  for(i in length(adjpval_name_list):1){
-    expr_all <- expr_all[order(expr_all[, adjpval_name_list[i]]), , drop = FALSE]
+  for(i in length(pval_name_list):1){
+    expr_all <- expr_all[order(expr_all[, pval_name_list[i]]), , drop = FALSE]
   }
 
   expr_all <- expr_all[order(expr_all$label), , drop = FALSE]

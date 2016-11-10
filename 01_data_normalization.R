@@ -29,11 +29,12 @@ library(reshape2)
 # path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
 # path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03all_myeloid_merging3'
-data_prefix='29mye_03_'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-11-02'
+data_prefix='02_val_'
 data_outdir='010_data'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03all.xlsx'
-path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel3.xlsx'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_validation.xlsx'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel_validation.xlsx'
+
 
 ##############################################################################
 # Read in the arguments

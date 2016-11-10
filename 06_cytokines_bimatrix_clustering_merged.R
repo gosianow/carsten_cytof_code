@@ -147,10 +147,16 @@ for(i in 1:length(clust_out))
 
 
 # make data frame with labels
-labels <- data.frame(cluster = sort(unique(clust)), label = sort(unique(clust)))
 
-for(i in 1:length(data_name))
+for(i in 1:length(clust_out)){
+  
+  clust_tmp <- clust_out[[i]]$cluster
+  
+  labels <- data.frame(cluster = sort(unique(clust_tmp)), label = sort(unique(clust_tmp)))
+  
   write.table(labels, file = file.path(outdir, paste0(prefix, data_name[i], "_", "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+  
+}
 
 
 
