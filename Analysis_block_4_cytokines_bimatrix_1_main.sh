@@ -109,15 +109,15 @@ if ${cytokines_bimatrix_main}; then
   tail $ROUT/06_cytokines_bimatrix.Rout
 
 
-  ### Clustering of bimatrix based on SOM only
+  ### Clustering of bimatrix is based on SOM only when som_dim^2 = nmetaclusts, otherwise cluster consesnsus is applied additionally
   echo ">>> 06_cytokines_bimatrix_clustering"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' clust_prefix='${prefix_cytokines}${prefix_clust}' clust_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' som_dim=${som_dim}" $RCODE/06_cytokines_bimatrix_clustering.R $ROUT/06_cytokines_bimatrix_clustering.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' clust_prefix='${prefix_cytokines}${prefix_clust}' clust_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' som_dim=${som_dim} nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines_bimatrix_clustering.R $ROUT/06_cytokines_bimatrix_clustering.Rout
   tail $ROUT/06_cytokines_bimatrix_clustering.Rout
 
 
   ### Heatmaps
   echo ">>> 02_heatmaps"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_clust}' heatmap_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls'  path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE linkage='ward.D2'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_clust}' heatmap_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls'  path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE linkage='average'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 

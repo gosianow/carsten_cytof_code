@@ -165,7 +165,7 @@ color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
 labels_col <- clustering_observables[clustering_observables$clustering_observable, "marker"]
 annotation_colors <- NA
 
-cluster_rows <- hclust(dist(data), method = "ward.D2")
+cluster_rows <- hclust(dist(data), method = "average")
 
 labels_row <- paste0(rownames(data), "  ( ", format(code_sizes_full, big.mark=",", scientific=FALSE), " )")
 annotation_row <- NA

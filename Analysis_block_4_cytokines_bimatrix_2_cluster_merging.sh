@@ -54,16 +54,8 @@ while [[ ${1} ]]; do
     prefix_clsubset=${2}
     shift
     ;;
-    --file_cytokines_cutoffs)
-    file_cytokines_cutoffs=${2}
-    shift
-    ;;
     --prefix_cytokines_cutoffs)
     prefix_cytokines_cutoffs=${2}
-    shift
-    ;;
-    --clsubset)
-    clsubset=${2}
     shift
     ;;
     --nmetaclusts)

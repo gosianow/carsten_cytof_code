@@ -65,7 +65,7 @@ if(all(!grepl("linkage=", args))){
 
 
 # ------------------------------------------------------------
-# Colors for MST maps
+# Colors for clusters
 # ------------------------------------------------------------
 
 # ggplot palette
@@ -196,13 +196,13 @@ rownames(data) <- 1:nrow(data)
 
 color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
 labels_col <- clustering_observables[clustering_observables$clustering_observable, "marker"]
-annotation_colors <- list(cluster = colors_clusters)  
 
 cluster_rows <- fsom_mc_tree
 labels_row <- paste0(rownames(data), "  ( ", format(code_sizes_full, big.mark=",", scientific=FALSE), " )")
+
 annotation_row <- data.frame(cluster = factor(fsom_mc))
 rownames(annotation_row) <- rownames(data)
-
+annotation_colors <- list(cluster = colors_clusters)  
 
 pheatmap(data[, clustering_observables[clustering_observables$clustering_observable, "mass"]], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "codes_pheatmap.pdf")))
 

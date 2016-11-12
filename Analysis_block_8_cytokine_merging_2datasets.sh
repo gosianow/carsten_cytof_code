@@ -82,8 +82,12 @@ while [[ ${1} ]]; do
     prefix_clsubset=${2}
     shift
     ;;
-    --prefix_cytokines_cutoffs)
-    prefix_cytokines_cutoffs=${2}
+    --prefix_cytokines_cutoffs1)
+    prefix_cytokines_cutoffs1=${2}
+    shift
+    ;;
+    --prefix_cytokines_cutoffs2)
+    prefix_cytokines_cutoffs2=${2}
     shift
     ;;
     --prefix_merging_cyt1)
@@ -122,12 +126,12 @@ if ${cytokines_merging}; then
 
   ### Get cluster frequencies - 3 responses
   echo "08_frequencies_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_cytokines_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/03_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_${prefix_merging_cyt1}counts.xls','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/03_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_${prefix_merging_cyt2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_cytokines_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/03_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs1}raw2_${prefix_merging_cyt1}counts.xls','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/03_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs2}raw2_${prefix_merging_cyt2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
   tail $ROUT/08_frequencies_merged.Rout
 
   ### Get cluster frequencies - 2 responses
   echo "08_frequencies_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_cytokines_merged_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/03_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_${prefix_merging_cyt1}counts.xls','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/03_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_${prefix_merging_cyt2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_cytokines_merged_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/03_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs1}raw2_${prefix_merging_cyt1}counts.xls','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/03_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs2}raw2_${prefix_merging_cyt2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
   tail $ROUT/08_frequencies_merged.Rout
 
 fi

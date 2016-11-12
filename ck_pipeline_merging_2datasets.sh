@@ -191,8 +191,9 @@ prefix_merging1="merging2_"
 prefix_merging2="merging3_"
 
 prefix_clsubset='Tmem_'
-prefix_cytokines_cutoffs='cytCM_'
 
+prefix_cytokines_cutoffs1='cytCMbak_'
+prefix_cytokines_cutoffs2='cytCM_'
 
 prefix_merging_cyt1='cytmerging3_'
 prefix_merging_cyt2='cytmerging2_'
@@ -200,16 +201,18 @@ prefix_merging_cyt2='cytmerging2_'
 prefix_data_merging="23CD4m2cm3_29CD4m3cm2_"
 
 
-./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
+./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs1 ${prefix_cytokines_cutoffs1} --prefix_cytokines_cutoffs2 ${prefix_cytokines_cutoffs2} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
 
 
+prefix_cytokines_cutoffs1='cytCM_'
+prefix_cytokines_cutoffs2='cytCM_'
 
 prefix_merging_cyt1='cytmerging4_'
 prefix_merging_cyt2='cytmerging4_'
 
 prefix_data_merging="23CD4m2cm4_29CD4m3cm4_"
 
-./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
+./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs1 ${prefix_cytokines_cutoffs1} --prefix_cytokines_cutoffs2 ${prefix_cytokines_cutoffs2} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
 
 
 
@@ -218,7 +221,7 @@ prefix_merging_cyt2='cytmerging5_'
 
 prefix_data_merging="23CD4m2cm5_29CD4m3cm5_"
 
-./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
+./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs1 ${prefix_cytokines_cutoffs1} --prefix_cytokines_cutoffs2 ${prefix_cytokines_cutoffs2} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
 
 
 
@@ -245,7 +248,8 @@ prefix_merging1="merging2_"
 prefix_merging2="merging3_"
 
 prefix_clsubset='Tmem_'
-prefix_cytokines_cutoffs='cytCM_'
+prefix_cytokines_cutoffs1='cytCM_'
+prefix_cytokines_cutoffs2='cytCM_'
 
 
 prefix_merging_cyt1='cytmerging3_'
@@ -253,7 +257,7 @@ prefix_merging_cyt2='cytmerging2_'
 
 prefix_data_merging="23CD8m2cm3_29CD8m3cm2_"
 
-./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
+./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs1 ${prefix_cytokines_cutoffs1} --prefix_cytokines_cutoffs2 ${prefix_cytokines_cutoffs2} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
 
 
 
@@ -262,7 +266,7 @@ prefix_merging_cyt2='cytmerging4_'
 
 prefix_data_merging="23CD8m2cm4_29CD8m3cm4_"
 
-./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
+./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs1 ${prefix_cytokines_cutoffs1} --prefix_cytokines_cutoffs2 ${prefix_cytokines_cutoffs2} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
 
 
 
@@ -297,6 +301,11 @@ prefix_clsubset='Tmem_'
 prefix_cytokines_cutoffs='cytCM_'
 
 prefix_data_merging="23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_"
+
+prefix_clust='cl25_'
+som_dim=5
+
+./Analysis_block_10_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v2 ${cytokines_merging_v2} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_clust ${prefix_clust} --som_dim ${som_dim}
 
 
 prefix_clust='cl36_'
@@ -380,6 +389,12 @@ prefix_clsubset='Tmem_'
 prefix_cytokines_cutoffs='cytCM_'
 
 prefix_data_merging="23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_"
+
+prefix_clust='cl25_'
+som_dim=5
+
+./Analysis_block_10_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v2 ${cytokines_merging_v2} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_clust ${prefix_clust} --som_dim ${som_dim}
+
 
 prefix_clust='cl36_'
 som_dim=6
