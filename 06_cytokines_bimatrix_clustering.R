@@ -257,6 +257,24 @@ write.table(labels, file = file.path(outdir, paste0(prefix, "clustering_labels.x
 
 
 
+### Plot heatmap of generated clusters
+
+
+color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
+labels_col <- colnames(data_new_labels)
+
+cluster_rows <- hclust(dist(data_new_labels), method = linkage)
+
+cluster <- as.character(sort(unique(clust)))
+
+labels_row <- paste0(cluster, " - ", cluster_binames[cluster], " (", prop_clust[cluster], ")")
+
+annotation_row <- data.frame(cluster = factor(as.numeric(cluster)))
+rownames(annotation_row) <- rownames(data_new_labels)
+annotation_colors <- list(cluster = colors_clusters)
+
+pheatmap(data_new_labels, color = color, cellwidth = 20, cellheight = 20, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 10, fontsize_col = 10, fontsize = 10, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "clusters_pheatmap.pdf")))
+
 
 
 

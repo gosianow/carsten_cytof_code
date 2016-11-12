@@ -3,9 +3,9 @@
 
 # BioC 3.3
 # Created 6 Nov 2016
-# Updated 6 Nov 2016
+# Updated 12 Nov 2016
 
-# It clusters the 2 bimatrices using SOM
+# It clusters the 2 bimatrices using SOM or SOM + cluster consensus
 # It saves also the freq_out as counts.xls files which is necessary for the 08_frequencies_merged.R
 ##############################################################################
 Sys.time()
@@ -20,20 +20,22 @@ library(plyr)
 library(reshape2)
 library(pheatmap)
 library(RColorBrewer)
+library(UpSetR)
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4'
-clust_prefix='23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl36_'
+clust_prefix='23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl40_'
 clust_outdir='10_cytokines_merged/01_clustering'
 
 path_data=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2/060_cytokines_bimatrix/01_clustering/23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_bimatrix.txt','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging/060_cytokines_bimatrix/01_clustering/29CD4_02CD4_pca1_merging3_Tmem_cytCM_raw2_bimatrix.txt')
 path_clustering_observables=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2/060_cytokines_bimatrix/01_clustering/23CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_clustering_observables.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging/060_cytokines_bimatrix/01_clustering/29CD4_02CD4_pca1_merging3_Tmem_cytCM_raw2_clustering_observables.xls')
 
 data_name=c('data23','data29')
-som_dim=6
+som_dim=10
+nmetaclusts=40
 
 
 ##############################################################################
@@ -59,6 +61,31 @@ outdir <- clust_outdir
 
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
+
+if(all(!grepl("linkage=", args))){
+  linkage <- "average"
+}
+
+
+# ------------------------------------------------------------
+# Colors for clusters
+# ------------------------------------------------------------
+
+# ggplot palette
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length=n+1)
+  hcl(h=hues, l=60 , c=100)[1:n]
+}
+
+# ------------------------------ 
+# color blind palette
+
+colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+color_ramp <- c(colors_muted, gg_color_hue(max(1, nmetaclusts - length(colors_muted))))
+
+colors_clusters <- color_ramp[1:nmetaclusts]
+names(colors_clusters) <- 1:nmetaclusts
+
 
 # ------------------------------------------------------------
 # Load data
@@ -88,6 +115,7 @@ e <- expr[, fcs_colnames]
 
 data_id <- paste0(expr[, "data_id"])
 
+
 # ------------------------------------------------------------
 # Load clustering_observables
 # ------------------------------------------------------------
@@ -116,6 +144,16 @@ scols <- which(fcs_colnames %in% clust_observ)
 ef <- as.matrix(e[, scols])
 
 
+# ------------------------------------------------------------
+# Upsetr plots
+# ------------------------------------------------------------
+
+bidf <- data.frame(ef[, clustering_observables[clustering_observables$clustering_observable, "mass"]], row.names = 1:nrow(ef), check.names = FALSE)
+colnames(bidf) <- clustering_observables[clustering_observables$clustering_observable, "marker"]
+
+pdf(file.path(outdir, paste0(prefix, "upsetr.pdf")), w = 16, h = 6)
+upset(bidf, sets = colnames(bidf), nintersects = 50, order.by = "freq")
+dev.off()
 
 # --------------------------------------------------------------------------
 # run FlowSOM 
@@ -133,7 +171,54 @@ fsom <- FlowSOM::SOM(ef, xdim = som_dim, ydim = som_dim, rlen = 10, mst = 1)
 data <- fsom$codes
 rownames(data) <- 1:nrow(data)
 
-clust <- fsom$mapping[,1]
+
+if(som_dim^2 > nmetaclusts){
+  
+  # -------------------------------------
+  # metaClustering_consensus 
+  # -------------------------------------
+  # consensus clustering that is reproducible with seed
+  
+  ### Sometimes not all the codes are used in mapping
+  k <- nmetaclusts
+  
+  pdf(file.path(outdir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 7)
+  
+  results <- ConsensusClusterPlus::ConsensusClusterPlus(t(data),
+    maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
+    plot = NULL, verbose = FALSE, clusterAlg = "hc", innerLinkage = linkage, finalLinkage = "average", distance = "euclidean", seed = rand_seed)
+  
+  dev.off()
+  
+  # get cluster ids
+  fsom_mc <- results[[k]]$consensusClass
+  fsom_mc_tree <- results[[k]]$consensusTree
+  
+  clust <- fsom_mc[fsom$mapping[,1]]
+  
+  # elements for the heatmap
+  annotation_row <- data.frame(cluster = factor(fsom_mc))
+  rownames(annotation_row) <- rownames(data)
+  annotation_colors <- list(cluster = colors_clusters)
+  
+  ### Save clustering results
+  save(fsom, file = file.path(outdir, paste0(prefix, "fsom.rda")))
+  save(fsom_mc, file = file.path(outdir, paste0(prefix, "fsom_mc.rda")))
+  
+}else{
+  
+  clust <- fsom$mapping[,1]
+  
+  fsom_mc <- 1:nrow(data)
+  fsom_mc_tree <- hclust(dist(data), method = linkage)
+  
+  # elements for the heatmap
+  annotation_row <- NA
+  annotation_colors = NA
+  
+}
+
+
 
 
 ### Save clustering results
@@ -163,12 +248,10 @@ code_sizes_full[names(code_sizes)] <- as.numeric(code_sizes)
 
 color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
 labels_col <- clustering_observables[clustering_observables$clustering_observable, "marker"]
-annotation_colors <- NA
 
-cluster_rows <- hclust(dist(data), method = "average")
+cluster_rows <- fsom_mc_tree
 
 labels_row <- paste0(rownames(data), "  ( ", format(code_sizes_full, big.mark=",", scientific=FALSE), " )")
-annotation_row <- NA
 
 
 pheatmap(data[, clustering_observables[clustering_observables$clustering_observable, "mass"]], color = color, cellwidth = 24, cellheight = 12, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 7, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "codes_pheatmap.pdf")))
@@ -177,18 +260,25 @@ pheatmap(data[, clustering_observables[clustering_observables$clustering_observa
 ### Save codes
 
 
-codes <- data.frame(code_id = rownames(data), cluster = 1:nrow(data), size = code_sizes_full, data)
+codes <- data.frame(code_id = rownames(data), cluster = fsom_mc, size = code_sizes_full, data)
 
 write.table(codes, file = file.path(outdir, paste0(prefix, "codes.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 
-# Save data frames with labels
+### Save data frames with labels
 
-data_new_labels <- data[, clustering_observables[clustering_observables$clustering_observable, "mass"]]
+# get cluster frequencies
+freq_clust <- table(clust)
+prop_clust <- round(freq_clust/sum(freq_clust)*100, 2)
+
+# get the names of cytokines that are positive in a given cluster
+
+a <- aggregate(ef, by = list(clust), FUN = "mean")
+
+data_new_labels <- a[, clustering_observables[clustering_observables$clustering_observable, "mass"]]
 colnames(data_new_labels) <- clustering_observables[clustering_observables$clustering_observable, "marker"]
-
-### Gent the names of cytokines that are positive in a given cluster
+rownames(data_new_labels) <- a[, 1]
 
 cluster_binames <- apply(data_new_labels, 1, function(x){
   
@@ -196,8 +286,7 @@ cluster_binames <- apply(data_new_labels, 1, function(x){
   
 })
 
-
-code_sizes_prop <- round(code_sizes_full/sum(code_sizes_full)*100, 2)
+names(cluster_binames) <- a[, 1]
 
 
 labels <- list()
@@ -207,15 +296,36 @@ for(i in 1:length(clust_out)){
   
   clust_tmp <- clust_out[[i]]$cluster
   
-  cluster <- sort(unique(clust_tmp))
+  cluster <- as.character(sort(unique(clust_tmp)))
   
-  label <- paste0(cluster, " - ", cluster_binames[cluster], " (", code_sizes_prop[cluster], ")")
+  label <- paste0(cluster, " - ", cluster_binames[cluster], " (", prop_clust[cluster], ")")
   
   labels[[i]] <- data.frame(cluster = cluster, label = label, stringsAsFactors = FALSE)
   
   write.table(labels[[i]], file = file.path(outdir, paste0(prefix, data_name[i], "_", "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
   
 }
+
+
+### Plot heatmap of generated clusters
+
+
+color <- rev(colorRampPalette(brewer.pal(n = 8, name = "Spectral"))(100))
+labels_col <- colnames(data_new_labels)
+
+cluster_rows <- hclust(dist(data_new_labels), method = linkage)
+
+cluster <- as.character(sort(unique(clust)))
+
+labels_row <- paste0(cluster, " - ", cluster_binames[cluster], " (", prop_clust[cluster], ")")
+
+annotation_row <- data.frame(cluster = factor(as.numeric(cluster)))
+rownames(annotation_row) <- rownames(data_new_labels)
+annotation_colors <- list(cluster = colors_clusters)
+
+pheatmap(data_new_labels, color = color, cellwidth = 20, cellheight = 20, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 10, fontsize_col = 10, fontsize = 10, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "clusters_pheatmap.pdf")))
+
+
 
 
 

@@ -94,6 +94,10 @@ while [[ ${1} ]]; do
     som_dim=${2}
     shift
     ;;
+    --nmetaclusts)
+    nmetaclusts=${2}
+    shift
+    ;;
 
 
     *)
@@ -124,7 +128,7 @@ if ${cytokines_merging_v2}; then
 
   echo ">>> 06_cytokines_bimatrix_clustering_merged"
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' clust_prefix='${prefix_data_merging}${prefix_clust}' clust_outdir='10_cytokines_merged/01_clustering' path_data=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_bimatrix.txt','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_clustering_observables.xls','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_clustering_observables.xls') data_name=c('${data_name1}','${data_name2}') som_dim=${som_dim}" $RCODE/06_cytokines_bimatrix_clustering_merged.R $ROUT/06_cytokines_bimatrix_clustering_merged.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' clust_prefix='${prefix_data_merging}${prefix_clust}' clust_outdir='10_cytokines_merged/01_clustering' path_data=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_bimatrix.txt','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/060_cytokines_bimatrix/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_clustering_observables.xls','${RWD_MAIN}/${data_dir2}/060_cytokines_bimatrix/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_clustering_observables.xls') data_name=c('${data_name1}','${data_name2}') som_dim=${som_dim} nmetaclusts=${nmetaclusts}" $RCODE/06_cytokines_bimatrix_clustering_merged.R $ROUT/06_cytokines_bimatrix_clustering_merged.Rout
   tail $ROUT/06_cytokines_bimatrix_clustering_merged.Rout
 
 
