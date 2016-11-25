@@ -28,14 +28,25 @@ library(tools)
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
 freq_prefix='23m6_29m4_'
 freq_outdir='08_frequencies_merged_2responses'
-
 path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
 path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_counts.xls')
 data_name=c('data23','data29')
-
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
 pdf_hight=8
+
+
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4'
+freq_prefix='23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_frequencies_glmer_binomial_interglht_top10_selection_NRvsR_base_'
+freq_outdir='10_cytokines_merged_top_combinations/03_frequencies_auto_2responses'
+path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_02.xlsx')
+path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4/10_cytokines_merged_top_combinations/01_clustering/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_data23_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4/10_cytokines_merged_top_combinations/01_clustering/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_data29_counts.xls')
+data_name=c('data23','data29')
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
+pdf_hight=8
+plot_only=TRUE
+path_cluster_selection='10_cytokines_merged_top_combinations/03_frequencies_auto_2responses/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_frequencies_glmer_binomial_interglht_top10_selection_NRvsR_base.txt'
 
 ##############################################################################
 # Read in the arguments
@@ -65,6 +76,10 @@ if(!file.exists(outdir))
 
 if(!any(grepl("pdf_hight=", args))){
   pdf_hight=4
+}
+
+if(!any(grepl("plot_only=", args))){
+  plot_only=FALSE
 }
 
 # ------------------------------------------------------------
@@ -197,15 +212,28 @@ ggdf$data <- factor(md$data[mm], levels = data_name)
 ## replace _ with \n
 levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
 
-## calculate mean and sd for the error bars on the plot
-ggds <- ddply(ggdf, .(group, cluster, data), summarise, mean = mean(prop), sd = sd(prop))
-
 ## add more info about samples
 ggdf$day <- strsplit2(ggdf$group, "\n")[, 1]
-ggds$day <- strsplit2(ggds$group, "\n")[, 1]
-
 ggdf$day <- factor(ggdf$day)
-ggds$day <- factor(ggds$day)
+
+
+
+### Cluster selection
+
+if(any(grepl("path_cluster_selection=", args))){
+  
+  if(!file.exists(path_cluster_selection))
+    stop(paste0(path_cluster_selection, " does NOT exists!!!"))
+  
+  cluster_selection <- read.table(path_cluster_selection, header = FALSE, sep = "\t", as.is = TRUE)[, 1]
+  
+  if(!all(cluster_selection %in% levels(ggdf$cluster)))
+    stop("Cluster selection is wrong!!!")
+  
+  ggdf <- ggdf[ggdf$cluster %in% cluster_selection, , drop = FALSE]
+  ggdf$cluster <- factor(ggdf$cluster, levels = cluster_selection)
+  
+}
 
 
 # ------------------------------------
@@ -278,215 +306,167 @@ for(i in 1:nlevels(ggdf$day)){
 ## For merged data it means such cluster was not present in all the datasets
 ## For expression data clusters with no cells are skipped
 
-
-### Load functions fitting models
-source(path_fun_models)
-### Load formulas that are fit in the models - this function may change the md object!!!
-source(path_fun_formulas)
-
-levels(md$data)
-levels(md$day)
-levels(md$response)
-
-
-
-models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_logit_interglht", "lmer_arcsinesqrt_interglht", "lm_logit_interglht", "lm_arcsinesqrt_interglht")
-
-
-for(k in models2fit){
-  # k = "glmer_logit_interglht"
-  print(k)
+if(!plot_only){
   
-  switch(k,
-    glm_binomial_interglht = {
-      # Fit a GLM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "binomial", formula = formula_glm_binomial, K = K)
+  ### Load functions fitting models
+  source(path_fun_models)
+  ### Load formulas that are fit in the models - this function may change the md object!!!
+  source(path_fun_formulas)
+  
+  levels(md$data)
+  levels(md$day)
+  levels(md$response)
+  
+  
+  
+  models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_logit_interglht", "lmer_arcsinesqrt_interglht", "lm_logit_interglht", "lm_arcsinesqrt_interglht")
+  
+  
+  for(k in models2fit){
+    # k = "glmer_logit_interglht"
+    print(k)
+    
+    switch(k,
+      glm_binomial_interglht = {
+        # Fit a GLM binomial with interactions + test contrasts with multcomp pckg
+        fit_out <- fit_glm_interglht(data = freq_out, md, family = "binomial", formula = formula_glm_binomial, K = K)
+        
+      },
+      glm_quasibinomial_interglht = {
+        # Fit a GLM quasibinomial with interactions + test contrasts with multcomp pckg
+        fit_out <- fit_glm_interglht(data = freq_out, md, family = "quasibinomial", formula = formula_glm_binomial, K = K)
+        
+      },
+      glmer_binomial_interglht = {
+        # Fit a GLMM binomial with interactions + test contrasts with multcomp pckg
+        fit_out <- fit_glmer_interglht(data = freq_out, md, family = "binomial", formula = formula_glmer_binomial, K = K)
+        
+      },
+      lmer_logit_interglht = {
+        
+        logit_freq_out <- freq_out
+        logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))
+        ## Be carefull about Inf and -Inf for prop = 0, 1
+        fit_out <- fit_lmer_interglht(data = logit_freq_out, md, formula = formula_lmer, K = K)
+        
+      },
+      lm_logit_interglht = {
+        
+        logit_freq_out <- freq_out
+        logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))
+        ## Be carefull about Inf and -Inf for prop = 0, 1
+        fit_out <- fit_lm_interglht(data = logit_freq_out, md, formula = formula_lm, K = K)
+        
+      },
+      lmer_arcsinesqrt_interglht = {
+        
+        ass_freq_out <- freq_out
+        ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
+        
+        fit_out <- fit_lmer_interglht(data = ass_freq_out, md, formula = formula_lmer, K = K)
+        
+      },
+      lm_arcsinesqrt_interglht = {
+        
+        ass_freq_out <- freq_out
+        ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
+        
+        fit_out <- fit_lm_interglht(data = ass_freq_out, md, formula = formula_lm, K = K)
+        
+      },
+      glmmadmb_fixed_beta_interglht = {
+        fit_out <- fit_glm_interglht(data = freq_out, md, family = "beta", formula = formula_glm_beta, K = K)
+      },
+      glmmadmb_fixed_betabinomial_interglht = {
+        fit_out <- fit_glm_interglht(data = freq_out, md, family = "betabinomial", formula = formula_glm_binomial, K = K)
+      },
+      test_wilcoxon = {
+        
+        n01_freq_out <- freq_out
+        n01_freq_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname]))
+        
+        fit_out <- test_wilcoxon(data = n01_freq_out, md)
+      }
       
-    },
-    glm_quasibinomial_interglht = {
-      # Fit a GLM quasibinomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "quasibinomial", formula = formula_glm_binomial, K = K)
-      
-    },
-    glmer_binomial_interglht = {
-      # Fit a GLMM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glmer_interglht(data = freq_out, md, family = "binomial", formula = formula_glmer_binomial, K = K)
-      
-    },
-    lmer_logit_interglht = {
-      
-      logit_freq_out <- freq_out
-      logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))
-      ## Be carefull about Inf and -Inf for prop = 0, 1
-      fit_out <- fit_lmer_interglht(data = logit_freq_out, md, formula = formula_lmer, K = K)
-      
-    },
-    lm_logit_interglht = {
-      
-      logit_freq_out <- freq_out
-      logit_freq_out[md$shortname] <- logit(t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))
-      ## Be carefull about Inf and -Inf for prop = 0, 1
-      fit_out <- fit_lm_interglht(data = logit_freq_out, md, formula = formula_lm, K = K)
-      
-    },
-    lmer_arcsinesqrt_interglht = {
-      
-      ass_freq_out <- freq_out
-      ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
-      
-      fit_out <- fit_lmer_interglht(data = ass_freq_out, md, formula = formula_lmer, K = K)
-      
-    },
-    lm_arcsinesqrt_interglht = {
-      
-      ass_freq_out <- freq_out
-      ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
-      
-      fit_out <- fit_lm_interglht(data = ass_freq_out, md, formula = formula_lm, K = K)
-      
-    },
-    glmmadmb_fixed_beta_interglht = {
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "beta", formula = formula_glm_beta, K = K)
-    },
-    glmmadmb_fixed_betabinomial_interglht = {
-      fit_out <- fit_glm_interglht(data = freq_out, md, family = "betabinomial", formula = formula_glm_binomial, K = K)
-    },
-    test_wilcoxon = {
-      
-      n01_freq_out <- freq_out
-      n01_freq_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname]))
-      
-      fit_out <- test_wilcoxon(data = n01_freq_out, md)
+    )
+    
+    # ----------------------------------------
+    # Extract p-values and coeffs
+    # ----------------------------------------
+    
+    pvs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["pvals"]])
+    coeffs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["coeffs"]])
+    
+    oo <- order(pvs[, pval_name1], decreasing = FALSE)
+    pvs <- pvs[oo, , drop = FALSE]
+    coeffs <- coeffs[oo, , drop = FALSE]
+    
+    ## save the results
+    write.table(pvs, file=file.path(outdir, paste0(prefix, "frequencies_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+    write.table(coeffs, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
+    
+    
+    # ----------------------------------------
+    # Plot a heatmap of significant cases - transform proportions with arcsin-sqrt so the dispersion is the same for low and high props.
+    # ----------------------------------------
+    
+    ### normalize the expression
+    ass_freq_out <- freq_out
+    ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
+    
+    ass_freq_out <- ass_freq_out[complete.cases(ass_freq_out), , drop = FALSE]
+    
+    expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
+    th <- 2.5
+    
+    data_days <- levels(md$data_day)
+    
+    ### Normalized to mean = 0 and sd = 1 per data and day
+    for(i in data_days){
+      # i = "data23.base"
+      expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){
+        sdx <- sd(x, na.rm = TRUE)
+        if(sdx == 0)
+          x <- (x-mean(x, na.rm = TRUE))
+        else
+          x <- (x-mean(x, na.rm = TRUE))/sdx
+        
+        x[x > th] <- th
+        x[x < -th] <- -th
+        
+        return(x)}))
     }
     
-  )
-  
-  # ----------------------------------------
-  # Extract p-values and coeffs
-  # ----------------------------------------
-  
-  pvs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["pvals"]])
-  coeffs <- data.frame(freq_out[, c("cluster", "label"), drop = FALSE], fit_out[["coeffs"]])
-  
-  oo <- order(pvs[, pval_name1], decreasing = FALSE)
-  pvs <- pvs[oo, , drop = FALSE]
-  coeffs <- coeffs[oo, , drop = FALSE]
-  
-  ## save the results
-  write.table(pvs, file=file.path(outdir, paste0(prefix, "frequencies_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-  write.table(coeffs, file=file.path(outdir, paste0(prefix, "frequencies_coeffs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-  
-  
-  # ----------------------------------------
-  # Plot a heatmap of significant cases - transform proportions with arcsin-sqrt so the dispersion is the same for low and high props.
-  # ----------------------------------------
-  
-  ### normalize the expression
-  ass_freq_out <- freq_out
-  ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
-  
-  ass_freq_out <- ass_freq_out[complete.cases(ass_freq_out), , drop = FALSE]
-  
-  expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
-  th <- 2.5
-  
-  data_days <- levels(md$data_day)
-  
-  ### Normalized to mean = 0 and sd = 1 per data and day
-  for(i in data_days){
-    # i = "data23.base"
-    expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){
-      sdx <- sd(x, na.rm = TRUE)
-      if(sdx == 0)
-        x <- (x-mean(x, na.rm = TRUE))
-      else
-        x <- (x-mean(x, na.rm = TRUE))/sdx
-      
-      x[x > th] <- th
-      x[x < -th] <- -th
-      
-      return(x)}))
-  }
-  
-  breaks = seq(from = -th, to = th, length.out = 101)
-  legend_breaks = seq(from = -round(th), to = round(th), by = 1)
-  
-  ### add p-value info
-  expr_all <- merge(expr_norm, pvs, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
-  
-  
-  # -----------------------------
-  ### Plot one heatmap with R vs NR
-  
-  ## group the expression by cluster
-  adjpval_name <- adjpval_name2
-  pval_name <- pval_name2
-  expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
-  
-  which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
-  which(which_top_pvs)
-  
-  if(sum(which_top_pvs) > 0) {
-    print("Plot pheatmap2")
+    breaks = seq(from = -th, to = th, length.out = 101)
+    legend_breaks = seq(from = -round(th), to = round(th), by = 1)
     
-    expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
+    ### add p-value info
+    expr_all <- merge(expr_norm, pvs, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
+    
     
     # -----------------------------
-    ## order the samples by base and tx
-    samples2plot <- md[md$response %in% c("NR", "R"), ]
-    samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
-    
-    ## gap in the heatmap
-    gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
-    gaps_row <- NULL
-    
-    ## expression scaled by row
-    expr <- expr_heat[ , samples2plot, drop = FALSE]
-    
-    labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")")
-    labels_col <- colnames(expr)
-    
-    annotation_col <- data.frame(response = factor(md[colnames(expr), "response"]))
-    rownames(annotation_col) <- colnames(expr)
-    
-    annotation_colors <- list(response = color_response[levels(annotation_col$response)])
-    
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = FALSE, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap2", suffix, ".pdf")))
-    
-    
-  }
-  
-  
-  # -----------------------------
-  ### Plot two heatmaps with R vs NR for base and tx
-  
-  for(i in levels(md$day)){
-    # i = "base"
-    print(paste0("Plot pheatmap_", i))
-    
-    adjpval_name <- paste0("adjp_NRvsR_", i)
-    pval_name <- paste0("pval_NRvsR_", i)
+    ### Plot one heatmap with R vs NR
     
     ## group the expression by cluster
+    adjpval_name <- adjpval_name2
+    pval_name <- pval_name2
     expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
     
     which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
     which(which_top_pvs)
     
-    if(sum(which_top_pvs) > 0){
+    if(sum(which_top_pvs) > 0) {
+      print("Plot pheatmap2")
       
       expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
       
       # -----------------------------
-      ## order the samples by NR and R
-      
+      ## order the samples by base and tx
       samples2plot <- md[md$response %in% c("NR", "R"), ]
-      samples2plot <- samples2plot[order(samples2plot$response, samples2plot$day), ]
-      samples2plot <- samples2plot[grep(i, samples2plot$day), ]
-      samples2plot <- samples2plot$shortname
+      samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
       
       ## gap in the heatmap
-      gaps_col <- sum(grepl("_NR", samples2plot))
+      gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
       gaps_row <- NULL
       
       ## expression scaled by row
@@ -500,103 +480,154 @@ for(k in models2fit){
       
       annotation_colors <- list(response = color_response[levels(annotation_col$response)])
       
-      pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = FALSE, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap_", i, suffix, ".pdf")))
+      pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = FALSE, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap2", suffix, ".pdf")))
       
       
     }
     
-  }
-  
-  # -----------------------------
-  ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
-  
-  ## group the expression by cluster and order by adjpval
-  for(i in length(pval_name_list):1){
-    expr_all <- expr_all[order(expr_all[, pval_name_list[i]]), , drop = FALSE]
-  }
-  
-  
-  # which_top_pvs <- rowSums(expr_all[, adjpval_name_list] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name_list])) == 0
-  # which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name_list])) < length(adjpval_name_list)
-  which_top_pvs <- rep(TRUE, nrow(expr_all))
-  which(which_top_pvs)
-  
-  if(sum(which_top_pvs) > 0){
-    print("Plot pheatmap3")
-    
-    expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
     
     # -----------------------------
-    ## order the samples by base and tx
-    samples2plot <- md[md$response %in% c("NR", "R"), ]
-    samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
+    ### Plot two heatmaps with R vs NR for base and tx
     
-    ## gap in the heatmap
-    gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
-    gaps_row <- NULL
+    for(i in levels(md$day)){
+      # i = "base"
+      print(paste0("Plot pheatmap_", i))
+      
+      adjpval_name <- paste0("adjp_NRvsR_", i)
+      pval_name <- paste0("pval_NRvsR_", i)
+      
+      ## group the expression by cluster
+      expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
+      
+      which_top_pvs <- expr_all[, adjpval_name] < 0.05 & !is.na(expr_all[, adjpval_name])
+      which(which_top_pvs)
+      
+      if(sum(which_top_pvs) > 0){
+        
+        expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
+        
+        # -----------------------------
+        ## order the samples by NR and R
+        
+        samples2plot <- md[md$response %in% c("NR", "R"), ]
+        samples2plot <- samples2plot[order(samples2plot$response, samples2plot$day), ]
+        samples2plot <- samples2plot[grep(i, samples2plot$day), ]
+        samples2plot <- samples2plot$shortname
+        
+        ## gap in the heatmap
+        gaps_col <- sum(grepl("_NR", samples2plot))
+        gaps_row <- NULL
+        
+        ## expression scaled by row
+        expr <- expr_heat[ , samples2plot, drop = FALSE]
+        
+        labels_row <- paste0(expr_heat$label, " (", sprintf( "%.02e", expr_heat[, adjpval_name]), ")")
+        labels_col <- colnames(expr)
+        
+        annotation_col <- data.frame(response = factor(md[colnames(expr), "response"]))
+        rownames(annotation_col) <- colnames(expr)
+        
+        annotation_colors <- list(response = color_response[levels(annotation_col$response)])
+        
+        pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = FALSE, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap_", i, suffix, ".pdf")))
+        
+        
+      }
+      
+    }
     
-    ## expression
-    expr <- expr_heat[ , samples2plot, drop = FALSE]
+    # -----------------------------
+    ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
     
-    labels_row <- paste0(expr_heat$label)
-    labels_col <- colnames(expr)
-    
-    annotation_col <- data.frame(response = factor(md[colnames(expr), "response"]))
-    rownames(annotation_col) <- colnames(expr)
-    
-    annotation_colors <- list(response = color_response[levels(annotation_col$response)])
-    
-    pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = FALSE, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap3", suffix, ".pdf")))
+    ## group the expression by cluster and order by adjpval
+    for(i in length(pval_name_list):1){
+      expr_all <- expr_all[order(expr_all[, pval_name_list[i]]), , drop = FALSE]
+    }
     
     
-    pvs_heat <- expr_heat[, adjpval_name_list, drop = FALSE]
+    # which_top_pvs <- rowSums(expr_all[, adjpval_name_list] < 0.05, na.rm = TRUE) > 0 & rowSums(is.na(expr_all[, adjpval_name_list])) == 0
+    # which_top_pvs <- rowSums(is.na(expr_all[, adjpval_name_list])) < length(adjpval_name_list)
+    which_top_pvs <- rep(TRUE, nrow(expr_all))
+    which(which_top_pvs)
     
-    labels_col <- colnames(pvs_heat)
-    gaps_col <- NULL
+    if(sum(which_top_pvs) > 0){
+      print("Plot pheatmap3")
+      
+      expr_heat <- expr_all[which_top_pvs, , drop = FALSE]
+      
+      # -----------------------------
+      ## order the samples by base and tx
+      samples2plot <- md[md$response %in% c("NR", "R"), ]
+      samples2plot <- samples2plot$shortname[order(samples2plot$day, samples2plot$response)]
+      
+      ## gap in the heatmap
+      gaps_col <- c(max(grep("base_NR", samples2plot)), rep(max(grep("base", samples2plot)), 2), max(grep("tx_NR", samples2plot)))
+      gaps_row <- NULL
+      
+      ## expression
+      expr <- expr_heat[ , samples2plot, drop = FALSE]
+      
+      labels_row <- paste0(expr_heat$label)
+      labels_col <- colnames(expr)
+      
+      annotation_col <- data.frame(response = factor(md[colnames(expr), "response"]))
+      rownames(annotation_col) <- colnames(expr)
+      
+      annotation_colors <- list(response = color_response[levels(annotation_col$response)])
+      
+      pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = FALSE, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap3", suffix, ".pdf")))
+      
+      
+      pvs_heat <- expr_heat[, adjpval_name_list, drop = FALSE]
+      
+      labels_col <- colnames(pvs_heat)
+      gaps_col <- NULL
+      
+      
+      pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap3pvs", suffix, ".pdf")))
+      
+      
+    }
     
     
-    pheatmap(pvs_heat, cellwidth = 60, cellheight = 24, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, gaps_col = gaps_col, gaps_row = gaps_row, display_numbers = TRUE, number_format = "%.02e", number_color = "black", fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "frequencies_", k, "_pheatmap3pvs", suffix, ".pdf")))
+    
+    # ----------------------------------------
+    # Plot coefficients NRvsR for base and tx (to show that they correlate)
+    # ----------------------------------------
+    
+    
+    if("adjp_NRvsR_basevstx" %in% colnames(pvs)){
+      
+      adjpval_name <- "adjp_NRvsR_basevstx"
+      
+      ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
+      
+      limmin <- min(ggdf, na.rm = TRUE)
+      limmax <- max(ggdf, na.rm = TRUE)
+      
+      ggdf$interaction <- factor(pvs[, adjpval_name] < 0.05, levels = c("FALSE", "TRUE"))
+      
+      
+      ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
+        geom_point(size = 3, alpha = 0.9) +
+        geom_abline(intercept = 0, slope = 1) +
+        coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
+        theme_bw() +
+        theme(axis.text = element_text(size=14),
+          axis.title = element_text(size=14, face="bold"))
+      
+      pdf(file.path(outdir, paste0(prefix, "frequencies_", k, "_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
+      print(ggp)
+      dev.off()
+      
+    }
+    
     
     
   }
-  
-  
-  
-  # ----------------------------------------
-  # Plot coefficients NRvsR for base and tx (to show that they correlate)
-  # ----------------------------------------
-  
-  
-  if("adjp_NRvsR_basevstx" %in% colnames(pvs)){
-    
-    adjpval_name <- "adjp_NRvsR_basevstx"
-    
-    ggdf <- coeffs[, c("NRvsR_base", "NRvsR_tx")]
-    
-    limmin <- min(ggdf, na.rm = TRUE)
-    limmax <- max(ggdf, na.rm = TRUE)
-    
-    ggdf$interaction <- factor(pvs[, adjpval_name] < 0.05, levels = c("FALSE", "TRUE"))
-    
-    
-    ggp <- ggplot(data = ggdf, aes(x = NRvsR_base, y = NRvsR_tx, shape = interaction)) +
-      geom_point(size = 3, alpha = 0.9) +
-      geom_abline(intercept = 0, slope = 1) +
-      coord_cartesian(xlim = c(limmin, limmax), ylim = c(limmin, limmax)) +
-      theme_bw() +
-      theme(axis.text = element_text(size=14),
-        axis.title = element_text(size=14, face="bold"))
-    
-    pdf(file.path(outdir, paste0(prefix, "frequencies_", k, "_coeffs", suffix, ".pdf")), w=6, h=5, onefile=TRUE)
-    print(ggp)
-    dev.off()
-    
-  }
-  
   
   
 }
-
 
 
 

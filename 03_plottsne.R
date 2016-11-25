@@ -19,34 +19,39 @@ library(reshape2) # melt
 library(RColorBrewer)
 library(Rtsne)
 library(coop) # cosine
+library(limma) 
+
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# tsnep_prefix='23_01_pca1_cl20_raw_'
-# tsnep_outdir='040_tsnemaps'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_rtsne_out='040_tsnemaps/23_01_pca1_raw_rtsne_out.rda'
-# path_rtsne_data='040_tsnemaps/23_01_pca1_raw_rtsne_data.xls'
-# path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
-# tsne_cmin=1000
-# tsne_distse=1
-# pdf_width=15
-# pdf_height=10
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+tsnep_prefix='23_01_pca1_cl20_raw_'
+tsnep_outdir='040_tsnemaps'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+path_rtsne_out='040_tsnemaps/23_01_pca1_raw_rtsne_out.rda'
+path_rtsne_data='040_tsnemaps/23_01_pca1_raw_rtsne_data.xls'
+path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
+path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
+tsne_cmin=1000 ### minimal size of a cluster to plot
+tsne_distse=1
+tsne_quantse=0.95
+pdf_width=22
+pdf_height=7
 
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
@@ -65,6 +70,18 @@ if(!file.exists(outdir))
 # ------------------------------------------------------------
 
 md <- read.xls(path_metadata, stringsAsFactors=FALSE)
+
+# add more info about samples
+cond_split <- strsplit2(md$condition, "_")
+colnames(cond_split) <- c("day", "response")
+
+md[, c("day", "response")] <- cond_split
+md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+md$response <- factor(md$response)
+md$day <- factor(md$day, levels = c("base", "tx"))
+md$day <- factor(md$day)
+md$patient_id <- factor(md$patient_id)
+
 
 # ------------------------------------------------------------
 # Load cluster data
@@ -128,7 +145,7 @@ ggdf <- data.frame(tSNE1 = rtsne_out$Y[cells2keep_rtsne,1], tSNE2 = rtsne_out$Y[
 
 # add group info
 mm <- match(ggdf$sample, md$shortname)
-ggdf$group <- md$condition[mm]
+ggdf$group <- md$response[mm]
 
 
 # use cluster labels instead of numbers
@@ -147,21 +164,6 @@ ggdf$cluster <- factor(ggdf$cluster)
 # -----------------------------------
 ### Plot of tsne - all cells, all clusters
 
-## facet per group
-# ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
-#   geom_point(size=1) +
-#   facet_wrap(~ group) +
-#   labs(x = "tSNE 1", y="tSNE 2")+ 
-#   theme_bw() +
-#   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
-#   scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
-#   guides(colour = guide_legend(override.aes = list(size = 5)))
-# 
-# pdf(file.path(outdir, paste0(prefix, "tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)  
-# print(ggp)
-# dev.off()
-
-
 ## one plot 
 ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   geom_point(size = 1) +
@@ -176,25 +178,24 @@ print(ggp)
 dev.off()
 
 
-## facet per sample
-# ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
-#   geom_point(size=1) +
-#   facet_wrap(~ sample) +
-#   labs(x = "tSNE 1", y="tSNE 2")+ 
-#   theme_bw() +
-#   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
-#   scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
-#   guides(colour = guide_legend(override.aes = list(size = 5)))
-# 
-# pdf(file.path(outdir, paste0(prefix, "tSNEsample", suffix, ".pdf")), width = pdf_width, height = pdf_height)          
-# print(ggp)
-# dev.off()
+## facet per group
+ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
+  geom_point(size=1) +
+  facet_wrap(~ group) +
+  labs(x = "tSNE 1", y="tSNE 2")+
+  theme_bw() +
+  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
+  scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
+  guides(colour = guide_legend(override.aes = list(size = 5)))
 
+pdf(file.path(outdir, paste0(prefix, "tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)
+print(ggp)
+dev.off()
 
 
 # -----------------------------------
 ### Plot of tsne - large clusters
-if(any(grepl("tsne_cmin", args))){
+if(any(grepl("tsne_cmin=", args))){
   
   tc <- table(ggdf$cluster)
   tc
@@ -210,19 +211,32 @@ if(any(grepl("tsne_cmin", args))){
   ggdf_sub$cluster <- factor(ggdf_sub$cluster)
   
   
-  ## facet per group
-  # ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
-  #   geom_point(size=1) + 
-  #   facet_wrap( ~ group)+ 
-  #   labs(x = "tSNE 1", y="tSNE 2")+ 
-  #   theme_bw() +
-  #   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
-  #   scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) + 
-  #   guides(colour = guide_legend(override.aes = list(size = 5)))
-  # 
-  # pdf(file.path(outdir, paste0(prefix, "tSNEgroup_subset", suffix, ".pdf")), width = pdf_width, height = pdf_height)             
-  # print(ggp)
-  # dev.off()
+  ## one plot 
+  ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
+    geom_point(size=1) +
+    labs(x = "tSNE 1", y="tSNE 2")+
+    theme_bw() +
+    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
+    guides(colour = guide_legend(override.aes = list(size = 5)))
+  
+  pdf(file.path(outdir, paste0(prefix, "tSNEone_subset", suffix, ".pdf")), width = 9, height = 7)
+  print(ggp)
+  dev.off()
+  
+  # facet per group
+  ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
+    geom_point(size=1) +
+    facet_wrap( ~ group)+
+    labs(x = "tSNE 1", y="tSNE 2")+
+    theme_bw() +
+    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
+    guides(colour = guide_legend(override.aes = list(size = 5)))
+  
+  pdf(file.path(outdir, paste0(prefix, "tSNEgroup_subset", suffix, ".pdf")), width = pdf_width, height = pdf_height)
+  print(ggp)
+  dev.off()
   
 }
 
@@ -230,8 +244,9 @@ if(any(grepl("tsne_cmin", args))){
 
 
 # -----------------------------------
-### Plot of tsne - cells that are close to the centers of clusters (no outliers), all clusters
-if(any(grepl("tsne_distse", args))){
+# Plot of tsne - cells that are close to the centers of clusters (no outliers), all clusters
+# Approach 1 - removing all the cells that are further than 1 from its cluster center
+if(any(grepl("tsne_distse=", args))){
   
   el <- rtsne_data[cells2keep_rtsne, -grep("cell_index|sample_name", colnames(rtsne_data))]
   a <- aggregate(el, by = list(clust_tsne), FUN=median)
@@ -242,41 +257,36 @@ if(any(grepl("tsne_distse", args))){
   
   for(i in 1:length(clust_lev)) {
     # i = 1
-    cent <- a[i,-1,drop=FALSE]
+    
     data <- el[clust_tsne == clust_lev[i], , drop=FALSE]
-    d <- 1 - cosine( t(rbind(cent,data)) )[1,-1]
-    dists[clust_tsne == clust_lev[i]] <- d
+    cent <- a[i,-1,drop=FALSE]
+    
+    ### cosine distance of cells from the center - per cluster
+    # d <- 1 - cosine( t(rbind(cent,data)) )[1,-1]
+    # dists[clust_tsne == clust_lev[i]] <- d
+    
+    ### Euclidean distance
     cent <- matrix(rep( as.numeric(cent), nrow(data)), byrow=TRUE, ncol=ncol(cent))
-    #distse[clust_tsne[s]==i] <- sqrt(rowSums((cent-data)^2))
+    # distse[clust_tsne == clust_lev[i]] <- sqrt(rowSums((cent-data)^2))
     distse[clust_tsne == clust_lev[i]] <- rowMeans(abs(cent-data))
   }
   
   
-  pdf(file.path(outdir, paste0(prefix, "distse", suffix, ".pdf")), width = 7, height = 7)        
-  hist(distse, breaks = 100)
-  abline(v = tsne_distse, col = "blue")
+  ### Plot the distances per cluster
+  ggdf$distse <- distse
+  
+  ggp <- ggplot(ggdf, aes(x = distse)) +
+    geom_histogram(bins = 50) +
+    geom_vline(xintercept = tsne_distse, color = "blue") +
+    facet_wrap(~ cluster, scales = "free_y")
+  
+  pdf(file.path(outdir, paste0(prefix, "distse", suffix, ".pdf")), width = 10, height = 10)        
+  print(ggp)
   dev.off()
   
   
   ggdf_sub <- ggdf[distse < tsne_distse, ]
   ggdf_sub$cluster <- factor(ggdf_sub$cluster)
-  
-  
-  ## facet per group
-  # ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
-  #   geom_point(size=1) + 
-  #   facet_wrap( ~ group) +
-  #   labs(x = "tSNE 1", y="tSNE 2")+ 
-  #   theme_bw() +
-  #   theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
-  #   scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
-  #   guides(colour = guide_legend(override.aes = list(size = 5)))
-  # 
-  # 
-  # pdf(file.path(outdir, paste0(prefix, "tSNEgroup_filtered", suffix, ".pdf")), width = pdf_width, height = pdf_height)
-  # print(ggp)
-  # dev.off()
-  
   
   
   ## one plot
@@ -288,13 +298,104 @@ if(any(grepl("tsne_distse", args))){
     scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
-  
   pdf(file.path(outdir, paste0(prefix, "tSNEone_filtered", suffix, ".pdf")), width = 9, height = 7)                 
+  print(ggp)
+  dev.off()
+  
+  
+  ## facet per group
+  ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
+    geom_point(size=1) +
+    facet_wrap( ~ group) +
+    labs(x = "tSNE 1", y="tSNE 2")+
+    theme_bw() +
+    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
+    guides(colour = guide_legend(override.aes = list(size = 5)))
+  
+  pdf(file.path(outdir, paste0(prefix, "tSNEgroup_filtered", suffix, ".pdf")), width = pdf_width, height = pdf_height)
   print(ggp)
   dev.off()
   
 }
 
+
+
+# -----------------------------------
+# Plot of tsne - cells that are close to the centers of clusters (no outliers), all clusters
+# Approach 2 - removing 5% of most distant cells from the center in each cluster
+if(any(grepl("tsne_quantse=", args))){
+  
+  el <- rtsne_data[cells2keep_rtsne, -grep("cell_index|sample_name", colnames(rtsne_data))]
+  a <- aggregate(el, by = list(clust_tsne), FUN=median)
+  
+  clust_lev <- a$Group.1
+  
+  distse <- dist_keep <- rep(NA, nrow(el))
+  
+  for(i in 1:length(clust_lev)){
+    # i = 1
+    
+    data <- el[clust_tsne == clust_lev[i], , drop=FALSE]
+    cent <- a[i,-1,drop=FALSE]
+    
+    ### Euclidean distance
+    cent <- matrix(rep( as.numeric(cent), nrow(data)), byrow=TRUE, ncol=ncol(cent))
+    
+    # d <- sqrt(rowSums((cent-data)^2))
+    d <- rowMeans(abs(cent-data))
+    distse[clust_tsne == clust_lev[i]] <- d
+    
+    dist_quant <- quantile(d, probs = tsne_quantse)
+    
+    dist_keep[clust_tsne == clust_lev[i]] <- d < dist_quant
+    
+  }
+  
+  ### Plot the distances per cluster
+  ggdf$distse <- distse
+  
+  ggp <- ggplot(ggdf, aes(x = distse)) +
+    geom_histogram(bins = 50) +
+    facet_wrap(~ cluster, scales = "free_y")
+  
+  pdf(file.path(outdir, paste0(prefix, "quantse", suffix, ".pdf")), width = 10, height = 10)        
+  print(ggp)
+  dev.off()
+  
+  
+  ggdf_sub <- ggdf[dist_keep, ]
+  ggdf_sub$cluster <- factor(ggdf_sub$cluster)
+  
+  ## one plot
+  ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
+    geom_point(size=1) + 
+    labs(x = "tSNE 1", y="tSNE 2")+ 
+    theme_bw() +
+    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
+    guides(colour = guide_legend(override.aes = list(size = 5)))
+  
+  pdf(file.path(outdir, paste0(prefix, "tSNEone_filtered2", suffix, ".pdf")), width = 9, height = 7)                 
+  print(ggp)
+  dev.off()
+  
+  
+  ## facet per group
+  ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
+    geom_point(size=1) +
+    facet_wrap( ~ group) +
+    labs(x = "tSNE 1", y="tSNE 2")+
+    theme_bw() +
+    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
+    scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
+    guides(colour = guide_legend(override.aes = list(size = 5)))
+  
+  pdf(file.path(outdir, paste0(prefix, "tSNEgroup_filtered2", suffix, ".pdf")), width = pdf_width, height = pdf_height)
+  print(ggp)
+  dev.off()
+  
+}
 
 
 

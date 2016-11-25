@@ -346,6 +346,8 @@ for(i in 1:length(clust_out)){
 }
 
 
+
+
 ### Plot heatmap of generated clusters
 
 
@@ -365,6 +367,12 @@ annotation_colors <- list(cluster = colors_clusters)
 pheatmap(data_new_labels, color = color, cellwidth = 20, cellheight = 20, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 10, fontsize_col = 10, fontsize = 10, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "clusters_pheatmap.pdf")))
 
 
+
+### Save cluster frequencies and the median expression
+
+clusters_out <- data.frame(cluster = cluster, label = labels_row, counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), data_new_labels)
+
+write.table(clusters_out, file.path(outdir, paste0(prefix, "clusters.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
 

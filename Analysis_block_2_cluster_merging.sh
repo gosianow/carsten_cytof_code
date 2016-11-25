@@ -107,7 +107,7 @@ if ${cluster_merging}; then
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}' merging_outdir='030_heatmaps' path_cluster_merging='${file_merging}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
   tail $ROUT/02_cluster_merging.Rout
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' codes_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}' codes_outdir='030_heatmaps' path_codes='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}codes.xls' pdf_width=15 pdf_height=10 path_cluster_merging='${file_merging}'" $RCODE/02_som_codes.R $ROUT/02_som_codes.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' codes_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}' codes_outdir='030_heatmaps' path_codes='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}codes.xls' pdf_width=22 pdf_height=7 path_cluster_merging='${file_merging}'" $RCODE/02_som_codes.R $ROUT/02_som_codes.Rout
   tail $ROUT/02_som_codes.Rout
 fi
 
@@ -129,12 +129,25 @@ fi
 ### Plot tSNE
 if ${plottsne}; then
   echo ">>> 03_plottsne"
-
-  ### Based on raw data
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}raw_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls'  pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}raw_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls'  pdf_width=22 pdf_height=7 tsne_distse=1 tsne_quantse=0.9" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
   tail $ROUT/03_plottsne.Rout
 
 fi
+
+### Plot tSNE with different perplexity
+
+for perplexity in 50 100 200 1000
+do
+
+  if ${plottsne}; then
+    echo ">>> 03_plottsne"
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}raw_perp${perplexity}_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls'  pdf_width=22 pdf_height=7 tsne_distse=1 tsne_quantse=0.9" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+    tail $ROUT/03_plottsne.Rout
+
+  fi
+
+done
+
 
 ### Get cluster frequencies
 if ${frequencies}; then

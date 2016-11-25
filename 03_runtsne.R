@@ -21,24 +21,28 @@ library(Rtsne)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# tsne_prefix='23_01_pca1_raw_'
-# tsne_outdir='040_tsnemaps'
-# path_data='010_data/23_01_expr_raw.rds'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
-# tsne_pmin=1500
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+tsne_prefix='23_01_pca1_raw_'
+tsne_outdir='040_tsnemaps'
+path_data='010_data/23_01_expr_raw.rds'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
+tsne_pmin=1500
+perplexity=30
+
 
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
@@ -51,6 +55,9 @@ outdir <- tsne_outdir
 if(!file.exists(outdir)) 
   dir.create(outdir)
 
+if(!any(grepl("perplexity=", args))){
+  perplexity=30
+}
 
 # ------------------------------------------------------------
 # Load data
@@ -126,7 +133,7 @@ et_sub <- et[cells2keep, ]
 
 ### Run tSNE
 set.seed(rand_seed)
-rtsne_out <- Rtsne(et_sub, perplexity = 30, pca = FALSE, max_iter = 1000, verbose = TRUE)
+rtsne_out <- Rtsne(et_sub, perplexity = perplexity, pca = FALSE, max_iter = 1000, verbose = TRUE, check_duplicates = FALSE)
 
 
 # Save rtsne results
