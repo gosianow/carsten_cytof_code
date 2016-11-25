@@ -36,9 +36,23 @@ path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
 path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
 tsne_cmin=1000 ### minimal size of a cluster to plot
 tsne_distse=1
-tsne_quantse=0.95
+tsne_quantse=0.9
 pdf_width=22
 pdf_height=7
+
+
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03'
+tsnep_prefix='23_03_pca1_merging4_raw_perp1000_'
+tsnep_outdir='040_tsnemaps'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx'
+path_rtsne_out='040_tsnemaps/23_03_pca1_raw_perp1000_rtsne_out.rda'
+path_rtsne_data='040_tsnemaps/23_03_pca1_raw_perp1000_rtsne_data.xls'
+path_clustering='030_heatmaps/23_03_pca1_merging4_clustering.xls'
+path_clustering_labels='030_heatmaps/23_03_pca1_merging4_clustering_labels.xls'
+pdf_width=22
+pdf_height=7
+tsne_distse=1
+tsne_quantse=0.9
 
 ##############################################################################
 # Read in the arguments
@@ -96,7 +110,7 @@ clust <- clustering[, "cluster"]
 labels <- read.table(path_clustering_labels, header = TRUE, sep = "\t", as.is = TRUE)
 labels <- labels[order(labels$cluster, decreasing = FALSE), ]
 labels$label <- factor(labels$label, levels = unique(labels$label))
-
+labels
 
 # ------------------------------------------------------------
 ### Colors for tSNE maps
@@ -141,7 +155,7 @@ cells2keep_rtsne <- rtsne_data$cell_index %in% clustering[, "cell_id"]
 names(clust) <- clustering[, "cell_id"]
 clust_tsne <- clust[as.character(rtsne_data$cell_index[cells2keep_rtsne])]
 
-ggdf <- data.frame(tSNE1 = rtsne_out$Y[cells2keep_rtsne,1], tSNE2 = rtsne_out$Y[cells2keep_rtsne,2], cluster = clust_tsne, sample = rtsne_data$sample_name[cells2keep_rtsne])
+ggdf <- data.frame(tSNE1 = rtsne_out$Y[cells2keep_rtsne, 1], tSNE2 = rtsne_out$Y[cells2keep_rtsne, 2], cluster = clust_tsne, sample = rtsne_data$sample_name[cells2keep_rtsne])
 
 # add group info
 mm <- match(ggdf$sample, md$shortname)
@@ -156,10 +170,15 @@ ggdf$cluster <- factor(ggdf$cluster, levels = levels(labels$label))
 
 # skipp the "drop" cluster
 
-ggdf <- ggdf[ggdf$cluster != "drop", ]
+skipp_drop <- ggdf$cluster != "drop"
+
+ggdf <- ggdf[skipp_drop, ]
 ggdf$cluster <- factor(ggdf$cluster)
 
+clust_tsne <- clust_tsne[skipp_drop]
 
+rtsne_data <- rtsne_data[cells2keep_rtsne, ]
+rtsne_data <- rtsne_data[skipp_drop, ]
 
 # -----------------------------------
 ### Plot of tsne - all cells, all clusters
@@ -248,7 +267,8 @@ if(any(grepl("tsne_cmin=", args))){
 # Approach 1 - removing all the cells that are further than 1 from its cluster center
 if(any(grepl("tsne_distse=", args))){
   
-  el <- rtsne_data[cells2keep_rtsne, -grep("cell_index|sample_name", colnames(rtsne_data))]
+  el <- rtsne_data[, -grep("cell_index|sample_name", colnames(rtsne_data)), drop = FALSE]
+  
   a <- aggregate(el, by = list(clust_tsne), FUN=median)
   
   dists <- distse <- rep(NA, nrow(el))
@@ -326,7 +346,7 @@ if(any(grepl("tsne_distse=", args))){
 # Approach 2 - removing 5% of most distant cells from the center in each cluster
 if(any(grepl("tsne_quantse=", args))){
   
-  el <- rtsne_data[cells2keep_rtsne, -grep("cell_index|sample_name", colnames(rtsne_data))]
+  el <- rtsne_data[, -grep("cell_index|sample_name", colnames(rtsne_data))]
   a <- aggregate(el, by = list(clust_tsne), FUN=median)
   
   clust_lev <- a$Group.1

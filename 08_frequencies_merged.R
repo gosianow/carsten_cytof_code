@@ -34,19 +34,21 @@ data_name=c('data23','data29')
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
 pdf_hight=8
+plot_only=TRUE
+sort_by_name=FALSE
 
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4'
-freq_prefix='23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_frequencies_glmer_binomial_interglht_top10_selection_NRvsR_base_'
-freq_outdir='10_cytokines_merged_top_combinations/03_frequencies_auto_2responses'
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_02.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_02.xlsx')
-path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4/10_cytokines_merged_top_combinations/01_clustering/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_data23_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/02_CD4/10_cytokines_merged_top_combinations/01_clustering/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_data29_counts.xls')
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01_CD4'
+freq_prefix='23CD4m5_29CD4m5_'
+freq_outdir='08_frequencies_merged_2responses'
+path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01_CD4_mergingNEW2/050_frequencies/23CD4_01CD4_pca1_merging5_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01_CD4_merging2/050_frequencies/29CD4_01CD4_pca1_merging5_counts.xls')
 data_name=c('data23','data29')
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
-pdf_hight=8
+pdf_hight=4
 plot_only=TRUE
-path_cluster_selection='10_cytokines_merged_top_combinations/03_frequencies_auto_2responses/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cl50_frequencies_glmer_binomial_interglht_top10_selection_NRvsR_base.txt'
+sort_by_name=TRUE
 
 ##############################################################################
 # Read in the arguments
@@ -80,6 +82,10 @@ if(!any(grepl("pdf_hight=", args))){
 
 if(!any(grepl("plot_only=", args))){
   plot_only=FALSE
+}
+
+if(!any(grepl("sort_by_name=", args))){
+  sort_by_name=FALSE
 }
 
 # ------------------------------------------------------------
@@ -148,6 +154,11 @@ freq <- lapply(1:length(data_name), function(i){
 freq_out <- Reduce(function(...) merge(..., by = c("label"), all=TRUE, sort = FALSE), freq)
 
 freq_out <- freq_out[freq_out$label != "drop", , drop = FALSE]
+
+# sort clusters by label name
+if(sort_by_name)
+  freq_out <- freq_out[order(freq_out$label), , drop = FALSE]
+
 freq_out$cluster <- 1:nrow(freq_out)
 
 freq_out <- freq_out[, c("cluster", "label", md$shortname)]
@@ -180,6 +191,8 @@ keep_samps <- names(table_samp)[which(table_samp > min_cells)]
 
 prop_out <- prop_out[, colnames(prop_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
 freq_out <- freq_out[, colnames(freq_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
+
+table(md$shortname %in% keep_samps)
 
 md <- md[md$shortname %in% keep_samps, , drop = FALSE]
 
@@ -299,6 +312,71 @@ for(i in 1:nlevels(ggdf$day)){
 }
 
 
+
+# -----------------------------------------------------------------------------
+# Prepare the matrix with data for heatmaps (rows - clusters; columns - samples)
+# Plot a heatmap with clustered columns
+# -----------------------------------------------------------------------------
+# Transform proportions with arcsin-sqrt so the dispersion is the same for low and high props.
+
+
+### normalize the expression
+ass_freq_out <- freq_out
+ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
+
+ass_freq_out <- ass_freq_out[complete.cases(ass_freq_out), , drop = FALSE]
+
+expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
+th <- 2.5
+
+data_days <- levels(md$data_day)
+
+### Normalized to mean = 0 and sd = 1 per data and day
+for(i in data_days){
+  # i = "data23.base"
+  expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){
+    sdx <- sd(x, na.rm = TRUE)
+    if(sdx == 0)
+      x <- (x-mean(x, na.rm = TRUE))
+    else
+      x <- (x-mean(x, na.rm = TRUE))/sdx
+    
+    x[x > th] <- th
+    x[x < -th] <- -th
+    
+    return(x)}))
+}
+
+breaks = seq(from = -th, to = th, length.out = 101)
+legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+
+
+### Plot a heatmap with clustered columns and all the rows
+
+expr_heat <- expr_norm
+rownames(expr_heat) <- expr_heat$label
+
+expr <- expr_heat[, md[md$response != "HD", "shortname"]]
+
+labels_row <- paste0(expr_heat$label) 
+labels_col <- colnames(expr)
+
+annotation_col <- data.frame(response = factor(md[md$response != "HD", "response"]))
+rownames(annotation_col) <- md[md$response != "HD", "shortname"]
+
+annotation_colors <- list(response = color_response[levels(annotation_col$response)])
+
+cluster_cols <- hclust(dist(t(expr)), method = "ward.D2")
+cluster_rows <- hclust(dist(expr), method = "ward.D2")
+
+# Using pheatmap
+pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = cluster_cols, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = TRUE, filename = file.path(outdir, paste0(prefix, "frequencies_pheatmap_colclust", suffix, ".pdf")))
+
+
+
+
+
+
 # ------------------------------------------------------------
 # Test for frequency differences between groups
 # ------------------------------------------------------------
@@ -316,8 +394,6 @@ if(!plot_only){
   levels(md$data)
   levels(md$day)
   levels(md$response)
-  
-  
   
   models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_logit_interglht", "lmer_arcsinesqrt_interglht", "lm_logit_interglht", "lm_arcsinesqrt_interglht")
   
@@ -407,42 +483,11 @@ if(!plot_only){
     
     
     # ----------------------------------------
-    # Plot a heatmap of significant cases - transform proportions with arcsin-sqrt so the dispersion is the same for low and high props.
+    # Plot a heatmap of significant cases 
     # ----------------------------------------
-    
-    ### normalize the expression
-    ass_freq_out <- freq_out
-    ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
-    
-    ass_freq_out <- ass_freq_out[complete.cases(ass_freq_out), , drop = FALSE]
-    
-    expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
-    th <- 2.5
-    
-    data_days <- levels(md$data_day)
-    
-    ### Normalized to mean = 0 and sd = 1 per data and day
-    for(i in data_days){
-      # i = "data23.base"
-      expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){
-        sdx <- sd(x, na.rm = TRUE)
-        if(sdx == 0)
-          x <- (x-mean(x, na.rm = TRUE))
-        else
-          x <- (x-mean(x, na.rm = TRUE))/sdx
-        
-        x[x > th] <- th
-        x[x < -th] <- -th
-        
-        return(x)}))
-    }
-    
-    breaks = seq(from = -th, to = th, length.out = 101)
-    legend_breaks = seq(from = -round(th), to = round(th), by = 1)
     
     ### add p-value info
     expr_all <- merge(expr_norm, pvs, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
-    
     
     # -----------------------------
     ### Plot one heatmap with R vs NR

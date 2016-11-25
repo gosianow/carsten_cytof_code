@@ -250,8 +250,8 @@ dev.off()
 
 
 # -----------------------------------------------------------------------------
-# Prepare the matrix with data (rows - markers X clusters; columns - samples)
-# Plot a heatmap with clustered samples
+# Prepare the matrix with data for heatmaps (rows - markers X clusters; columns - samples)
+# Plot a heatmap with clustered columns
 # -----------------------------------------------------------------------------
 
 
@@ -294,6 +294,8 @@ for(i in data_days){
 breaks = seq(from = -th, to = th, length.out = 101)
 legend_breaks = seq(from = -round(th), to = round(th), by = 1)
 
+
+### Plot a heatmap with clustered columns and all the rows
 if(analysis_type == "all"){
   
   expr_heat <- expr_norm

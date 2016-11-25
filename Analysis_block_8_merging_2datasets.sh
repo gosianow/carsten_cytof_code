@@ -117,14 +117,14 @@ fi
 ### Get cluster frequencies - models with NR, R and HD
 if ${frequencies_merged}; then
   echo ">>> 08_frequencies_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' sort_by_name=TRUE" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
   tail $ROUT/08_frequencies_merged.Rout
 fi
 
 ### Get cluster frequencies - models with NR, R
 if ${frequencies_merged}; then
   echo ">>> 08_frequencies_merged"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' sort_by_name=TRUE" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
   tail $ROUT/08_frequencies_merged.Rout
 fi
 
@@ -151,6 +151,10 @@ if ${expression_merged}; then
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_clust.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_clust.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' analysis_type='clust'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
   tail $ROUT/08_expression_merged.Rout
 fi
+
+
+
+### Run tSNE
 
 # if ${runtsne_merged}; then
 #   echo "08_runtsne_merged"
