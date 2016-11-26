@@ -35,7 +35,6 @@ path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
 pdf_hight=8
 plot_only=TRUE
-sort_by_name=FALSE
 
 
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01_CD4'
@@ -48,7 +47,7 @@ path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
 pdf_hight=4
 plot_only=TRUE
-sort_by_name=TRUE
+path_cluster_selection='23CD4m5_29CD4m5_frequencies_cluster_selection.txt'
 
 ##############################################################################
 # Read in the arguments
@@ -76,6 +75,8 @@ outdir <- freq_outdir
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
 
+
+
 if(!any(grepl("pdf_hight=", args))){
   pdf_hight=4
 }
@@ -84,9 +85,7 @@ if(!any(grepl("plot_only=", args))){
   plot_only=FALSE
 }
 
-if(!any(grepl("sort_by_name=", args))){
-  sort_by_name=FALSE
-}
+
 
 # ------------------------------------------------------------
 # Load metadata
@@ -154,10 +153,6 @@ freq <- lapply(1:length(data_name), function(i){
 freq_out <- Reduce(function(...) merge(..., by = c("label"), all=TRUE, sort = FALSE), freq)
 
 freq_out <- freq_out[freq_out$label != "drop", , drop = FALSE]
-
-# sort clusters by label name
-if(sort_by_name)
-  freq_out <- freq_out[order(freq_out$label), , drop = FALSE]
 
 freq_out$cluster <- 1:nrow(freq_out)
 
@@ -232,19 +227,21 @@ ggdf$day <- factor(ggdf$day)
 
 
 ### Cluster selection
+### Use only the clusters that are specified in the cluster_selection.txt file
 
 if(any(grepl("path_cluster_selection=", args))){
   
-  if(!file.exists(path_cluster_selection))
-    stop(paste0(path_cluster_selection, " does NOT exists!!!"))
-  
-  cluster_selection <- read.table(path_cluster_selection, header = FALSE, sep = "\t", as.is = TRUE)[, 1]
-  
-  if(!all(cluster_selection %in% levels(ggdf$cluster)))
-    stop("Cluster selection is wrong!!!")
-  
-  ggdf <- ggdf[ggdf$cluster %in% cluster_selection, , drop = FALSE]
-  ggdf$cluster <- factor(ggdf$cluster, levels = cluster_selection)
+  if(file.exists(path_cluster_selection)){
+    
+    cluster_selection <- read.table(path_cluster_selection, header = FALSE, sep = "\t", as.is = TRUE)[, 1]
+    
+    if(!all(cluster_selection %in% levels(ggdf$cluster)))
+      stop("Cluster selection is wrong!!!")
+    
+    ggdf <- ggdf[ggdf$cluster %in% cluster_selection, , drop = FALSE]
+    ggdf$cluster <- factor(ggdf$cluster, levels = cluster_selection)
+    
+  }
   
 }
 
