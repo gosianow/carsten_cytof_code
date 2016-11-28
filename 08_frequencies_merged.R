@@ -164,13 +164,16 @@ if(all(!complete.cases(freq_out)))
   stop("There is no common cluster in the merged data sets!")
 
 prop_out <- freq_out
-prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE))
+prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)) * 100
 
 
 labels <- data.frame(cluster = freq_out$cluster, label = freq_out$label)
 labels$label <- factor(labels$label, levels = unique(labels$label))
 labels
 
+
+write.table(prop_out, file=file.path(outdir, paste0(prefix, "frequencies.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(freq_out, file=file.path(outdir, paste0(prefix, "counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 # ---------------------------------------
 # Keep only those samples that have enough cells 

@@ -151,7 +151,7 @@ if(all(!complete.cases(freq_out)))
   stop("There is no common cluster in the merged data sets!")
 
 prop_out <- freq_out
-prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE))
+prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)) * 100
 
 
 labels <- data.frame(cluster = freq_out$cluster, label = freq_out$label)

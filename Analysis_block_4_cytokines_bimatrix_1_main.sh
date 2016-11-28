@@ -88,10 +88,6 @@ done
 # function
 # -----------------------------------------------------
 
-#############################################################################
-### Cytokine analysis
-#############################################################################
-
 if ${cytokines_bimatrix_main}; then
 
   RWD=$RWD_MAIN/${data_dir}
@@ -100,7 +96,7 @@ if ${cytokines_bimatrix_main}; then
   echo "$RWD"
 
   ### Analysis based on different cutoffs for base and tx
-  prefix_cytokines="${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}${prefix_cytokines_cutoffs}raw2_"
+  prefix_cytokines="${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}${prefix_cytokines_cutoffs}"
   prefix_clust="cl${nmetaclusts}_"
 
   ### Create the bimatrix
@@ -119,12 +115,6 @@ if ${cytokines_bimatrix_main}; then
   echo ">>> 02_heatmaps"
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_clust}' heatmap_outdir='060_cytokines_bimatrix/01_clustering' path_data='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}clustering_observables.xls' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls'  path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE linkage='average'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
-
-
-  ### tSNE plot with bimatrix clusters (based on raw data)
-  echo ">>> 03_plottsne"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_cytokines}${prefix_clust}raw_' tsnep_outdir='060_cytokines_bimatrix/02_tsne' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_rtsne_data.xls' path_clustering='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls' path_clustering_labels='060_cytokines_bimatrix/01_clustering/${prefix_cytokines}${prefix_clust}clustering_labels.xls' pdf_width=15 pdf_height=10" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
-  tail $ROUT/03_plottsne.Rout
 
 
   ### Get cluster frequencies

@@ -25,26 +25,28 @@ library(limma)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw2_'
-# pd1_outdir='070_pd1'
-# path_data='010_data/23CD4_02CD4_expr_raw.rds'
-# path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
-# path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging_clustering.xls'
-# path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging_clustering_labels.xls'
-# clsubset=c('CM','EM')
-# cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_raw2_pd1_'
+pd1_outdir='070_pd1'
+path_data='010_data/23CD4_02CD4_expr_raw.rds'
+path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
+path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging_clustering.xls'
+path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging_clustering_labels.xls'
+clsubset=c('CM','EM')
+cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')
 
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
@@ -55,7 +57,7 @@ suffix <- ""
 outdir <- pd1_outdir
 
 if(!file.exists(outdir)) 
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
 # ------------------------------------------------------------
 # Load data
@@ -185,7 +187,7 @@ bimatrix_pd1 <- apply(bimatrix_pd1, 2, as.numeric)
 
 bimatrix_out <- data.frame(cell_id = cell_id[cells2keep_clust], sample_id = samp[cells2keep_clust], bimatrix_pd1)
 
-write.table(bimatrix_out, file.path(outdir, paste0(prefix, "pd1_bimatrix", suffix, ".txt")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(bimatrix_out, file.path(outdir, paste0(prefix, "bimatrix", suffix, ".txt")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
 # ------------------------------------------------------------
@@ -194,17 +196,17 @@ write.table(bimatrix_out, file.path(outdir, paste0(prefix, "pd1_bimatrix", suffi
 
 clustering <- data.frame(cluster = bimatrix_pd1[, 1] + 1, cell_id = cell_id[cells2keep_clust], sample_id = samp[cells2keep_clust], stringsAsFactors = FALSE)
 
-write.table(clustering, file.path(outdir, paste0(prefix, "pd1_clustering.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(clustering, file.path(outdir, paste0(prefix, "clustering.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 freq_clust <- table(clustering$cluster)
 
 clustering_labels <- data.frame(cluster = c(1, 2), label = c("PD1-", "PD1+"), counts = as.numeric(freq_clust), stringsAsFactors = FALSE)
 
-write.table(clustering_labels, file.path(outdir, paste0(prefix, "pd1_clustering_labels.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(clustering_labels, file.path(outdir, paste0(prefix, "clustering_labels.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
 # ----------------------------------------------------------------------------------------
-# Create the bimatrix for other cytokines for positive and negative PD1
+# Create a bimatrix for other cytokines for positive and negative PD1
 # ----------------------------------------------------------------------------------------
 
 eb <- e[cells2keep_clust, pncols, drop = FALSE]
@@ -232,7 +234,7 @@ keep_pos_cells <- c(FALSE, TRUE)
 for(i in 1:length(pd1_type)){
   # i = 1
   
-  prefix_type <- paste0("pd1", pd1_type[i], "_")
+  prefix_type <- paste0(pd1_type[i], "_")
   
   eb_tmp <- eb[cells2keep_pd1[[i]], ]
   sampb_tmp <- sampb[cells2keep_pd1[[i]]]
@@ -302,9 +304,10 @@ for(i in 1:length(pd1_type)){
 
 clustering_observables <- data.frame(mass = fcs_panel$fcs_colname[pncols], marker = fcs_panel$Antigen[pncols], clustering_observable = TRUE, stringsAsFactors = FALSE)
 
-write.table(clustering_observables, file.path(outdir, paste0(prefix, "pd1_", "clustering_observables.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(clustering_observables, file.path(outdir, paste0(prefix, "clustering_observables.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
-
+for(i in 1:length(pd1_type))
+  write.table(clustering_observables, file.path(outdir, paste0(prefix, pd1_type[i], "_", "clustering_observables.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 
 

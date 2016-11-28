@@ -10,12 +10,12 @@ PANELS=$RWD_MAIN/CK_panels
 
 ## Define which analysis to re-run
 frequencies_merged=true
-expression_merged=true
+expression_merged=false
 runtsne_merged=false
 plottsne_merged=false
-cytokines_merging=true
-cytokines_merging_v2=true # based on clustering the two joint bimatrices
-cytokines_merging_v3=true # based on selecting the most occuring combinations
+cytokines_merging=false
+cytokines_merging_v2=false # based on clustering the two joint bimatrices
+cytokines_merging_v3=false # based on selecting the most occuring combinations
 
 ###############################################################################################################
 # Merging data 23 and 29 for panel 1

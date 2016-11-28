@@ -415,7 +415,7 @@ prefix_merging=('merging3_' 'merging3_') # name of merging from which the Tmem c
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
 prefix_clsubset=('Tmem_' 'Tmem_')
 file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM.xlsx')
-prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
+prefix_cytokines_cutoffs=('cytCM_raw2_' 'cytCM_raw2_')
 
 
 som_dim=(10 10)
@@ -442,7 +442,7 @@ done
 
 ### for CD8, new cytokine cutoffs are defined - they include all the cytokines that were also used for CD4
 file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM_new.xlsx')
-prefix_cytokines_cutoffs=('cytCM_' 'cytCMnew_')
+prefix_cytokines_cutoffs=('cytCM_raw2_' 'cytCMnew_raw2_')
 
 som_dim=(5 5)
 nmetaclusts=(25 25)
@@ -461,7 +461,7 @@ done
 nmetaclusts=(40 20)
 
 ## Merging is done only when these files exist
-file_merging_cyt=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_merging[0]}${prefix_clsubset[0]}${prefix_cytokines_cutoffs[0]}raw2_cl${nmetaclusts[0]}_cytokine_merging2.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_merging[1]}${prefix_clsubset[1]}${prefix_cytokines_cutoffs[1]}raw2_cl${nmetaclusts[1]}_cytokine_merging2.xlsx")
+file_merging_cyt=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_merging[0]}${prefix_clsubset[0]}${prefix_cytokines_cutoffs[0]}cl${nmetaclusts[0]}_cytokine_merging2.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_merging[1]}${prefix_clsubset[1]}${prefix_cytokines_cutoffs[1]}cl${nmetaclusts[1]}_cytokine_merging2.xlsx")
 prefix_merging_cyt=("cytmerging2_" "cytmerging2_")
 
 for i in 0 1
@@ -474,7 +474,7 @@ done
 nmetaclusts=(25 25)
 
 ## Merging is done only when these files exist
-file_merging_cyt=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_merging[0]}${prefix_clsubset[0]}${prefix_cytokines_cutoffs[0]}raw2_cl${nmetaclusts[0]}_cytokine_merging4.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_merging[1]}${prefix_clsubset[1]}${prefix_cytokines_cutoffs[1]}raw2_cl${nmetaclusts[1]}_cytokine_merging4.xlsx")
+file_merging_cyt=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_merging[0]}${prefix_clsubset[0]}${prefix_cytokines_cutoffs[0]}cl${nmetaclusts[0]}_cytokine_merging4.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_merging[1]}${prefix_clsubset[1]}${prefix_cytokines_cutoffs[1]}cl${nmetaclusts[1]}_cytokine_merging4.xlsx")
 prefix_merging_cyt=("cytmerging4_" "cytmerging4_")
 
 for i in 0 1
@@ -485,7 +485,7 @@ done
 
 nmetaclusts=(25 25)
 
-file_merging_cyt=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_merging[0]}${prefix_clsubset[0]}${prefix_cytokines_cutoffs[0]}raw2_cl${nmetaclusts[0]}_cytokine_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_merging[1]}${prefix_clsubset[1]}${prefix_cytokines_cutoffs[1]}raw2_cl${nmetaclusts[1]}_cytokine_merging5.xlsx")
+file_merging_cyt=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_merging[0]}${prefix_clsubset[0]}${prefix_cytokines_cutoffs[0]}cl${nmetaclusts[0]}_cytokine_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_merging[1]}${prefix_clsubset[1]}${prefix_cytokines_cutoffs[1]}cl${nmetaclusts[1]}_cytokine_merging5.xlsx")
 prefix_merging_cyt=("cytmerging5_" "cytmerging5_")
 
 for i in 0 ### run only for CD4
@@ -514,7 +514,7 @@ prefix_merging=('merging3_' 'merging3_') # name of merging from which the Tmem c
 clsubset=("c('EM','CM')" "c('CM')")
 prefix_clsubset=('EM_CM_' 'CM_')
 file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM.xlsx')
-prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
+prefix_cytokines_cutoffs=('cytCM_raw2_' 'cytCM_raw2_')
 
 
 som_dim=(5 5)
@@ -545,7 +545,7 @@ prefix_merging=('merging3_' 'merging3_') # name of merging from which the Tmem c
 clsubset=("c('EM','CM')" "c('CM','naive')")
 prefix_clsubset=('EM_CM_' 'CM_naive_')
 file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM.xlsx')
-prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
+prefix_cytokines_cutoffs=('cytCM_raw2_' 'cytCM_raw2_')
 
 
 som_dim=(5 5)
@@ -578,7 +578,7 @@ prefix_merging=('merging3_' 'merging3_') # name of merging from which the Tmem c
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
 prefix_clsubset=('Tmem_' 'Tmem_')
 file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM.xlsx')
-prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
+prefix_cytokines_cutoffs=('cytCM_raw2_' 'cytCM_raw2_')
 
 
 for i in 0 1
@@ -608,17 +608,15 @@ prefix_panel=('02CD4_' '02CD8_')
 prefix_merging=('merging3_' 'merging3_') # name of merging from which the Tmem clusters are extracted
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
 prefix_clsubset=('Tmem_' 'Tmem_')
-file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM.xlsx')
-prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
-nmetaclusts=(20 20)
+file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM_new.xlsx')
+prefix_cytokines_cutoffs=('cytCM_raw2_pd1_' 'cytCMnew_raw2_pd1_')
 
-file_merging_pd1=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_merging[0]}${prefix_clsubset[0]}${prefix_cytokines_cutoffs[0]}raw2_pd1positive_cl${nmetaclusts[0]}_pd1_merging.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_merging[1]}${prefix_clsubset[1]}${prefix_cytokines_cutoffs[1]}raw2_pd1positive_cl${nmetaclusts[1]}_pd1_merging.xlsx")
-prefix_merging_pd1=("pd1merging_" "pd1merging_")
-
+som_dim=(5 5)
+nmetaclusts=(25 25)
 
 for i in 0 1
 do
-  ./Analysis_block_5_pd1_bimatrix.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --pd1 ${pd1_bimatrix} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --nmetaclusts ${nmetaclusts[$i]} --file_merging_pd1 ${file_merging_pd1[$i]} --prefix_merging_pd1 ${prefix_merging_pd1[$i]}
+  ./Analysis_block_5_pd1_bimatrix_1_main.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --pd1_bimatrix_main ${pd1_bimatrix_main} --PANELS ${PANELS} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --prefix_clsubset ${prefix_clsubset[$i]} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs[$i]} --file_cytokines_cutoffs ${file_cytokines_cutoffs[$i]} --clsubset ${clsubset[$i]} --som_dim ${som_dim[$i]} --nmetaclusts ${nmetaclusts[$i]}
 done
 
 # --------------------------------------------------
@@ -643,8 +641,8 @@ prefix_panel=('02CD4_' '02CD8_')
 prefix_merging=('merging3_' 'merging3_') # name of merging from which the Tmem clusters are extracted
 clsubset=("c('CM','EM')" "c('CM','EM','TE')")
 prefix_clsubset=('Tmem_' 'Tmem_')
-file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM.xlsx')
-prefix_cytokines_cutoffs=('cytCM_' 'cytCM_')
+file_cytokines_cutoffs=('panel2CD4_29_cytokines_CM.xlsx' 'panel2CD8_29_cytokines_CM_new.xlsx')
+prefix_cytokines_cutoffs=('cytCM_raw2_pd1_' 'cytCMnew_raw2_pd1_')
 
 
 for i in 0 1

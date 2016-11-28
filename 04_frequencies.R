@@ -42,6 +42,7 @@ path_clustering='030_heatmaps/29mye_03_pca1_cl5_clustering.xls'
 path_clustering_labels='030_heatmaps/29mye_03_pca1_cl5_clustering_labels.xls'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
+pdf_hight=8
 
 ##############################################################################
 # Read in the arguments
@@ -69,6 +70,10 @@ if(!file.exists(outdir))
   dir.create(outdir, recursive = TRUE)
 
 source(path_fun_models)
+
+if(!any(grepl("pdf_hight=", args))){
+  pdf_hight=4
+}
 
 # ------------------------------------------------------------
 # Load metadata
@@ -229,7 +234,7 @@ ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group, fill = group)) +
   scale_fill_manual(values = color_groupsb) +
   facet_wrap(~ day)
 
-pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 1, h=4)
+pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = nlevels(ggdf$cluster) + 2, h = pdf_hight)
 print(ggp)
 dev.off()
 
