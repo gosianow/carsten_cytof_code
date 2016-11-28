@@ -36,20 +36,17 @@ path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
 analysis_type='all'
 
-
-
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-03-23_01'
-expr_prefix='0323_01_pca1_merging_raw_'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03'
+expr_prefix='29_03_pca1_merging2_raw_'
 expr_outdir='080_expression'
-path_data='010_data/0323_01_expr_raw.rds'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_0323_01.xlsx'
-path_clustering_observables='030_heatmaps/0323_01_pca1_clustering_observables.xls'
-path_clustering='030_heatmaps/0323_01_pca1_merging_clustering.xls'
-path_clustering_labels='030_heatmaps/0323_01_pca1_merging_clustering_labels.xls'
+path_data='010_data/29_03_expr_raw.rds'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03.xlsx'
+path_clustering_observables='030_heatmaps/29_03_pca1_clustering_observables.xls'
+path_clustering='030_heatmaps/29_03_pca1_merging2_clustering.xls'
+path_clustering_labels='030_heatmaps/29_03_pca1_merging2_clustering_labels.xls'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
 analysis_type='clust'
-
 
 ##############################################################################
 # Read in the arguments
@@ -192,19 +189,18 @@ if("avg_score" %in% colnames(clustering_observables)){
 # Get the median expression per cluster, and if sample has not enough cells, set expression to NA
 # ------------------------------------------------------------
 
-min_cells <- 200
-
-table_samp <- table(samp)
-
-keep_samps <- names(table_samp)[which(table_samp > min_cells)]
-
-
 
 if(analysis_type == "clust"){
   
+  min_cells <- 20
+  
+  table_samp <- aggregate(e[, 1, drop = FALSE], by = list(clust, samp), FUN = length, drop = FALSE)
+  
+  keep_samps <- table_samp[, 3] > min_cells
+  
   colnames(e) <- fcs_panel$Antigen
   
-  a <- aggregate(e, by = list(clust, samp), FUN = median)
+  a <- aggregate(e, by = list(clust, samp), FUN = median, drop = FALSE)
   
   mlab <- match(a$Group.1, labels$cluster)
   a$label <- labels$label[mlab]
@@ -214,14 +210,37 @@ if(analysis_type == "clust"){
   a <- a[, c("cluster", "label", "sample", fcs_panel$Antigen[c(scols, xcols)])]
   a$label <- factor(a$label, levels = labels$label)
   
-  a[!a$sample %in% keep_samps, fcs_panel$Antigen[c(scols, xcols)]] <- NA
+  a[!keep_samps, fcs_panel$Antigen[c(scols, xcols)]] <- NA
   
   ### Save the median expression per cluster and sample
   write.table(a, file.path(outdir, paste0(prefix, "expr_clust.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
+  ### Skipp samples that have NA for all the clusters
+  ### Clusters with at least one NA will be skipped in the expression analysis (see 00_models.R)
+  
+  table_sample <- table(a[complete.cases(a), "sample"])
+  
+  keep_samps <- names(table_sample)[table_sample > 0]
+  
+  a <- a[a$sample %in% keep_samps, , drop = FALSE]
+  
+  md <- md[md$shortname %in% keep_samps, , drop = FALSE]
+  
+  ## drop unused levels
+  md$response <- factor(md$response)
+  md$day <- factor(md$day)
+  md$patient_id <- factor(md$patient_id)
+  
 }
 
 if(analysis_type == "all"){
+  
+  min_cells <- 50
+  
+  table_samp <- table(samp)
+  
+  keep_samps <- names(table_samp)[which(table_samp > min_cells)]
+  
   
   colnames(e) <- fcs_panel$Antigen
   
@@ -240,22 +259,20 @@ if(analysis_type == "all"){
   ### Save the median expression per cluster and sample
   write.table(a, file.path(outdir, paste0(prefix, "expr_all.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
+  ### Keep only those samples that have enough cells 
+  
+  a <- a[a$sample %in% keep_samps, , drop = FALSE]
+  
+  md <- md[md$shortname %in% keep_samps, , drop = FALSE]
+  
+  ## drop unused levels
+  md$response <- factor(md$response)
+  md$day <- factor(md$day)
+  md$patient_id <- factor(md$patient_id)
+  
+  
 }
 
-
-# ---------------------------------------
-# Keep only those samples that have enough cells 
-# ---------------------------------------
-
-
-a <- a[a$sample %in% keep_samps, , drop = FALSE]
-
-md <- md[md$shortname %in% keep_samps, , drop = FALSE]
-
-## drop unused levels
-md$response <- factor(md$response)
-md$day <- factor(md$day)
-md$patient_id <- factor(md$patient_id)
 
 
 # -----------------------------------------------------------------------------
@@ -340,7 +357,8 @@ expr <- a
 exprm <- melt(expr, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
 exprc <- dcast(exprm, cluster + label + marker ~ sample, value.var = "expr")
 
-models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
+# models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
+models2fit <- c("lmer_interglht")
 
 
 for(k in models2fit){
@@ -371,7 +389,7 @@ for(k in models2fit){
     test_wilcoxon = {
       fit_out <- test_wilcoxon(data = exprc, md)
     }
-  
+    
   )
   
   
@@ -405,6 +423,13 @@ for(k in models2fit){
   for(i in days){
     # i = "base"
     expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ 
+      
+      if(sum(!is.na(x)) == 0)
+        return(x)
+      
+      if(sum(!is.na(x)) < 2)
+        return(x-mean(x, na.rm = TRUE))
+      
       sdx <- sd(x, na.rm = TRUE)
       if(sdx == 0)
         x <- (x-mean(x, na.rm = TRUE))

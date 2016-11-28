@@ -34,8 +34,7 @@ test_wilcoxon <- function(data, md){
       return(out)
     }
     
-    ## there must be at least 10 values different than 0
-    if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf))){
+    if(any(y[!NAs] %in% c(-Inf, Inf)) || sum(y[!NAs] == 0) > length(y[!NAs])/2){
       return(out)
     }
     
@@ -102,12 +101,11 @@ fit_lm_interglht <- function(data, md, method = "lm", formula, K){
     
     mm <- model.matrix(formula, data = data_tmp)
     
-    ## there must be at least 10 values different than 0
     out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
     colnames(out) <- c("coeff", "pval")
     rownames(out) <- contrast_names
     
-    if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf)))
+    if(any(y[!NAs] %in% c(-Inf, Inf)) || sum(y[!NAs] == 0) > length(y[!NAs])/2)
       return(out)
     
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
@@ -202,12 +200,11 @@ fit_lmer_interglht <- function(data, md, formula, K){
     NAs <- is.na(y)
     data_tmp <- data.frame(y = as.numeric(y)[!NAs], md[!NAs, ])
     
-    ## there must be at least 10 values different than 0
     out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
     colnames(out) <- c("coeff", "pval")
     rownames(out) <- contrast_names
     
-    if(sum(y[!NAs] != 0) < 10 || any(y[!NAs] %in% c(-Inf, Inf)))
+    if(any(y[!NAs] %in% c(-Inf, Inf)) || sum(y[!NAs] == 0) > length(y[!NAs])/2)
       return(out)
     
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
@@ -271,13 +268,6 @@ fit_lmer_interglht <- function(data, md, formula, K){
 
 
 
-
-
-
-
-
-
-
 # ---------------------------------------------------------------------------------------
 # logit models
 # ---------------------------------------------------------------------------------------
@@ -302,12 +292,11 @@ fit_glm_interglht <- function(data, md, family = "binomial", formula, K){
     
     mm <- model.matrix(formula, data = data_tmp)
     
-    ## there must be at least 10 proportions greater than 0
     out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
     colnames(out) <- c("coeff", "pval")
     rownames(out) <- contrast_names
     
-    if(sum(y[!NAs] > 0) < 10)
+    if(sum(y[!NAs] == 0) > length(y[!NAs])/2)
       return(out)
     
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
@@ -418,14 +407,13 @@ fit_glmer_interglht <- function(data, md, family = "binomial", formula, K){
     NAs <- is.na(y)
     data_tmp <- data.frame(y = as.numeric(y), total = as.numeric(ntot), md)[!NAs, , drop = FALSE]
     
-    ## there must be at least 10 proportions greater than 0
     out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
     colnames(out) <- c("coeff", "pval")
     rownames(out) <- contrast_names
     
-    if(sum(y[!NAs] > 0) < 10)
+    if(sum(y[!NAs] == 0) > length(y[!NAs])/2)
       return(out)
-    
+      
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
     if(any(NAs))
       return(out)

@@ -31,6 +31,14 @@ path_clustering_observables='060_cytokines_bimatrix/01_clustering/23CD4_02CD4_pc
 som_dim=10
 nmetaclusts=40
 
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging'
+clust_prefix='29CD4_02CD4_pca1_merging3_EM_CM_cytCM_raw2_cl25_'
+clust_outdir='060_cytokines_bimatrix/01_clustering'
+path_data='060_cytokines_bimatrix/01_clustering/29CD4_02CD4_pca1_merging3_EM_CM_cytCM_raw2_bimatrix.txt'
+path_clustering_observables='060_cytokines_bimatrix/01_clustering/29CD4_02CD4_pca1_merging3_EM_CM_cytCM_raw2_clustering_observables.xls'
+som_dim=5
+nmetaclusts=25
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
@@ -265,22 +273,21 @@ labels_col <- colnames(data_new_labels)
 
 cluster_rows <- hclust(dist(data_new_labels), method = linkage)
 
-cluster <- as.character(sort(unique(clust)))
+cluster <- sort(unique(clust))
 
-labels_row <- paste0(cluster, " - ", cluster_binames[cluster], " (", prop_clust[cluster], ")")
+labels_row <- paste0(cluster, " - ", cluster_binames, " (", prop_clust, ")")
 
-annotation_row <- data.frame(cluster = factor(as.numeric(cluster)))
+annotation_row <- data.frame(cluster = factor(cluster))
 rownames(annotation_row) <- rownames(data_new_labels)
+
 annotation_colors <- list(cluster = colors_clusters)
+
 
 pheatmap(data_new_labels, color = color, cellwidth = 20, cellheight = 20, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 6, fontsize_row = 10, fontsize_col = 10, fontsize = 10, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "clusters_pheatmap.pdf")))
 
 
-
-
-
-
-
+# Error in annotation_colors[[colnames(annotation)[i]]] :
+# subscript out of bounds
 
 
 

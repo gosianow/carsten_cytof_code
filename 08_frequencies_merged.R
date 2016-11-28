@@ -176,7 +176,7 @@ labels
 # Keep only those samples that have enough cells 
 # ---------------------------------------
 
-min_cells <- 200
+min_cells <- 0
 
 table_samp <- colSums(freq_out[md$shortname], na.rm = TRUE)
 names(table_samp) <- md$shortname
@@ -332,6 +332,13 @@ data_days <- levels(md$data_day)
 for(i in data_days){
   # i = "data23.base"
   expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){
+    
+    if(sum(!is.na(x)) == 0)
+      return(x)
+    
+    if(sum(!is.na(x)) < 2)
+      return(x-mean(x, na.rm = TRUE))
+    
     sdx <- sd(x, na.rm = TRUE)
     if(sdx == 0)
       x <- (x-mean(x, na.rm = TRUE))
@@ -392,8 +399,8 @@ if(!plot_only){
   levels(md$day)
   levels(md$response)
   
-  models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_logit_interglht", "lmer_arcsinesqrt_interglht", "lm_logit_interglht", "lm_arcsinesqrt_interglht")
-  
+  # models2fit <- c("glm_binomial_interglht", "glm_quasibinomial_interglht", "glmer_binomial_interglht", "lmer_logit_interglht", "lmer_arcsinesqrt_interglht", "lm_logit_interglht", "lm_arcsinesqrt_interglht")
+  models2fit <- c("glmer_binomial_interglht")
   
   for(k in models2fit){
     # k = "glmer_logit_interglht"

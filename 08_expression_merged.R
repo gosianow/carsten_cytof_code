@@ -30,15 +30,24 @@ library(ComplexHeatmap)
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
 expr_prefix='23m6_29m4_'
 expr_outdir='08_expression_merged'
-
 path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
 path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_raw_expr_all.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_raw_expr_all.xls')
 data_name=c('data23','data29')
-
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
-
 analysis_type='all'
+
+
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/03'
+expr_prefix='23m4_29m2_'
+expr_outdir='08_expression_merged_2responses'
+path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03.xlsx')
+path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/080_expression/23_03_pca1_merging4_raw_expr_clust.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03/080_expression/29_03_pca1_merging2_raw_expr_clust.xls')
+data_name=c('data23','data29')
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
+analysis_type='clust'
+
 
 ##############################################################################
 # Read in the arguments
@@ -128,32 +137,38 @@ names(color_response) <- colors$response
 # ------------------------------------------------------------
 
 a <- lapply(1:length(data_name), function(i){
-  # i = 1
+  # i = 2
   path <- path_expression[i]
   a <- read.table(path, header = TRUE, sep = "\t", as.is = TRUE, check.names = FALSE)
-  a[, -which(colnames(a) == "cluster")]
-  
+  a <- a[, -which(colnames(a) == "cluster")]
+  a
 })
+
+
+## keep only those markers that are common for all the merged datasets 
+marker_list <- unlist(lapply(a, colnames))
+marker_list <- marker_list[!grepl("label|sample", marker_list)]
+
+marker_table <- table(marker_list)
+marker_overlap <- names(marker_table)[marker_table == length(data_name)]
 
 a <- rbind.fill(a)
 
-## keep only those marksers that are common for all the merged datasets 
-a <- a[, complete.cases(t(a)), drop = FALSE]
+a <- a[, colnames(a) %in% c(marker_overlap, "label", "sample"), drop = FALSE]
 
+## drop the "drop" cluster
 a <- a[a$label != "drop", , drop = FALSE]
 
 
 ## keep only these clusters that are present in all the merged datasets
-nr_samples <- length(unique(a$sample))
-
-labels_keep <- names(which(table(a$label) == nr_samples))
+labels_keep <- names(which(table(a$label) == nrow(md)))
 
 labels <- unique(a$label)
 labels <- labels[labels %in% labels_keep]
 
 labels <- data.frame(cluster = 1:length(labels), label = labels)
 labels$label <- factor(labels$label, levels = unique(labels$label))
-
+labels
 
 a <- a[a$label %in% labels_keep, , drop = FALSE]
 
@@ -163,13 +178,17 @@ a <- cbind(cluster = labels$cluster[mm], a)
 
 markers_ordered <- colnames(a)[!colnames(a) %in% c("cluster", "label", "sample")]
 
-
+### Save the median expression per cluster and sample
+write.table(a, file.path(outdir, paste0(prefix, "expr_clust_", out_name, ".xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 # ---------------------------------------
-# Keep only those samples that have enough cells 
+# Keep only those samples that have enough cells in any of the clusters
+# Clusters with at least one NA will be skipped in the expression analysis (see 00_models.R)
 # ---------------------------------------
 
-keep_samps <- unique(a$sample[!rowSums(is.na(a[, markers_ordered, drop = FALSE])) == length(markers_ordered)])
+table_sample <- table(a[complete.cases(a), "sample"])
+
+keep_samps <- names(table_sample)[table_sample > 0]
 
 a <- a[a$sample %in% keep_samps, , drop = FALSE]
 
@@ -269,10 +288,19 @@ data_days <- levels(md$data_day)
 ### Normalized to mean = 0 and sd = 1 per data and day
 for(i in data_days){
   # i = "data23.base"
+  print(i)
+  
   expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){ 
+    
+    if(sum(!is.na(x)) == 0)
+      return(x)
+    
+    if(sum(!is.na(x)) < 2)
+      return(x-mean(x, na.rm = TRUE))
+    
     sdx <- sd(x, na.rm = TRUE)
     if(sdx == 0)
-      x <- (x-mean(x, na.rm = TRUE))
+      x <- x-mean(x, na.rm = TRUE)
     else 
       x <- (x-mean(x, na.rm = TRUE))/sdx
     
@@ -358,7 +386,9 @@ levels(md$response)
 
 ### Fit all the models
 
-models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
+# models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
+models2fit <- c("lmer_interglht")
+
 
 for(k in models2fit){
   # k = "lm_interglht"

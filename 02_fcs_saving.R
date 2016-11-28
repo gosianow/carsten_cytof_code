@@ -22,22 +22,24 @@ library(reshape2)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging'
-# save_prefix='29CD4_02CD4_'
-# save_outdir='060_dumpfcs'
-# path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4.xlsx'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_02.xlsx'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_02_CD4_merging'
+save_prefix='29CD4_02CD4_'
+save_outdir='060_dumpfcs'
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4.xlsx'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_02.xlsx'
 
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 

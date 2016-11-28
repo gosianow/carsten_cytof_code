@@ -8,150 +8,54 @@ RCODE=/Users/gosia/Dropbox/UZH/carsten_cytof_code
 METADATA=$RWD_MAIN/CK_metadata
 PANELS=$RWD_MAIN/CK_panels
 
-
 ## Define which analysis to re-run
-
-# data_normalization=true
-# pcascores=true
-# select_observables=false
-# flowsom=false
-# flowsom_validation=false
-# heatmaps=false
-# runtsne=false
-# plottsne=false
-# plottsne_expr=false
-# frequencies=false
-# expression=false
-# cluster_merging=false
-# cluster_extracting=false
-# fcs_saving=false
-# cytokines_bimatrix=false
-# pd1_bimatrix=false
-# cytokines_expression=false
-# pd1_expression=false
-
-
-data_normalization=false
-pcascores=false
-select_observables=true
-flowsom=true
-flowsom_validation=true
-heatmaps=true
-runtsne=true
-plottsne=true
-plottsne_expr=true
-frequencies=true
-expression=true
-cluster_merging=true
-cluster_extracting=true
-fcs_saving=false
-cytokines_bimatrix=false
-pd1_bimatrix=false
-cytokines_expression=false
-pd1_expression=false
-
-
-
-
-## global parameters
-tsne_pmin=1500
-
+frequencies_merged=false
+expression_merged=true
+runtsne_merged=false
+plottsne_merged=false
+cytokines_merging=true
+cytokines_merging_v2=false # based on clustering the two joint bimatrices
+cytokines_merging_v3=false # based on selecting the most occuring combinations
 
 ###############################################################################################################
+# Merging data 23 and 29 for panel 2 CD8 - cytokines
+###############################################################################################################
 
+PANEL=2
 
+new_data_dir="CK_2016-06-merged_23_29/02_CD8"
 
-# --------------------------------------------------
-# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 using panel1CD4.xlsx
-# and CK_2016-06-23_01_CD8_mergingNEW2 using panel1CD8.xlsx
-# Use Analysis block 1
-# --------------------------------------------------
+data_name1="data23"
+data_name2="data29"
+data_dir1="CK_2016-06-23_02_CD8_merging2"
+data_dir2="CK_2016-06-29_02_CD8_merging"
+file_metadata1="metadata_23_02.xlsx"
+file_metadata2="metadata_29_02.xlsx"
 
-DATA=23
-PANEL=1
-
-file_metadata="metadata_23_01.xlsx"
-
-rand_seed_consensus=1234
-nmetaclusts=20
-
+prefix_data1="23CD8_"
+prefix_data2="29CD8_"
+prefix_panel="02CD8_"
 prefix_pca="pca1_"
-prefix_clust="cl20_"
+prefix_merging1="merging2_"
+prefix_merging2="merging3_"
 
-data_dir=('CK_2016-06-23_01_CD4_mergingNEW2' 'CK_2016-06-23_01_CD8_mergingNEW2')
-prefix_data=('23CD4_' '23CD8_')
-file_panel=('panel1CD4.xlsx' 'panel1CD8.xlsx')
-prefix_panel=('01CD4_' '01CD8_')
-pca_score_cutoff=(2 2)
-
-
-prefix_clust=('cl5_' 'cl8_')
-
-file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust[0]}cluster_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust[1]}cluster_merging4.xlsx")
-prefix_merging=('merging5_' 'merging4_')
-
-# for i in 1
-# do
-#   ./Analysis_block_2_cluster_merging.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cluster_merging ${cluster_merging} --heatmaps ${heatmaps} --plottsne ${plottsne} --frequencies ${frequencies} --expression ${expression} --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust[$i]} --prefix_merging ${prefix_merging[$i]} --file_merging ${file_merging[$i]}
-# done
-
-prefix_clust=('cl5_' 'cl8_')
-
-file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust[0]}cluster_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust[1]}cluster_merging5.xlsx")
-prefix_merging=('merging5_' 'merging5_')
-
-# for i in  1 # run only for CD8
-# do
-#   ./Analysis_block_2_cluster_merging.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cluster_merging ${cluster_merging} --heatmaps ${heatmaps} --plottsne ${plottsne} --frequencies ${frequencies} --expression ${expression} --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust[$i]} --prefix_merging ${prefix_merging[$i]} --file_merging ${file_merging[$i]}
-# done
+prefix_clsubset='Tmem_'
+prefix_cytokines_cutoffs1='cytCM_'
+prefix_cytokines_cutoffs2='cytCM_'
 
 
-# --------------------------------------------------
-# Analysis of CK_2016-06-29_01_CD4_merging2 using panel1CD4.xlsx
-# and CK_2016-06-29_01_CD8_merging2 using panel1CD8.xlsx
-# Use Analysis block 1
-# --------------------------------------------------
+prefix_merging_cyt1='cytmerging3_'
+prefix_merging_cyt2='cytmerging2_'
 
-DATA=29
-PANEL=1
+prefix_data_merging="23CD8m2cm3_29CD8m3cm2_"
 
-file_metadata="metadata_29_01.xlsx"
-
-rand_seed_consensus=1234
-nmetaclusts=20
-
-prefix_pca="pca1_"
-prefix_clust="cl20_"
-
-data_dir=('CK_2016-06-29_01_CD4_merging2' 'CK_2016-06-29_01_CD8_merging2')
-prefix_data=('29CD4_' '29CD8_')
-file_panel=('panel1CD4.xlsx' 'panel1CD8.xlsx')
-prefix_panel=('01CD4_' '01CD8_')
-pca_score_cutoff=(1.9 1.9)
-
-
-prefix_clust=('cl5_' 'cl8_')
-
-file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust[0]}cluster_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust[1]}cluster_merging4.xlsx")
-prefix_merging=('merging5_' 'merging4_')
-
-for i in 1
-do
-  ./Analysis_block_2_cluster_merging.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cluster_merging ${cluster_merging} --heatmaps ${heatmaps} --plottsne ${plottsne} --frequencies ${frequencies} --expression ${expression} --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust[$i]} --prefix_merging ${prefix_merging[$i]} --file_merging ${file_merging[$i]}
-done
+./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs1 ${prefix_cytokines_cutoffs1} --prefix_cytokines_cutoffs2 ${prefix_cytokines_cutoffs2} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
 
 
 
+prefix_merging_cyt1='cytmerging4_'
+prefix_merging_cyt2='cytmerging4_'
 
+prefix_data_merging="23CD8m2cm4_29CD8m3cm4_"
 
-
-
-
-
-
-
-
-
-
-
-#
+./Analysis_block_8_cytokine_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging ${cytokines_merging} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs1 ${prefix_cytokines_cutoffs1} --prefix_cytokines_cutoffs2 ${prefix_cytokines_cutoffs2} --prefix_merging_cyt1 ${prefix_merging_cyt1} --prefix_merging_cyt2 ${prefix_merging_cyt2}
