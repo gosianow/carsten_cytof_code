@@ -34,6 +34,8 @@ path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging_clustering.xls'
 path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging_clustering_labels.xls'
 clsubset=c('CM','EM')
 cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')
+marker='PD-1'
+
 
 ##############################################################################
 # Read in the arguments
@@ -122,10 +124,13 @@ fcs_panel <- data.frame(fcs_colname = fcs_colnames, Isotope = cytokines_cutoffs$
 # -------------------------------------
 # Indeces of observables used for PD1 and positive-negative analysis
 
-pd1_marker <- cytokines_cutoffs$Antigen == "PD-1"
+if(length(marker) != 1 || !any(marker %in% cytokines_cutoffs$Antigen))
+  stop("Marker name is wrong!")
+
+pd1_marker <- cytokines_cutoffs$Antigen == marker
 
 if(any(is.na(cytokines_cutoffs[pd1_marker, cutoff_colname])))
-  stop("NAs in PD-1 cutoffs")
+  stop(paste0("NAs in ", marker," cutoffs"))
 
 pn_markers <- complete.cases(cytokines_cutoffs[, cutoff_colname, drop = FALSE]) & !pd1_marker
 
@@ -200,7 +205,7 @@ write.table(clustering, file.path(outdir, paste0(prefix, "clustering.xls")), sep
 
 freq_clust <- table(clustering$cluster)
 
-clustering_labels <- data.frame(cluster = c(1, 2), label = c("PD1-", "PD1+"), counts = as.numeric(freq_clust), stringsAsFactors = FALSE)
+clustering_labels <- data.frame(cluster = c(1, 2), label = paste0(marker, c("-", "+")), counts = as.numeric(freq_clust), stringsAsFactors = FALSE)
 
 write.table(clustering_labels, file.path(outdir, paste0(prefix, "clustering_labels.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 

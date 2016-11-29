@@ -359,6 +359,13 @@ data_days <- levels(md$data_day)
 for(i in data_days){
   # i = "data23.base"
   expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){
+    
+    if(sum(!is.na(x)) == 0)
+      return(x)
+    
+    if(sum(!is.na(x)) < 2)
+      return(x-mean(x, na.rm = TRUE))
+    
     sdx <- sd(x, na.rm = TRUE)
     if(sdx == 0)
       x <- (x-mean(x, na.rm = TRUE))
