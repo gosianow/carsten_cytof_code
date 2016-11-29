@@ -47,7 +47,10 @@ path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
 pdf_hight=4
 plot_only=TRUE
-path_cluster_selection='23CD4m5_29CD4m5_frequencies_cluster_selection.txt'
+### For selecting and ordering clusters to plot
+path_cluster_selection='23CD4m5_29CD4m5_frequencies_cluster_selection.txt' 
+if_no_cluster_selection='plot_blank' # 'plot_all'
+
 
 ##############################################################################
 # Read in the arguments
@@ -85,6 +88,9 @@ if(!any(grepl("plot_only=", args))){
   plot_only=FALSE
 }
 
+if(!any(grepl("if_no_cluster_selection=", args))){
+  if_no_cluster_selection='plot_all'
+}
 
 
 # ------------------------------------------------------------
@@ -311,6 +317,26 @@ for(i in 1:nlevels(ggdf$day)){
   
 }
 
+
+### Overwrite frequency figures with empty pdfs
+if(any(grepl("path_cluster_selection=", args))){
+  
+  if(!file.exists(path_cluster_selection) && if_no_cluster_selection == "plot_blank"){
+    
+    pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = 3, h = pdf_hight)
+    plot(1, type="n", axes=F, xlab="", ylab="")
+    dev.off()
+    
+    for(i in 1:nlevels(ggdf$day)){
+      pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = 3, h = pdf_hight)
+      plot(1, type="n", axes=F, xlab="", ylab="")
+      dev.off()
+      
+    }
+    
+  }
+  
+}
 
 
 # -----------------------------------------------------------------------------
