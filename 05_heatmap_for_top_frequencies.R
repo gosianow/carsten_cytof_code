@@ -98,14 +98,14 @@ for(i in 1:length(pvs_list)){
   datam <- datam[order(datam[, paste0("pval_", pvs_list[i])], decreasing = FALSE), , drop = FALSE]
   
   if(!is.na(adjp_cut)){
-    keep_pvs <- datam[, paste0("adjp_", pvs_list[i])] <= adjp_cut
+    keep_pvs <- datam[, paste0("adjp_", pvs_list[i])] <= adjp_cut & !is.na(datam[, paste0("adjp_", pvs_list[i])])
     if(sum(keep_pvs, na.rm = TRUE) == 0)
       next
     pdf_name <- gsub("\\.", "", as.character(adjp_cut))
   }
   
   if(!is.na(adjp_top)){
-    keep_pvs <- 1:min(adjp_top, nrow(datam))
+    keep_pvs <- intersect(1:min(adjp_top, nrow(datam)), which(!is.na(datam[, paste0("adjp_", pvs_list[i])])))
     pdf_name <- adjp_top
   }
   
