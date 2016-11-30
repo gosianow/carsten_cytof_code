@@ -37,18 +37,6 @@ path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
 analysis_type='all'
 
-
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/03'
-expr_prefix='23m4_29m2_'
-expr_outdir='08_expression_merged_2responses'
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03.xlsx')
-path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/080_expression/23_03_pca1_merging4_raw_expr_clust.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03/080_expression/29_03_pca1_merging2_raw_expr_clust.xls')
-data_name=c('data23','data29')
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
-analysis_type='clust'
-
-
 ##############################################################################
 # Read in the arguments
 ##############################################################################
@@ -158,9 +146,9 @@ a <- a[, colnames(a) %in% c(marker_overlap, "label", "sample"), drop = FALSE]
 
 ## drop the "drop" cluster
 a <- a[a$label != "drop", , drop = FALSE]
+a <- a[a$sample %in% md$shortname, , drop = FALSE]
 
-
-## keep only these clusters that are present in all the merged datasets
+## keep only those clusters that are present in all the merged datasets
 labels_keep <- names(which(table(a$label) == nrow(md)))
 
 labels <- unique(a$label)

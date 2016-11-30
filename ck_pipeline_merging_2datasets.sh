@@ -20,7 +20,7 @@ pd1_merging_v2=false
 pd1_merging_v3=false
 cd69_merging_v2=false
 cd69_merging_v3=false
-
+cytokines_fcs_saving=true
 
 ###############################################################################################################
 # Merging data 23 and 29 for panel 1
@@ -98,6 +98,11 @@ prefix_data1="23CD4_"
 prefix_data2="29CD4_"
 prefix_panel="01CD4_"
 prefix_pca="pca1_"
+
+# ----------------------------------------------------
+# 23 merging 4 + 29 merging 4
+# ----------------------------------------------------
+
 prefix_merging1="merging4_"
 prefix_merging2="merging4_"
 
@@ -140,6 +145,11 @@ prefix_data1="23CD8_"
 prefix_data2="29CD8_"
 prefix_panel="01CD8_"
 prefix_pca="pca1_"
+
+# ----------------------------------------------------
+# 23 merging 3 + 29 merging 3
+# ----------------------------------------------------
+
 prefix_merging1="merging3_"
 prefix_merging2="merging3_"
 
@@ -172,6 +182,74 @@ prefix_data_merging="23CD8m5_29CD8m4_"
 
 
 ./Analysis_block_8_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --runtsne_merged ${runtsne_merged} --plottsne_merged ${plottsne_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
+
+###############################################################################################################
+# Merging data 23 and 29 for panel 1 CD4 --- no HD10
+###############################################################################################################
+
+PANEL=1
+
+new_data_dir="CK_2016-06-merged_23_29/01_CD4"
+
+data_name1="data23"
+data_name2="data29"
+data_dir1="CK_2016-06-23_01_CD4_mergingNEW2"
+data_dir2="CK_2016-06-29_01_CD4_merging2"
+file_metadata1="metadata_23_01.xlsx"
+file_metadata2="metadata_29_01_noHD10.xlsx"
+
+prefix_data1="23CD4_"
+prefix_data2="29CD4_"
+prefix_panel="01CD4_"
+prefix_pca="pca1_"
+
+# ----------------------------------------------------
+# 23 merging 5 + 29 merging 5
+# ----------------------------------------------------
+
+prefix_merging1="merging5_"
+prefix_merging2="merging5_"
+
+prefix_data_merging="noHD10_23CD4m5_29CD4m5_"
+
+
+./Analysis_block_8_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --runtsne_merged ${runtsne_merged} --plottsne_merged ${plottsne_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
+
+
+
+###############################################################################################################
+# Merging data 23 and 29 for panel 1 CD8 --- no HD10
+###############################################################################################################
+
+PANEL=1
+
+new_data_dir="CK_2016-06-merged_23_29/01_CD8"
+
+data_name1="data23"
+data_name2="data29"
+data_dir1="CK_2016-06-23_01_CD8_mergingNEW2"
+data_dir2="CK_2016-06-29_01_CD8_merging2"
+file_metadata1="metadata_23_01.xlsx"
+file_metadata2="metadata_29_01_noHD10.xlsx"
+
+prefix_data1="23CD8_"
+prefix_data2="29CD8_"
+prefix_panel="01CD8_"
+prefix_pca="pca1_"
+
+# ----------------------------------------------------
+# 23 merging 3 + 29 merging 3
+# ----------------------------------------------------
+
+prefix_merging1="merging3_"
+prefix_merging2="merging3_"
+
+prefix_data_merging="noHD10_23CD8m3_29CD8m3_"
+
+
+./Analysis_block_8_merging_2datasets.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --new_data_dir ${new_data_dir} --frequencies_merged ${frequencies_merged} --expression_merged ${expression_merged} --runtsne_merged ${runtsne_merged} --plottsne_merged ${plottsne_merged} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --METADATA ${METADATA}
+
+
 
 
 ###############################################################################################################
@@ -333,6 +411,35 @@ do
   prefix_clust="cl${i}_"
   ./Analysis_block_10_cytokine_merging_2datasets_top_selection.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v3 ${cytokines_merging_v3} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_clust ${prefix_clust} --top_combinations ${top_combinations} --outdir "10_cytokines_merged_top_combinations"
 done
+
+
+# -----------------------------
+# Save the FCS files for each cluster for the validation
+# -----------------------------
+
+data_name="data23"
+data_dir="CK_2016-06-23_02_CD4_merging2"
+file_metadata="metadata_23_02.xlsx"
+file_panel="panel2CD4_23_cytokines_CM.xlsx"
+
+for i in 40
+do
+  prefix_clust="cl${i}_"
+  ./Analysis_block_3_cytokines_fcs_saving.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --PANELS ${PANELS} --new_data_dir ${new_data_dir} --cytokines_fcs_saving ${cytokines_fcs_saving} --data_name ${data_name} --data_dir ${data_dir} --file_metadata ${file_metadata} --file_panel ${file_panel} --prefix_data_merging ${prefix_data_merging} --prefix_clust ${prefix_clust} --outdir "10_cytokines_merged_top_combinations"
+done
+
+data_name="data29"
+data_dir="CK_2016-06-29_02_CD4_merging"
+file_metadata="metadata_29_02.xlsx"
+file_panel="panel2CD4_29_cytokines_CM.xlsx"
+
+for i in 40
+do
+  prefix_clust="cl${i}_"
+  ./Analysis_block_3_cytokines_fcs_saving.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --PANELS ${PANELS} --new_data_dir ${new_data_dir} --cytokines_fcs_saving ${cytokines_fcs_saving} --data_name ${data_name} --data_dir ${data_dir} --file_metadata ${file_metadata} --file_panel ${file_panel} --prefix_data_merging ${prefix_data_merging} --prefix_clust ${prefix_clust} --outdir "10_cytokines_merged_top_combinations"
+done
+
+
 
 # -----------------------------
 # EM+CM cluster
@@ -705,6 +812,34 @@ do
   prefix_clust="cl${i}_"
   ./Analysis_block_10_cytokine_merging_2datasets_top_selection.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v3 ${cd69_merging_v3} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --prefix_clust ${prefix_clust} --top_combinations ${top_combinations} --outdir "10_cd69_merged_top_combinations"
 done
+
+
+# -----------------------------
+# Save the FCS files for each cluster for the validation
+# -----------------------------
+
+data_name="data23"
+data_dir="CK_2016-06-23_02_CD4_merging2"
+file_metadata="metadata_23_02.xlsx"
+file_panel="panel2CD4_23_cytokines_CM.xlsx"
+
+for i in 40
+do
+  prefix_clust="cl${i}_"
+  ./Analysis_block_3_cytokines_fcs_saving.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --PANELS ${PANELS} --new_data_dir ${new_data_dir} --cytokines_fcs_saving ${cytokines_fcs_saving} --data_name ${data_name} --data_dir ${data_dir} --file_metadata ${file_metadata} --file_panel ${file_panel} --prefix_data_merging ${prefix_data_merging} --prefix_clust ${prefix_clust} --outdir "10_cd69_merged_top_combinations"
+done
+
+data_name="data29"
+data_dir="CK_2016-06-29_02_CD4_merging"
+file_metadata="metadata_29_02.xlsx"
+file_panel="panel2CD4_29_cytokines_CM.xlsx"
+
+for i in 40
+do
+  prefix_clust="cl${i}_"
+  ./Analysis_block_3_cytokines_fcs_saving.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --PANELS ${PANELS} --new_data_dir ${new_data_dir} --cytokines_fcs_saving ${cytokines_fcs_saving} --data_name ${data_name} --data_dir ${data_dir} --file_metadata ${file_metadata} --file_panel ${file_panel} --prefix_data_merging ${prefix_data_merging} --prefix_clust ${prefix_clust} --outdir "10_cd69_merged_top_combinations"
+done
+
 
 
 ###############################################################################################################
