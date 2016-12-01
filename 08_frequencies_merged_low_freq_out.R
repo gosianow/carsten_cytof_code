@@ -316,7 +316,7 @@ pval_name_list <- c("pval_NRvsR", "pval_NRvsR_base", "pval_NRvsR_tx", "pval_NRvs
 # write.table(pvs, file=file.path(outdir, paste0(prefix, "frequencies_pvs_", k, suffix, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 # ----------------------------------------
-# Read in the p-values and re-adjust them using qvalue()
+# Read in the p-values and re-adjust them using p.adjust()
 # ----------------------------------------
 
 pvs <- read.table(path_pvs, header = TRUE, sep = "\t", as.is = TRUE)

@@ -16,11 +16,12 @@ plottsne_merged=false
 cytokines_merging=false
 cytokines_merging_v2=false # based on clustering the two joint bimatrices
 cytokines_merging_v3=false # based on selecting the most occuring combinations
+cytokines_merging_v4=false # frequency analysis per cytokine
 pd1_merging_v2=false
 pd1_merging_v3=false
 cd69_merging_v2=false
 cd69_merging_v3=false
-cytokines_fcs_saving=true
+cytokines_fcs_saving=false
 
 ###############################################################################################################
 # Merging data 23 and 29 for panel 1
@@ -387,6 +388,12 @@ prefix_cytokines_cutoffs='cytCM_raw2_'
 prefix_data_merging="23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_"
 
 
+### cytokines_merging_v4
+
+./Analysis_block_10_cytokine_merging_2datasets_overall_freqs.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v4 ${cytokines_merging_v4} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --outdir "10_cytokines_merged_overall_freqs"
+
+
+
 for i in 20 30 40
 do
   som_dim=10
@@ -507,6 +514,12 @@ prefix_clsubset='Tmem_'
 prefix_cytokines_cutoffs='cytCM_raw2_'
 
 prefix_data_merging="23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_"
+
+
+### cytokines_merging_v4
+
+./Analysis_block_10_cytokine_merging_2datasets_overall_freqs.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v4 ${cytokines_merging_v4} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --outdir "10_cytokines_merged_overall_freqs"
+
 
 
 for i in 20 30 40
@@ -641,6 +654,12 @@ prefix_cytokines_cutoffs='cytCMnew_raw2_'
 prefix_data_merging="23_29_CD8_02CD8_pca1_merging2_Tmem_cytCMnew_raw2_"
 
 
+### cytokines_merging_v4
+
+./Analysis_block_10_cytokine_merging_2datasets_overall_freqs.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v4 ${cytokines_merging_v4} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --outdir "10_cytokines_merged_overall_freqs"
+
+
+
 for i in 20 30 40
 do
   som_dim=10
@@ -699,6 +718,11 @@ prefix_cytokines_cutoffs='cytCM_raw2_pd1_positive_'
 prefix_data_merging="23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_pd1_positive_"
 
 
+### cytokines_merging_v4
+
+./Analysis_block_10_cytokine_merging_2datasets_overall_freqs.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v4 ${cytokines_merging_v4} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --outdir "10_pd1_merged_overall_freqs"
+
+
 for i in 5 6 7
 do
   som_dim=$i
@@ -748,6 +772,11 @@ prefix_cytokines_cutoffs='cytCMnew_raw2_pd1_positive_'
 prefix_data_merging="23_29_CD8_02CD8_pca1_merging2_Tmem_cytCMnew_raw2_pd1_positive_"
 
 
+### cytokines_merging_v4
+
+./Analysis_block_10_cytokine_merging_2datasets_overall_freqs.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v4 ${cytokines_merging_v4} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --outdir "10_pd1_merged_overall_freqs"
+
+
 for i in 5 6 7
 do
   som_dim=$i
@@ -795,6 +824,11 @@ prefix_clsubset='Tmem_'
 prefix_cytokines_cutoffs='cytCM_raw2_cd69_positive_'
 
 prefix_data_merging="23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_"
+
+
+### cytokines_merging_v4
+
+./Analysis_block_10_cytokine_merging_2datasets_overall_freqs.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v4 ${cytokines_merging_v4} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --outdir "10_cd69_merged_overall_freqs"
 
 
 for i in 5 6 7
@@ -872,6 +906,12 @@ prefix_clsubset='Tmem_'
 prefix_cytokines_cutoffs='cytCM_raw2_cd69_positive_'
 
 prefix_data_merging="23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_"
+
+
+### cytokines_merging_v4
+
+./Analysis_block_10_cytokine_merging_2datasets_overall_freqs.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --METADATA ${METADATA} --new_data_dir ${new_data_dir} --cytokines_merging_v4 ${cytokines_merging_v4} --data_name1 ${data_name1} --data_name2 ${data_name2} --data_dir1 ${data_dir1} --data_dir2 ${data_dir2} --file_metadata1 ${file_metadata1} --file_metadata2 ${file_metadata2} --prefix_data1 ${prefix_data1} --prefix_data2 ${prefix_data2} --prefix_panel ${prefix_panel} --prefix_pca ${prefix_pca} --prefix_merging1 ${prefix_merging1} --prefix_merging2 ${prefix_merging2} --prefix_data_merging ${prefix_data_merging} --prefix_clsubset ${prefix_clsubset} --prefix_cytokines_cutoffs ${prefix_cytokines_cutoffs} --outdir "10_cd69_merged_overall_freqs"
+
 
 
 for i in 5 6 7
