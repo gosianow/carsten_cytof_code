@@ -617,12 +617,68 @@ do
 done
 
 
+# ----------------------------------------------------------------------------------------------------
+# Analysis of cytokines based on clustering
+# ----------------------------------------------------------------------------------------------------
 
-# --------------------------------------------------
+# ------------------------
+### Extract the Tmem cells
+
+file_metadata="metadata_23_02.xlsx"
+data_dir=('CK_2016-06-23_02_CD4_merging2' 'CK_2016-06-23_02_CD8_merging2')
+prefix_merging=('merging2_' 'merging2_') # name of merging from which the Tmem clusters are extracted
+
+prefix_data=('23CD4Tmem_' '23CD8Tmem_')
+prefix_panel=('02CD4_' '02CD8_')
+prefix_pca="pca1_"
+
+extract_cluster=("c('CM','EM','TE','TM')" "c('CM','EM','TE','TM')")
+extract_dir=('CK_2016-06-23_02_CD4_merging2_Tmem_merging2' 'CK_2016-06-23_02_CD8_merging2_Tmem_merging2')
+
+
+for i in 0 1
+do
+  ./Analysis_block_3_cluster_extracting.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cluster_extracting ${cluster_extracting} --METADATA ${METADATA} --file_metadata ${file_metadata} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_merging ${prefix_merging[$i]} --extract_cluster ${extract_cluster[$i]} --extract_dir ${extract_dir[$i]}
+done
+
+# ------------------------
+
+file_metadata="metadata_23_02.xlsx"
+
+rand_seed_consensus=1234
+nmetaclusts=20
+
+prefix_pca="pca1_"
+prefix_clust="cl20_"
+
+data_dir=('CK_2016-06-23_02_CD4_merging2_Tmem_merging2' 'CK_2016-06-23_02_CD8_merging2_Tmem_merging2')
+prefix_data=('23CD4Tmem_' '23CD8Tmem_')
+file_panel=('panel2_cytokines_CM.xlsx' 'panel2_cytokines_CM.xlsx')
+prefix_panel=('02CM_' '02CM_')
+pca_score_cutoff=(0 0)
+
+for i in 0 1
+do
+  ./Analysis_block_1_main.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --data_normalization ${data_normalization} --pcascores ${pcascores} --select_observables ${select_observables} --flowsom ${flowsom} --flowsom_validation ${flowsom_validation} --heatmaps ${heatmaps} --runtsne ${runtsne} --plottsne ${plottsne} --plottsne_expr ${plottsne_expr} --frequencies ${frequencies} --expression false --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust} --pca_score_cutoff ${pca_score_cutoff[$i]} --rand_seed_consensus ${rand_seed_consensus} --nmetaclusts ${nmetaclusts} --tsne_pmin ${tsne_pmin}
+done
+
+
+rand_seed_consensus=1234
+nmetaclusts=(4 7)
+prefix_clust=("cl4_" "cl7_")
+
+for i in 0 1
+do
+  ./Analysis_block_1_main.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --data_normalization false --pcascores false --select_observables false --flowsom ${flowsom} --flowsom_validation false --heatmaps ${heatmaps} --runtsne false --plottsne ${plottsne} --plottsne_expr false --frequencies ${frequencies} --expression false --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust[$i]} --pca_score_cutoff ${pca_score_cutoff[$i]} --rand_seed_consensus ${rand_seed_consensus} --nmetaclusts ${nmetaclusts[$i]}
+done
+
+
+
+# ----------------------------------------------------------------------------------------------------
 # Analysis of PD1+ and PD1- cells based on bimatrix
 # in CK_2016-06-23_02_CD4_merging2 and CK_2016-06-23_02_CD8_merging2
 # Use Analysis block 5
-# --------------------------------------------------
+# ----------------------------------------------------------------------------------------------------
 
 ### Analysis of cytokines for PD1+
 

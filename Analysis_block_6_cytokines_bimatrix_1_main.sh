@@ -91,7 +91,7 @@ if ${cytokines_bimatrix_main}; then
   mkdir -p $ROUT
   echo "$RWD"
 
-  ### Analysis based on different cutoffs for base and tx
+
   prefix_cytokines="${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}${prefix_clsubset}${prefix_cytokines_cutoffs}"
   prefix_clust="cl${nmetaclusts}_"
 
