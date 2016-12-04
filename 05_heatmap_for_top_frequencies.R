@@ -99,9 +99,14 @@ for(i in 1:length(pvs_list)){
   
   if(!is.na(adjp_cut)){
     keep_pvs <- datam[, paste0("adjp_", pvs_list[i])] <= adjp_cut & !is.na(datam[, paste0("adjp_", pvs_list[i])])
-    if(sum(keep_pvs, na.rm = TRUE) == 0)
-      next
     pdf_name <- gsub("\\.", "", as.character(adjp_cut))
+    if(sum(keep_pvs, na.rm = TRUE) == 0){
+      pdf(file.path(outdir, paste0(prefix, "top", pdf_name, "_pheatmap_", pvs_list[i],".pdf")))
+      plot(1, type="n", axes=F, xlab="", ylab="")
+      dev.off()
+      next
+    }
+    
   }
   
   if(!is.na(adjp_top)){
