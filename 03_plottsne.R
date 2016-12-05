@@ -79,6 +79,10 @@ if(!file.exists(outdir))
   dir.create(outdir, recursive = TRUE)
 
 
+if(!file.exists(path_rtsne_data))
+  stop(paste0("File ", path_rtsne_data, " does not exists!!!"))
+
+
 # ------------------------------------------------------------
 # Load metadata
 # ------------------------------------------------------------
@@ -210,6 +214,23 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
 pdf(file.path(outdir, paste0(prefix, "tSNEgroup", suffix, ".pdf")), width = pdf_width, height = pdf_height)
 print(ggp)
 dev.off()
+
+
+### Save numbers of cells in each cluster
+
+cell_count <- table(ggdf$cluster)
+
+cell_count <- data.frame(cluster = names(cell_count), cell_count = as.numeric(cell_count))
+
+write.table(cell_count, file = file.path(outdir, paste0(prefix, "tSNEone", suffix, ".xls")), quote = FALSE, sep = "\t", row.names = FALSE)
+
+
+cell_count <- table(ggdf$cluster, ggdf$group)
+
+cell_count <- data.frame(cluster = rownames(cell_count), as.data.frame.matrix(cell_count))
+
+write.table(cell_count, file = file.path(outdir, paste0(prefix, "tSNEgroup", suffix, ".xls")), quote = FALSE, sep = "\t", row.names = FALSE)
+
 
 
 # -----------------------------------

@@ -126,36 +126,36 @@ if ${cytokines_merging_v3}; then
 
   ### Assign cluster to the top frequent combinations of cytokines, the rest is droped
 
-  # echo ">>> 06_cytokines_bimatrix_top_selection_merged"
-  #
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' clust_prefix='${prefix_data_merging}${prefix_clust}' clust_outdir='${outdir}/01_clustering' path_data=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls') data_name=c('${data_name1}','${data_name2}') top_combinations=${top_combinations}" $RCODE/06_cytokines_bimatrix_top_selection_merged.R $ROUT/06_cytokines_bimatrix_top_selection_merged.Rout
-  # tail $ROUT/06_cytokines_bimatrix_top_selection_merged.Rout
-  #
-  #
-  # ### Heatmap for data23
-  #
-  # echo ">>> 02_heatmaps"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data_merging}${prefix_clust}${data_name1}_' heatmap_outdir='${outdir}/01_clustering' path_data='${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt' path_metadata='${METADATA}/${file_metadata1}'   path_clustering_observables='${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls' path_clustering='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_clustering.xls'  path_clustering_labels='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_clustering_labels.xls' path_marker_selection='$RWD/10_cytokines_merged/${prefix_data_merging}${prefix_clust}${data_name1}_marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE linkage='average'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-  # tail $ROUT/02_heatmaps.Rout
-  #
-  # ### Heatmap for data29
-  #
-  # echo ">>> 02_heatmaps"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data_merging}${prefix_clust}${data_name2}_' heatmap_outdir='${outdir}/01_clustering' path_data='${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt' path_metadata='${METADATA}/${file_metadata2}'   path_clustering_observables='${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls' path_clustering='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_clustering.xls'  path_clustering_labels='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_clustering_labels.xls' path_marker_selection='$RWD/${outdir}/${prefix_data_merging}${prefix_clust}${data_name2}_marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE linkage='average'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
-  # tail $ROUT/02_heatmaps.Rout
-  #
-  #
-  # ### Analysis of cluster frequencies - 3 responses
-  #
-  # echo ">>> 08_frequencies_merged"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='${outdir}/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' pdf_hight=8" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
-  # tail $ROUT/08_frequencies_merged.Rout
-  #
-  # ### Analysis of cluster frequencies - 2 responses
-  #
-  # echo ">>> 08_frequencies_merged"
-  # R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='${outdir}/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' pdf_hight=8" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
-  # tail $ROUT/08_frequencies_merged.Rout
+  echo ">>> 06_cytokines_bimatrix_top_selection_merged"
+  
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' clust_prefix='${prefix_data_merging}${prefix_clust}' clust_outdir='${outdir}/01_clustering' path_data=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls') data_name=c('${data_name1}','${data_name2}') top_combinations=${top_combinations}" $RCODE/06_cytokines_bimatrix_top_selection_merged.R $ROUT/06_cytokines_bimatrix_top_selection_merged.Rout
+  tail $ROUT/06_cytokines_bimatrix_top_selection_merged.Rout
+
+
+  ### Heatmap for data23
+
+  echo ">>> 02_heatmaps"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data_merging}${prefix_clust}${data_name1}_' heatmap_outdir='${outdir}/01_clustering' path_data='${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt' path_metadata='${METADATA}/${file_metadata1}'   path_clustering_observables='${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls' path_clustering='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_clustering.xls'  path_clustering_labels='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_clustering_labels.xls' path_marker_selection='$RWD/10_cytokines_merged/${prefix_data_merging}${prefix_clust}${data_name1}_marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE linkage='average'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+
+  ### Heatmap for data29
+
+  echo ">>> 02_heatmaps"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_data_merging}${prefix_clust}${data_name2}_' heatmap_outdir='${outdir}/01_clustering' path_data='${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt' path_metadata='${METADATA}/${file_metadata2}'   path_clustering_observables='${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls' path_clustering='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_clustering.xls'  path_clustering_labels='$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_clustering_labels.xls' path_marker_selection='$RWD/${outdir}/${prefix_data_merging}${prefix_clust}${data_name2}_marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE linkage='average'" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  tail $ROUT/02_heatmaps.Rout
+
+
+  ### Analysis of cluster frequencies - 3 responses
+
+  echo ">>> 08_frequencies_merged"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='${outdir}/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' pdf_hight=8" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  tail $ROUT/08_frequencies_merged.Rout
+
+  ### Analysis of cluster frequencies - 2 responses
+
+  echo ">>> 08_frequencies_merged"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='${outdir}/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' pdf_hight=8" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+  tail $ROUT/08_frequencies_merged.Rout
 
 
 
