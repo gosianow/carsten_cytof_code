@@ -164,8 +164,6 @@ freq_out$cluster <- 1:nrow(freq_out)
 
 freq_out <- freq_out[, c("cluster", "label", md$shortname)]
 
-# if(any(!complete.cases(freq_out)))
-#   stop(paste0("Files: ", paste(basename(path_counts), collapse = ", "), " have different clusters!!!"))
 if(all(!complete.cases(freq_out)))
   stop("There is no common cluster in the merged data sets!")
 

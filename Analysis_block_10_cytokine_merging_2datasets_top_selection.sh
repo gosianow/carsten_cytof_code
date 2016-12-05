@@ -127,7 +127,7 @@ if ${cytokines_merging_v3}; then
   ### Assign cluster to the top frequent combinations of cytokines, the rest is droped
 
   echo ">>> 06_cytokines_bimatrix_top_selection_merged"
-  
+
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' clust_prefix='${prefix_data_merging}${prefix_clust}' clust_outdir='${outdir}/01_clustering' path_data=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls') data_name=c('${data_name1}','${data_name2}') top_combinations=${top_combinations}" $RCODE/06_cytokines_bimatrix_top_selection_merged.R $ROUT/06_cytokines_bimatrix_top_selection_merged.Rout
   tail $ROUT/06_cytokines_bimatrix_top_selection_merged.Rout
 

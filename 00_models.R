@@ -87,7 +87,7 @@ test_wilcoxon <- function(data, md){
 ### Fit a LM with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
-fit_lm_interglht <- function(data, md, method = "lm", formula, K){
+fit_lm_interglht <- function(data, md, method = "lm", formula, K, skippNAs = TRUE){
   
   contrast_names <- rownames(K)
   
@@ -109,7 +109,7 @@ fit_lm_interglht <- function(data, md, method = "lm", formula, K){
       return(out)
     
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
-    if(any(NAs))
+    if(any(NAs) && skippNAs)
       return(out)
       
       
@@ -188,7 +188,7 @@ fit_lm_interglht <- function(data, md, method = "lm", formula, K){
 ### Fit a lmer with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
-fit_lmer_interglht <- function(data, md, formula, K){
+fit_lmer_interglht <- function(data, md, formula, K, skippNAs = TRUE){
   
   contrast_names <- rownames(K)
   
@@ -208,7 +208,7 @@ fit_lmer_interglht <- function(data, md, formula, K){
       return(out)
     
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
-    if(any(NAs))
+    if(any(NAs) && skippNAs)
       return(out)
     
     fit_tmp <- lmer(formula, data = data_tmp)
