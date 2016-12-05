@@ -27,22 +27,24 @@ library(ConsensusClusterPlus)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# heatmap_prefix='23_01_pca1_cl20_raw_'
-# heatmap_outdir='030_heatmaps'
-# path_data='010_data/23_01_expr_raw.rds'
-# path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
-# path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
-# path_marker_selection='030_heatmaps/23_01_pca1_cl20_marker_selection.txt'
-# aggregate_fun='median'
-# pheatmap_palette='YlGnBu' # RdYlBu
-# pheatmap_palette_rev=FALSE
-# pheatmap_scale=TRUE
-# extra_path_data='010_data/23_01_expr_norm.rds'
-# extra_pheatmap_palette='RdYlBu'
-# extra_pheatmap_palette_rev=TRUE
-# extra_suffix='_norm'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+heatmap_prefix='23_01_pca1_cl20_raw_'
+heatmap_outdir='030_heatmaps'
+path_data='010_data/23_01_expr_raw.rds'
+path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
+path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
+path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
+path_marker_selection='030_heatmaps/23_01_pca1_cl20_marker_selection.txt'
+aggregate_fun='median'
+pheatmap_palette='YlGnBu' # RdYlBu
+pheatmap_palette_rev=FALSE
+pheatmap_scale=TRUE
+extra_path_data='010_data/23_01_expr_norm.rds'
+extra_pheatmap_palette='Greys'
+extra_pheatmap_palette_rev=FALSE
+extra_suffix='_norm'
+
+linkage <- "average"
 
 ##############################################################################
 # Read in the arguments
@@ -66,6 +68,8 @@ outdir <- heatmap_outdir
 
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
+
+
 
 if(all(!grepl("linkage=", args))){
   linkage <- "average"
@@ -160,166 +164,76 @@ e <- expr[expr[, "cell_id"] %in% common_cells, fcs_colnames]
 clust <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
 
 
-# ------------------------------------------------------------
-# Get the median expression
-# ------------------------------------------------------------
-
-colnames(e) <- fcs_panel$Antigen
-
-a <- aggregate(e, by = list(clust), FUN = aggregate_fun)
-
-# get cluster frequencies
-freq_clust <- table(clust)
+samp_org <- samp
+e_org <- e
+clust_org <- clust
 
 
-### Save cluster frequencies and the median expression
+subset_samp <- list()
+subset_samp[[1]] <- unique(samp)
+subset_samp[[2]] <- unique(samp)[grep("_HD", unique(samp))]
 
-clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), a[, fcs_panel$Antigen[c(scols, xcols)]])
-
-write.table(clusters_out, file.path(outdir, paste0(prefix, "clusters.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-
-
-# ------------------------------------------------------------
-# pheatmaps of median expression
-# ------------------------------------------------------------
-
-### Cluster clustering is based on the markers that were used for the main clustering
-expr <- as.matrix(a[, fcs_panel$Antigen[scols]])
-rownames(expr) <- labels$label
-
-cluster_rows <- hclust(dist(expr), method = linkage)
+suffix_subset <- c("", "_HD")
 
 
-### Use all markers for plotting
-expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
-rownames(expr) <- labels$label
-
-labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
-labels_col <- colnames(expr)
-
-if(pheatmap_palette_rev){
-  color <- colorRampPalette(rev(brewer.pal(n = 8, name = pheatmap_palette)))(100)
-}else{
-  color <- colorRampPalette(brewer.pal(n = 8, name = pheatmap_palette))(100)
-}
-
-
-pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust.pdf")))
-
-# pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all.pdf")))
-
-
-## Plot only the selected markers
-if(!is.null(marker_selection)){
-  expr_sub <- expr[, marker_selection, drop = FALSE]
-  labels_col_sub <- colnames(expr_sub)
+### Plot heatmaps based on all the data and HD samples only
+for(ii in 1:length(subset_samp)){
   
-  pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust.pdf")))
+  cells2keep <- samp_org %in% subset_samp[[ii]]
   
-  # pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1.pdf")))
+  samp <- samp_org[cells2keep]
+  e <- e_org[cells2keep, , drop = FALSE]
+  clust <- clust_org[cells2keep]
   
-}
-
-
-
-# ------------------------------------------------------------
-# pheatmaps of median expression scalled by marker (column)
-# ------------------------------------------------------------
-
-if(pheatmap_scale){
-  
-  ## scalled to 01
-  # expr_scaled <- apply(expr, 2, function(x){(x-min(x))/(max(x)-min(x))})
-  
-  ## scalled to mean = 0, sd = 1
-  expr_scaled <- apply(expr, 2, function(x){(x-mean(x))/sd(x)})
-  th <- 2.5
-  expr_scaled[expr_scaled > th] <- th
-  expr_scaled[expr_scaled < -th] <- -th
-  breaks = seq(from = -th, to = th, length.out = 101)
-  legend_breaks = seq(from = -round(th), to = round(th), by = 1)
-  
-  color <- colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlGn")))(100)
-  
-  pheatmap(expr_scaled, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust_scale.pdf")))
-  
-  # pheatmap(expr_scaled, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_scale.pdf")))
-  
-  
-  ## Plot only the selected markers
-  if(!is.null(marker_selection)){
-    expr_sub <- expr_scaled[, marker_selection, drop = FALSE]
-    labels_col_sub <- colnames(expr_sub)
-    
-    pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust_scale.pdf")))
-    
-    # pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_scale.pdf")))
-    
-  }
-  
-  
-}
-
-
-
-# ------------------------------------------------------------
-# Plot phetmaps based on the EXTRA data - works only if the extra arguments are specified!!!
-# Had to do this way because I want to plot the 01 normalized data, but I want to keep row clustering from the raw data
-# ------------------------------------------------------------
-
-
-if(any(grepl("extra_", args))){
-  
-  
-  # ------------------------------------------------------------
-  # Load extra data
-  # ------------------------------------------------------------
-  
-  # read expression data
-  if(grepl(".txt", extra_path_data)){
-    expr_extra <- read.table(extra_path_data, header = TRUE, sep = "\t", as.is = TRUE)
-  }
-  if(grepl(".rds", extra_path_data)){
-    expr_extra <- readRDS(extra_path_data)
-  }
-  
-  
-  # ------------------------------------------------------------
-  # Keep expression and clustering results for the cells that are common in both
-  # ------------------------------------------------------------
-  
-  common_cells <- intersect(clustering[, "cell_id"], expr_extra[, "cell_id"])
-  
-  e.ex <- expr_extra[expr_extra[, "cell_id"] %in% common_cells, fcs_colnames]
-  clust.ex <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
+  suffix <- suffix_subset[ii]
   
   # ------------------------------------------------------------
   # Get the median expression
   # ------------------------------------------------------------
   
-  colnames(e.ex) <- fcs_panel$Antigen
+  colnames(e) <- fcs_panel$Antigen
   
-  a.ex <- aggregate(e.ex, by = list(clust.ex), FUN = aggregate_fun)
+  a <- aggregate(e, by = list(clust), FUN = aggregate_fun)
+  
+  # get cluster frequencies
+  freq_clust <- table(clust)
+  
+  
+  ### Save cluster frequencies and the median expression
+  
+  clusters_out <- data.frame(cluster = names(freq_clust), label = labels[names(freq_clust), "label"], counts = as.numeric(freq_clust), frequencies = as.numeric(freq_clust)/sum(freq_clust), a[, fcs_panel$Antigen[c(scols, xcols)]])
+  
+  write.table(clusters_out, file.path(outdir, paste0(prefix, "clusters", suffix, ".xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+  
   
   # ------------------------------------------------------------
   # pheatmaps of median expression
   # ------------------------------------------------------------
   
+  ### Cluster clustering is based on the markers that were used for the main clustering
+  expr <- as.matrix(a[, fcs_panel$Antigen[scols]])
+  rownames(expr) <- labels$label
+  
+  cluster_rows <- hclust(dist(expr), method = linkage)
+  
+  
   ### Use all markers for plotting
-  expr <- as.matrix(a.ex[, fcs_panel$Antigen[c(scols, xcols)]])
+  expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
+  rownames(expr) <- labels$label
   
   labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
   labels_col <- colnames(expr)
   
-  if(extra_pheatmap_palette_rev){
-    color <- colorRampPalette(rev(brewer.pal(n = 8, name = extra_pheatmap_palette)))(100)
+  if(pheatmap_palette_rev){
+    color <- colorRampPalette(rev(brewer.pal(n = 8, name = pheatmap_palette)))(100)
   }else{
-    color <- colorRampPalette(brewer.pal(n = 8, name = extra_pheatmap_palette))(100)
+    color <- colorRampPalette(brewer.pal(n = 8, name = pheatmap_palette))(100)
   }
   
-  pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust", extra_suffix, ".pdf")))
   
-  # pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all", extra_suffix, ".pdf")))
+  pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust", suffix, ".pdf")))
+  
+  # pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all", suffix, ".pdf")))
   
   
   ## Plot only the selected markers
@@ -327,56 +241,180 @@ if(any(grepl("extra_", args))){
     expr_sub <- expr[, marker_selection, drop = FALSE]
     labels_col_sub <- colnames(expr_sub)
     
-    pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust", extra_suffix, ".pdf")))
+    pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust", suffix, ".pdf")))
     
-    # pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1", extra_suffix, ".pdf")))
+    # pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1", suffix, ".pdf")))
     
   }
   
   
   
+  # ------------------------------------------------------------
+  # pheatmaps of median expression scalled by marker (column)
+  # ------------------------------------------------------------
+  
+  if(pheatmap_scale){
+    
+    ## scalled to 01
+    # expr_scaled <- apply(expr, 2, function(x){(x-min(x))/(max(x)-min(x))})
+    
+    ## scalled to mean = 0, sd = 1
+    expr_scaled <- apply(expr, 2, function(x){(x-mean(x))/sd(x)})
+    th <- 2.5
+    expr_scaled[expr_scaled > th] <- th
+    expr_scaled[expr_scaled < -th] <- -th
+    breaks = seq(from = -th, to = th, length.out = 101)
+    legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+    
+    color <- colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlGn")))(100)
+    
+    pheatmap(expr_scaled, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust_scale", suffix, ".pdf")))
+    
+    # pheatmap(expr_scaled, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_scale", suffix, ".pdf")))
+    
+    
+    ## Plot only the selected markers
+    if(!is.null(marker_selection)){
+      expr_sub <- expr_scaled[, marker_selection, drop = FALSE]
+      labels_col_sub <- colnames(expr_sub)
+      
+      pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust_scale", suffix, ".pdf")))
+      
+      # pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_scale", suffix, ".pdf")))
+      
+    }
+    
+    
+  }
+  
+  
+  
+  # ------------------------------------------------------------
+  # Plot phetmaps based on the EXTRA data - works only if the extra arguments are specified!!!
+  # Had to do this way because I want to plot the 01 normalized data, but I want to keep row clustering from the raw data
+  # ------------------------------------------------------------
+  
+  
+  if(any(grepl("extra_", args))){
+    
+    
+    # ------------------------------------------------------------
+    # Load extra data
+    # ------------------------------------------------------------
+    
+    # read expression data
+    if(grepl(".txt", extra_path_data)){
+      expr_extra <- read.table(extra_path_data, header = TRUE, sep = "\t", as.is = TRUE)
+    }
+    if(grepl(".rds", extra_path_data)){
+      expr_extra <- readRDS(extra_path_data)
+    }
+    
+    
+    # ------------------------------------------------------------
+    # Keep expression and clustering results for the cells that are common in both
+    # ------------------------------------------------------------
+    
+    common_cells <- intersect(clustering[, "cell_id"], expr_extra[, "cell_id"])
+    
+    samp.ex <- expr_extra[expr_extra[, "cell_id"] %in% common_cells, "sample_id"]
+    e.ex <- expr_extra[expr_extra[, "cell_id"] %in% common_cells, fcs_colnames]
+    clust.ex <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
+    
+    cells2keep <- samp.ex %in% subset_samp[[ii]]
+    
+    samp.ex <- samp.ex[cells2keep]
+    e.ex <- e.ex[cells2keep, , drop = FALSE]
+    clust.ex <- clust.ex[cells2keep]
+    
+    # ------------------------------------------------------------
+    # Get the median expression
+    # ------------------------------------------------------------
+    
+    colnames(e.ex) <- fcs_panel$Antigen
+    
+    a.ex <- aggregate(e.ex, by = list(clust.ex), FUN = aggregate_fun)
+    
+    # ------------------------------------------------------------
+    # pheatmaps of median expression
+    # ------------------------------------------------------------
+    
+    ### Use all markers for plotting
+    expr <- as.matrix(a.ex[, fcs_panel$Antigen[c(scols, xcols)]])
+    
+    labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
+    labels_col <- colnames(expr)
+    
+    if(extra_pheatmap_palette_rev){
+      color <- colorRampPalette(rev(brewer.pal(n = 8, name = extra_pheatmap_palette)))(100)
+    }else{
+      color <- colorRampPalette(brewer.pal(n = 8, name = extra_pheatmap_palette))(100)
+    }
+    
+    pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all_row_clust", extra_suffix, suffix, ".pdf")))
+    
+    # pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_all", extra_suffix, suffix, ".pdf")))
+    
+    
+    ## Plot only the selected markers
+    if(!is.null(marker_selection)){
+      expr_sub <- expr[, marker_selection, drop = FALSE]
+      labels_col_sub <- colnames(expr_sub)
+      
+      pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1_row_clust", extra_suffix, suffix, ".pdf")))
+      
+      # pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix, "pheatmap_s1", extra_suffix, suffix, ".pdf")))
+      
+    }
+    
+    
+    
+  }
+  
+  
+  
+  # ------------------------------------------------------------
+  # Plot expression of markers in each cluster - distros plots
+  # ------------------------------------------------------------
+  
+  
+  plotting_wrapper <- function(e, suffix){
+    
+    df <- data.frame(e, clust = clust, check.names = FALSE)
+    dfm <- melt(df, id.vars = c("clust"))
+    
+    dfm$clust <- factor(dfm$clust, levels = labels$cluster[cluster_rows$order], labels = paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")[cluster_rows$order])
+    
+    ggp <- ggplot(dfm, aes(x=value, y = ..scaled..)) +
+      geom_density(adjust=1, fill = "blue", alpha = 0.3) +
+      facet_grid(clust ~ variable, scales = "free") +
+      xlab("Marker expression") +
+      ylab("Scaled density") +
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 8), strip.text = element_text(size = 9)) 
+    
+    pdf(file.path(outdir, paste0(prefix, "distros", suffix, ".pdf")), w = ncol(e)*1.8, h = nrow(labels)*1.6)
+    print(ggp)
+    dev.off()
+    
+    return(NULL)
+    
+  }
+  
+  
+  # ## Expression, included observables
+  # plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = paste0("_in", suffix))
+  # 
+  # ## Expression, excluded observables
+  # if(length(xcols) > 0){
+  #   plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = paste0("_ex", suffix))
+  # }
+  
+  
+  
+  
+  
 }
-
-
-
-
-# ------------------------------------------------------------
-# Plot expression of markers in each cluster - distros plots
-# ------------------------------------------------------------
-
-
-plotting_wrapper <- function(e, suffix){
-  
-  df <- data.frame(e, clust = clust, check.names = FALSE)
-  dfm <- melt(df, id.vars = c("clust"))
-  
-  dfm$clust <- factor(dfm$clust, levels = labels$cluster[cluster_rows$order], labels = paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")[cluster_rows$order])
-
-  ggp <- ggplot(dfm, aes(x=value, y = ..scaled..)) +
-    geom_density(adjust=1, fill = "blue", alpha = 0.3) +
-    facet_grid(clust ~ variable, scales = "free") +
-    xlab("Marker expression") +
-    ylab("Scaled density") +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.text = element_text(size = 8), strip.text = element_text(size = 9)) 
-  
-  pdf(file.path(outdir, paste0(prefix, "distros", suffix, ".pdf")), w = ncol(e)*1.8, h = nrow(labels)*1.6)
-  print(ggp)
-  dev.off()
-  
-  return(NULL)
-  
-}
-
-
-## Expression, included observables
-plotting_wrapper(e = e[, fcs_panel$Antigen[scols]], suffix = "_in")
-
-## Expression, excluded observables
-if(length(xcols) > 0){
-  plotting_wrapper(e = e[, fcs_panel$Antigen[xcols]], suffix = "_ex")
-}
-
 
 
 
