@@ -9,8 +9,8 @@ plot_frequencies_merged <- function(){
   
   
   ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group, shape = data, fill = group)) +
-    geom_boxplot(width = 1, position = position_dodge(width = 0.9), outlier.colour = NA) +
-    geom_point(size=1.5, alpha = 0.8, position = position_jitterdodge(jitter.width = 1.2, jitter.height = 0, dodge.width = 0.9)) +
+    geom_boxplot(width = 0.95, position = position_dodge(width = 0.95), outlier.colour = NA) +
+    geom_point(size=1.5, alpha = 0.8, position = position_jitterdodge(jitter.width = 0.95, jitter.height = 0, dodge.width = 0.95)) +
     theme_bw() +
     ylab("Frequency") +
     xlab("") +
@@ -43,8 +43,8 @@ plot_frequencies_merged <- function(){
     df <- ggdf[ggdf$cluster == clusters[i], , drop = FALSE]
     
     ggp[[i]] <- ggplot(df, aes(x = group, y = prop, color = group, shape = data, fill = group)) +
-      geom_boxplot(width = 1, position = position_dodge(width = 0.9), outlier.colour = NA) +
-      geom_point(size=3, alpha = 0.8, position = position_jitterdodge(jitter.width = 1.2, jitter.height = 0, dodge.width = 0.9)) +
+      geom_boxplot(width = 0.95, position = position_dodge(width = 0.95), outlier.colour = NA) +
+      geom_point(size=3, alpha = 0.8, position = position_jitterdodge(jitter.width = 0.95, jitter.height = 0, dodge.width = 0.95)) +
       ggtitle(clusters[i]) +
       theme_bw() +
       ylab("Frequency") +
@@ -68,8 +68,10 @@ plot_frequencies_merged <- function(){
     print(ggp[[i]])
   dev.off()
   
+  
   # ------------------------------------
   # plot all clusters in one pdf; colors per response; separate pdf for base and tx; one boxplot + points
+  
   
   days <- levels(ggdf$day)
   
@@ -79,8 +81,8 @@ plot_frequencies_merged <- function(){
     df <- ggdf[ggdf$day == days[i], , drop = FALSE]
     
     ggp <- ggplot(df) +
-      geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 1, position = position_dodge(width = 0.9), outlier.colour = NA) +
-      geom_point(aes(x = cluster, y = prop, color = group, shape = data), size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 1.2, jitter.height = 0, dodge.width = 0.9)) +
+      geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 0.95, position = position_dodge(width = 0.95), outlier.colour = NA) +
+      geom_point(aes(x = cluster, y = prop, color = group, shape = data), size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 0.95, jitter.height = 0, dodge.width = 0.95)) +
       theme_bw() +
       ylab("Frequency") +
       xlab("") +
@@ -118,8 +120,8 @@ plot_frequencies_merged <- function(){
     df <- ggdf[ggdf$day == days[i], , drop = FALSE]
     
     ggp <- ggplot(df) +
-      geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 1, position = position_dodge(width = 0.9), outlier.colour = NA) +
-      geom_point(aes(x = cluster, y = prop, color = group, shape = data), size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 1.2, jitter.height = 0, dodge.width = 0.9)) +
+      geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 0.95, position = position_dodge(width = 0.95), outlier.colour = NA) +
+      geom_point(aes(x = cluster, y = prop, color = group, shape = data), size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 0.95, jitter.height = 0, dodge.width = 0.95)) +
       theme_bw() +
       ylab("Frequency") +
       xlab("") +
@@ -160,8 +162,8 @@ plot_frequencies_merged <- function(){
       df <- ggdf[ggdf$day == days[i] & ggdf$cluster == clusters[j], , drop = FALSE]
       
       ggp[[j]] <- ggplot(df) +
-        geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 1, position = position_dodge(width = 0.9), outlier.colour = NA) +
-        geom_point(aes(x = cluster, y = prop, color = group, shape = data), size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 1.2, jitter.height = 0, dodge.width = 0.9)) +
+        geom_boxplot(aes(x = cluster, y = prop, color = group, fill = group), width = 0.95, position = position_dodge(width = 0.95), outlier.colour = NA) +
+        geom_point(aes(x = cluster, y = prop, color = group, shape = data), size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 0.95, jitter.height = 0, dodge.width = 0.95)) +
         theme_bw() +
         ggtitle(clusters[j]) +
         ylab("Frequency") +

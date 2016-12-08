@@ -18,7 +18,7 @@ plot_expression_merged <- function(){
     ds <- ggds[ggds$cluster == clusters[i], , drop = FALSE]
     
     ggp[[i]] <- ggplot(df, aes(x = group, y = expr, color = group, shape = data)) +
-      geom_point(size=2.5, position = position_jitterdodge(jitter.width = 3, jitter.height = 0, dodge.width = 0.7)) +
+      geom_point(size=2, position = position_jitterdodge(jitter.width = 1, jitter.height = 0, dodge.width = 0.7)) +
       geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean, ymax=mean), color='black', width=0.4, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7)) +
       geom_errorbar(data=ds, aes(x=group, y=mean, ymin=mean-sd, ymax=mean+sd), color='black', width=0.25, position = position_jitterdodge(jitter.width = 0, jitter.height = 0, dodge.width = 0.7)) +
       facet_wrap(~ marker, scales = "free") +
