@@ -116,20 +116,28 @@ fi
 
 if ${cytokines_merging_v4}; then
 
-  ### Analysis of individual cytokine frequencies - 3 responses
+  FDR_cutoff=(0.05 0.1)
+  suffix=('_top005' '_top01')
 
-  echo ">>> 08_frequencies_merged_bimatrix"
+  for j in 0 1
+  do
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='${outdir}/03_frequencies_auto' path_data=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls') path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' pdf_hight=4" $RCODE/08_frequencies_merged_bimatrix.R $ROUT/08_frequencies_merged_bimatrix.Rout
-  tail $ROUT/08_frequencies_merged_bimatrix.Rout
+    ### Analysis of individual cytokine frequencies - 3 responses
+
+    echo ">>> 08_frequencies_merged_bimatrix"
+
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='${outdir}/03_frequencies_auto' path_data=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls') path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' pdf_hight=4 FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}'" $RCODE/08_frequencies_merged_bimatrix.R $ROUT/08_frequencies_merged_bimatrix.Rout
+    tail $ROUT/08_frequencies_merged_bimatrix.Rout
 
 
-  ### Analysis of individual cytokine frequencies - 3 responses
+    ### Analysis of individual cytokine frequencies - 2 responses
 
-  echo ">>> 08_frequencies_merged_bimatrix"
+    echo ">>> 08_frequencies_merged_bimatrix"
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='${outdir}/03_frequencies_auto_2responses' path_data=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls') path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' pdf_hight=4" $RCODE/08_frequencies_merged_bimatrix.R $ROUT/08_frequencies_merged_bimatrix.Rout
-  tail $ROUT/08_frequencies_merged_bimatrix.Rout
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='${outdir}/03_frequencies_auto_2responses' path_data=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}bimatrix.txt') path_clustering_observables=c('${RWD_MAIN}/${data_dir1}/01_clustering/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls','${RWD_MAIN}/${data_dir2}/01_clustering/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}${prefix_clsubset}${prefix_cytokines_cutoffs}clustering_observables.xls') path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' pdf_hight=4 FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}'" $RCODE/08_frequencies_merged_bimatrix.R $ROUT/08_frequencies_merged_bimatrix.Rout
+    tail $ROUT/08_frequencies_merged_bimatrix.Rout
+
+  done
 
 
 fi

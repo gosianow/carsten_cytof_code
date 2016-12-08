@@ -167,7 +167,6 @@ if ${cytokines_merging_v3}; then
   tail $ROUT/05_heatmap_for_top_frequencies.Rout
 
   ## - 2 responses
-
   echo ">>> 05_heatmap_for_top_frequencies"
   R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='${outdir}/03_frequencies_auto_2responses'  path_pvs='${outdir}/03_frequencies_auto_2responses/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' path_clusters='${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}clusters.xls' model2fit='glmer_binomial_interglht' pvs_list=c('NRvsR','NRvsR_base','NRvsR_tx') adjp_top=NA adjp_cut=0.1 pheatmap_palette='Greys' pheatmap_palette_rev=FALSE" $RCODE/05_heatmap_for_top_frequencies.R $ROUT/05_heatmap_for_top_frequencies.Rout
   tail $ROUT/05_heatmap_for_top_frequencies.Rout
@@ -178,19 +177,44 @@ if ${cytokines_merging_v3}; then
   for i in "NRvsR" "NRvsR_base" "NRvsR_tx"
   do
     ## - 3 responses
-
     echo ">>> 08_frequencies_merged"
     R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top01_selection_${i}_' freq_outdir='${outdir}/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' pdf_hight=8 plot_only=TRUE path_cluster_selection='${outdir}/03_frequencies_auto/${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top01_selection_${i}.txt' if_no_cluster_selection='plot_blank'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
     tail $ROUT/08_frequencies_merged.Rout
 
     ## - 2 responses
-
     echo ">>> 08_frequencies_merged"
     R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top01_selection_${i}_' freq_outdir='${outdir}/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' pdf_hight=8 plot_only=TRUE path_cluster_selection='${outdir}/03_frequencies_auto_2responses/${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top01_selection_${i}.txt' if_no_cluster_selection='plot_blank'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
     tail $ROUT/08_frequencies_merged.Rout
   done
 
 
+  ### Plot heatmaps for the top significant clusters - adjusted p-value < 0.05
+
+  ## - 3 responses
+  echo ">>> 05_heatmap_for_top_frequencies"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='${outdir}/03_frequencies_auto'  path_pvs='${outdir}/03_frequencies_auto/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' path_clusters='${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}clusters.xls' model2fit='glmer_binomial_interglht' pvs_list=c('NRvsR','NRvsR_base','NRvsR_tx') adjp_top=NA adjp_cut=0.05 pheatmap_palette='Greys' pheatmap_palette_rev=FALSE" $RCODE/05_heatmap_for_top_frequencies.R $ROUT/05_heatmap_for_top_frequencies.Rout
+  tail $ROUT/05_heatmap_for_top_frequencies.Rout
+
+  ## - 2 responses
+  echo ">>> 05_heatmap_for_top_frequencies"
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}' freq_outdir='${outdir}/03_frequencies_auto_2responses'  path_pvs='${outdir}/03_frequencies_auto_2responses/${prefix_data_merging}${prefix_clust}frequencies_pvs_glmer_binomial_interglht.xls' path_clusters='${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}clusters.xls' model2fit='glmer_binomial_interglht' pvs_list=c('NRvsR','NRvsR_base','NRvsR_tx') adjp_top=NA adjp_cut=0.05 pheatmap_palette='Greys' pheatmap_palette_rev=FALSE" $RCODE/05_heatmap_for_top_frequencies.R $ROUT/05_heatmap_for_top_frequencies.Rout
+  tail $ROUT/05_heatmap_for_top_frequencies.Rout
+
+
+  ### Plot frequencies for the top significant clusters -  adjusted p-value < 0.05
+
+  for i in "NRvsR" "NRvsR_base" "NRvsR_tx"
+  do
+    ## - 3 responses
+    echo ">>> 08_frequencies_merged"
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top005_selection_${i}_' freq_outdir='${outdir}/03_frequencies_auto' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' pdf_hight=8 plot_only=TRUE path_cluster_selection='${outdir}/03_frequencies_auto/${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top005_selection_${i}.txt' if_no_cluster_selection='plot_blank'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+    tail $ROUT/08_frequencies_merged.Rout
+
+    ## - 2 responses
+    echo ">>> 08_frequencies_merged"
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top005_selection_${i}_' freq_outdir='${outdir}/03_frequencies_auto_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name1}_counts.xls','$RWD/${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name2}_counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' pdf_hight=8 plot_only=TRUE path_cluster_selection='${outdir}/03_frequencies_auto_2responses/${prefix_data_merging}${prefix_clust}frequencies_glmer_binomial_interglht_top005_selection_${i}.txt' if_no_cluster_selection='plot_blank'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+    tail $ROUT/08_frequencies_merged.Rout
+  done
 
 
 
