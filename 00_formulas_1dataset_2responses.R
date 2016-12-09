@@ -12,6 +12,7 @@ if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), 
   formula_glm_binomial <- cbind(y, total-y) ~ response + day + response:day
   formula_glm_beta <- y/total ~ response + day + response:day
   formula_glmer_binomial <- y/total ~ response + day + response:day + (1|patient_id)
+  formula_glmer_binomial_01 <- y ~ response + day + response:day + (1|patient_id)
   
   data_tmp <- data.frame(y = 1:nrow(md), md)
   mm <- model.matrix(formula_lm, data = data_tmp)
@@ -42,6 +43,8 @@ if(identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), 
   formula_glm_binomial <- cbind(y, total-y) ~ response
   formula_glm_beta <- y/total ~ response
   formula_glmer_binomial <- y/total ~ response + (1|patient_id)
+  formula_glmer_binomial_01 <- y ~ response + (1|patient_id)
+  
   
   ## create contrasts
   contrast_names <- c("NRvsR_base")

@@ -503,17 +503,16 @@ fit_glmer_interglht <- function(data, md, family = "binomial", formula, K, skipp
 
 fit_glmer_interglht_01 <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
   
-  ntot <- colSums(data[, md$shortname, drop = FALSE], na.rm = TRUE)
   contrast_names <- rownames(K)
   
   ### Fit the GLM
   fit <- lapply(1:nrow(data), function(i){
-    # i = 1
+    # i = 2
     print(i)
     
     y <- data[i, md$shortname]
     NAs <- is.na(y)
-    data_tmp <- data.frame(y = as.numeric(y), total = as.numeric(ntot), md)[!NAs, , drop = FALSE]
+    data_tmp <- data.frame(y = as.numeric(y), md)[!NAs, , drop = FALSE]
     
     out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
     colnames(out) <- c("coeff", "pval")
@@ -538,7 +537,7 @@ fit_glmer_interglht_01 <- function(data, md, family = "binomial", formula, K, sk
     
     ## fit contrasts one by one
     out <- t(apply(K, 1, function(k){
-      # k = K[2, ]
+      # k = K[1, ]
       
       contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
       summ_tmp <- summary(contr_tmp)

@@ -15,7 +15,6 @@ library(pheatmap)
 library(gtools) # for logit
 
 
-
 rwd <- "/Users/gosia/Dropbox/UZH/carsten_cytof/Patientdata/"
 
 setwd(rwd)
@@ -266,6 +265,49 @@ rownames(data_bi) <- NULL
 
 
 # ----------------------------------------------------------
+# Plot features stratified by day and response
+# ----------------------------------------------------------
+
+ggdf <- melt(data_bi, id.vars = c("cluster", "label", "marker"), value.name = "expr", variable.name = "sample")
+
+## add group info
+mm <- match(ggdf$sample, md$shortname)
+ggdf$day <- factor(md$day[mm])
+ggdf$response <- factor(md$response[mm])
+ggdf$group <- interaction(ggdf$day, ggdf$response, lex.order = TRUE, sep = "_")
+ggdf$marker <- factor(ggdf$marker, levels = vars_bi)
+
+ggdf$expr <- factor(ggdf$expr, levels = c(1, 0))
+
+ggdf <- ggdf[complete.cases(ggdf), ]
+
+# ------------------------------------
+
+ggp <- ggplot(ggdf, aes(x = group, color = group, fill = expr)) +
+  geom_bar() +
+  theme_bw() +
+  ylab("") +
+  xlab("") +
+  facet_wrap(~ marker, scale = "fixed") +
+  theme(axis.text.x = element_text(size=10, face="bold"), 
+    axis.title.y = element_text(size=10, face="bold"), 
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(), 
+    axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"), 
+    axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
+    legend.position = "right",
+    strip.text = element_text(size = 10, hjust = 0), strip.background = element_blank()) +
+  scale_color_manual(values = color_groups) +
+  scale_fill_manual(values = c("gray50", "gray80"))
+
+pdf(file.path(outdir, paste0("frequencies_", out_name, "_plot.pdf")), w=8, h=3, onefile=TRUE)
+print(ggp)
+dev.off()
+
+
+
+# ----------------------------------------------------------
 ### normalize the expression
 # ----------------------------------------------------------
 
@@ -330,7 +372,7 @@ for(k in models2fit){
     
     glmer_binomial_interglht_01 = {
       # Fit a GLMM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glmer_interglht_01(data = freq_out, md, family = "binomial", formula = formula_glmer_binomial, K = K, skippNAs = FALSE)
+      fit_out <- fit_glmer_interglht_01(data = freq_out, md, family = "binomial", formula = formula_glmer_binomial_01, K = K, skippNAs = FALSE)
       
     }
     
