@@ -4,7 +4,7 @@ library(glmmADMB) # for glmmadmb()
 library(robustbase) # glmrob
 library(robust) # glmRob
 library(MASS) # rlm
-
+library(betareg) # betareg() does not work with glht()
 
 # -----------------------------
 # Wilcoxon / Mann-Whitney U test
@@ -264,9 +264,6 @@ fit_lmer_interglht <- function(data, md, formula, K, skippNAs = TRUE){
   return(out)
   
 }
-
-
-
 
 # ---------------------------------------------------------------------------------------
 # logit models

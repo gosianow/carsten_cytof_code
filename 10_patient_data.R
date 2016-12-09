@@ -27,7 +27,7 @@ suffix <- ""
 out_name <- "patientdata"
 
 path_fun_models <- '/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas <- '/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_2responses.R'
+path_fun_formulas <- '/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_2responses_base.R'
 
 path_data <- "Patient_data_cytof_FACS_09_12_16_CK_GN.xlsx"
 path_variables <- "variables_to_use.xlsx"
