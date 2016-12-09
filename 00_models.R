@@ -275,9 +275,10 @@ fit_lmer_interglht <- function(data, md, formula, K, skippNAs = TRUE){
 
 # -----------------------------
 ### Fit a logit GLM with inteactions + test contrasts with multcomp pckg
+### Response is a count of 1s
 # -----------------------------
 
-fit_glm_interglht <- function(data, md, family = "binomial", formula, K){
+fit_glm_interglht <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
   
   ntot <- colSums(data[, md$shortname, drop = FALSE], na.rm = TRUE)
   contrast_names <- rownames(K)
@@ -300,7 +301,7 @@ fit_glm_interglht <- function(data, md, family = "binomial", formula, K){
       return(out)
     
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
-    if(any(NAs))
+    if(any(NAs) && skippNAs)
       return(out)
     
     switch(family,
@@ -390,10 +391,11 @@ fit_glm_interglht <- function(data, md, family = "binomial", formula, K){
 
 # -----------------------------
 ### Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
+### Response is a count of 1s
 # -----------------------------
 
 
-fit_glmer_interglht <- function(data, md, family = "binomial", formula, K){
+fit_glmer_interglht <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
   
   ntot <- colSums(data[, md$shortname, drop = FALSE], na.rm = TRUE)
   contrast_names <- rownames(K)
@@ -415,7 +417,7 @@ fit_glmer_interglht <- function(data, md, family = "binomial", formula, K){
       return(out)
       
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
-    if(any(NAs))
+    if(any(NAs) && skippNAs)
       return(out)
     
     switch(family, 
@@ -492,6 +494,95 @@ fit_glmer_interglht <- function(data, md, family = "binomial", formula, K){
 
 
 
+
+# -----------------------------
+### Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
+### Response is 0s and 1s
+# -----------------------------
+
+
+fit_glmer_interglht_01 <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
+  
+  ntot <- colSums(data[, md$shortname, drop = FALSE], na.rm = TRUE)
+  contrast_names <- rownames(K)
+  
+  ### Fit the GLM
+  fit <- lapply(1:nrow(data), function(i){
+    # i = 1
+    print(i)
+    
+    y <- data[i, md$shortname]
+    NAs <- is.na(y)
+    data_tmp <- data.frame(y = as.numeric(y), total = as.numeric(ntot), md)[!NAs, , drop = FALSE]
+    
+    out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
+    colnames(out) <- c("coeff", "pval")
+    rownames(out) <- contrast_names
+    
+    if(sum(y[!NAs] == 0) > length(y[!NAs])/2)
+      return(out)
+      
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs) && skippNAs)
+      return(out)
+    
+    switch(family, 
+      binomial = {
+        fit_tmp <- glmer(formula, family = binomial, data = data_tmp)
+        summary(fit_tmp)
+      }      
+    )
+    
+    if(is.null(fit_tmp))
+      return(out)
+    
+    ## fit contrasts one by one
+    out <- t(apply(K, 1, function(k){
+      # k = K[2, ]
+      
+      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
+      summ_tmp <- summary(contr_tmp)
+      summ_tmp
+      
+      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+      names(out) <- c("coeff", "pval")
+      out
+      
+    }))
+    out
+    
+    return(out)
+    
+  })
+  
+  ### Extract p-values
+  pvals <- lapply(fit, function(x){
+    x[, "pval"]
+  })
+  pvals <- do.call(rbind, pvals)
+  
+  ### Extract fitted coefficients
+  coeffs <- lapply(fit, function(x){
+    x[, "coeff"]
+  })
+  coeffs <- do.call(rbind, coeffs)
+  
+  movars <- contrast_names
+  
+  colnames(pvals) <- paste0("pval_", movars)
+  colnames(coeffs) <- movars
+  
+  colnames(pvals) <- paste0("pval_", movars)
+  
+  ## get adjusted p-values
+  adjp <- apply(pvals, 2, p.adjust, method = "BH")
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
+  
+  return(out)
+  
+}
 
 
 
