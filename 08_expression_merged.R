@@ -37,6 +37,19 @@ path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
 analysis_type='all'
 
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/03'
+expr_prefix='23m4_29m2_'
+expr_outdir='08_expression_merged'
+path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03.xlsx')
+path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/080_expression/23_03_pca1_merging4_raw_expr_all.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03/080_expression/29_03_pca1_merging2_raw_expr_all.xls')
+data_name=c('data23','data29')
+path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
+analysis_type='all'
+
+FDR_cutoff=0.05
+suffix="_top005"
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
