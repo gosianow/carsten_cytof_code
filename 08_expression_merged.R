@@ -47,8 +47,11 @@ path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
 analysis_type='all'
 
+### Optional arguments
 FDR_cutoff=0.05
 suffix="_top005"
+
+path_marker_exclusion='23m4_29m2_expr_marker_exclusion.txt'
 
 ##############################################################################
 # Read in the arguments
@@ -149,6 +152,7 @@ color_response <- colors$color
 names(color_response) <- colors$response
 
 
+
 # ------------------------------------------------------------
 # Load expression data
 # ------------------------------------------------------------
@@ -216,6 +220,22 @@ md$response <- factor(md$response)
 md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
 
+
+# ------------------------------------------------------------
+# load marker exclusion for plotting on the heatmaps
+# ------------------------------------------------------------
+
+marker_exclusion <- NULL
+
+if(file.exists(file.path(path_marker_exclusion))){
+  
+  marker_exclusion <- read.table(file.path(path_marker_exclusion), header = TRUE, sep = "\t", as.is = TRUE)
+  marker_exclusion <- marker_exclusion[, 1]
+  
+  if(!all(marker_exclusion %in% markers_ordered))
+    stop("Marker exclusion is wrong")
+  
+}
 
 
 # -----------------------------------------------------------------------------
@@ -336,11 +356,32 @@ if(analysis_type == "all"){
   ht1 <- Heatmap(expr, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
   
   pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust", ".pdf")), width = 10, height = 7)
-  
   draw(ht1)
-  
   dev.off()
   
+  ## Plot only those markers that are not excluded
+  if(!is.null(marker_exclusion)){
+    
+    expr_sub <- expr[!rownames(expr) %in% marker_exclusion, , drop = FALSE]
+    labels_row_sub <- rownames(expr_sub)
+    
+    cluster_cols <- hclust(dist(t(expr_sub)), method = "ward.D2")
+    cluster_rows <- hclust(dist(expr_sub), method = "ward.D2")
+    
+    # Using pheatmap
+    pheatmap(expr_sub, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = cluster_cols, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row_sub, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = TRUE, filename = file.path(outdir, paste0(prefix, "expr_", out_name,  "_pheatmap_colclust_ex", ".pdf")))
+    
+    
+    ### Using ComplexHeatmap
+    ha <-  HeatmapAnnotation(df = annotation_col, col = list(response = color_response[levels(annotation_col$response)]))
+    ht1 <- Heatmap(expr_sub, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
+    
+    pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust_ex", ".pdf")), width = 10, height = 7)
+    draw(ht1)
+    dev.off()
+    
+    
+  }
   
 }
 
@@ -370,23 +411,25 @@ levels(md$response)
 # models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
 models2fit <- c("lmer_interglht")
 
+suffix_org <- suffix
+
 
 for(k in models2fit){
   # k = "lm_interglht"
   print(k)
-
+  
   switch(k,
     lm_interglht = {
-
+      
       # Fit a LM with interactions + test contrasts with multcomp pckg
       fit_out <- fit_lm_interglht(data = exprc, md, method = "lm", formula = formula_lm, K = K)
-
+      
     },
     lmer_interglht = {
-
+      
       # Fit a lmer with interactions + test contrasts with multcomp pckg
       fit_out <- fit_lmer_interglht(data = exprc, md, formula = formula_lmer, K = K)
-
+      
     },
     lmrob_interglht = {
       ## Problems with running lmrob!!!
@@ -398,36 +441,49 @@ for(k in models2fit){
     test_wilcoxon = {
       fit_out <- test_wilcoxon(data = exprc, md)
     }
-
+    
   )
-
-
+  
+  
   # ----------------------------------------
   # Extract p-values and coeffs
   # ----------------------------------------
-
+  
   pvs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["pvals"]])
   coeffs <- data.frame(exprc[, c("cluster", "label", "marker")], fit_out[["coeffs"]])
-
+  
   oo <- order(pvs[, pval_name1], decreasing = FALSE)
   pvs <- pvs[oo, , drop = FALSE]
   coeffs <- coeffs[oo, , drop = FALSE]
-
+  
   ## save the results
   write.table(pvs, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_pvs_", k, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
   write.table(coeffs, file = file.path(outdir, paste0(prefix, "expr_", out_name, "_coeffs_", k, ".xls")), row.names=FALSE, quote=FALSE, sep="\t")
-
-
+  
+  
   # ----------------------------------------
   # Plot a heatmap of significant cases
   # ----------------------------------------
-
+  
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
-
+  
+  
+  suffix <- suffix_org
+  
   plot_heatmaps_for_sign_expr_merged()
+  
+  ## Plot only those markers that are not excluded
+  if(!is.null(marker_exclusion)){
+    expr_all <- expr_all[!expr_all$marker %in% marker_exclusion, , drop = FALSE]
+    
+    suffix <- paste0(suffix_org, "_ex")
+    
+    plot_heatmaps_for_sign_expr_merged()
+    
+  }
 
-
+  
   
 } # models2fit
 
