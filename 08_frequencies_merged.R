@@ -33,24 +33,16 @@ path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/050_frequ
 data_name=c('data23','data29')
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
+path_fun_plot_frequencies <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_frequencies.R"
+path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
+
+### Optional arguments
 pdf_hight=8
-plot_only=TRUE
-
-
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01_CD4'
-freq_prefix='23CD4m5_29CD4m5_'
-freq_outdir='08_frequencies_merged_2responses'
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
-path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01_CD4_mergingNEW2/050_frequencies/23CD4_01CD4_pca1_merging5_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01_CD4_merging2/050_frequencies/29CD4_01CD4_pca1_merging5_counts.xls')
-data_name=c('data23','data29')
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
-pdf_hight=4
-plot_only=TRUE
-### For selecting and ordering clusters to plot
+plot_only=FALSE
+FDR_cutoff=0.05
+suffix="_top005"
+# For selecting and ordering clusters to plot
 path_cluster_selection='23CD4m5_29CD4m5_frequencies_cluster_selection.txt' 
-if_no_cluster_selection='plot_blank' # 'plot_all'
-
 
 ##############################################################################
 # Read in the arguments
@@ -67,15 +59,9 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs_merged.R"
-source(path_fun_plot_heatmaps)
-
-path_fun_plot_frequencies <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_frequencies_merged.R"
-source(path_fun_plot_frequencies)
-
-
 if(!file.exists(rwd)) 
   dir.create(rwd, recursive = TRUE)
+
 setwd(rwd)
 
 prefix <- freq_prefix
@@ -85,17 +71,8 @@ if(!file.exists(outdir))
   dir.create(outdir, recursive = TRUE)
 
 
-
 if(!any(grepl("pdf_hight=", args))){
   pdf_hight=4
-}
-
-if(!any(grepl("plot_only=", args))){
-  plot_only=FALSE
-}
-
-if(!any(grepl("if_no_cluster_selection=", args))){
-  if_no_cluster_selection='plot_all'
 }
 
 if(!any(grepl("FDR_cutoff=", args))){
@@ -103,8 +80,13 @@ if(!any(grepl("FDR_cutoff=", args))){
 }
 
 if(!any(grepl("suffix=", args))){
-  suffix=""
+  suffix="_top005"
 }
+
+if(!any(grepl("plot_only=", args))){
+  plot_only=FALSE
+}
+
 
 # ------------------------------------------------------------
 # Load metadata
@@ -225,6 +207,9 @@ md$data_day <- factor(md$data_day)
 # Plot frequencies
 # ------------------------------------------------------------
 
+source(path_fun_plot_frequencies)
+
+
 ggdf <- melt(prop_out[complete.cases(freq_out), , drop = FALSE], id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
 
 ## use labels as clusters
@@ -246,7 +231,6 @@ ggdf$day <- factor(ggdf$day)
 
 
 
-
 ### Cluster selection
 ### Use only the clusters that are specified in the cluster_selection.txt file
 
@@ -262,50 +246,16 @@ if(any(grepl("path_cluster_selection=", args))){
     ggdf <- ggdf[ggdf$cluster %in% cluster_selection, , drop = FALSE]
     ggdf$cluster <- factor(ggdf$cluster, levels = cluster_selection)
     
-  }
-  
-}
-
-
-plot_frequencies_merged()
-
-
-days <- levels(ggdf$day)
-
-### Overwrite frequency figures with empty pdfs
-if(any(grepl("path_cluster_selection=", args))){
-  
-  if(!file.exists(path_cluster_selection) && if_no_cluster_selection == "plot_blank"){
+  }else{
     
-    pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")), w = pdf_hight, h = pdf_hight)
-    plot(1, type="n", axes=F, xlab="", ylab="")
-    dev.off()
-    
-    pdf(file.path(outdir, paste0(prefix, "frequencies_plot2.pdf")), w = pdf_hight, h = pdf_hight)
-    plot(1, type="n", axes=F, xlab="", ylab="")
-    dev.off()
-    
-    for(i in 1:nlevels(ggdf$day)){
-      pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,".pdf")), w = pdf_hight, h = pdf_hight)
-      plot(1, type="n", axes=F, xlab="", ylab="")
-      dev.off()
-    }
-    
-    for(i in 1:nlevels(ggdf$day)){
-      pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,"2.pdf")), w = pdf_hight, h = pdf_hight)
-      plot(1, type="n", axes=F, xlab="", ylab="")
-      dev.off()
-    }
-    
-    for(i in 1:nlevels(ggdf$day)){
-      pdf(file.path(outdir, paste0(prefix, "frequencies_plot_boxplotpoints_", days[i] ,"3.pdf")), w = pdf_hight, h = pdf_hight)
-      plot(1, type="n", axes=F, xlab="", ylab="")
-      dev.off()
-    }
+    ggdf$prop <- NA
     
   }
   
 }
+
+
+plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, outdir = outdir, prefix = prefix, pdf_hight = pdf_hight)
 
 
 # -----------------------------------------------------------------------------
@@ -378,7 +328,6 @@ pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87C
 
 
 
-
 # ------------------------------------------------------------
 # Test for frequency differences between groups
 # ------------------------------------------------------------
@@ -392,6 +341,9 @@ if(!plot_only){
   source(path_fun_models)
   ### Load formulas that are fit in the models - this function may change the md object!!!
   source(path_fun_formulas)
+  
+  source(path_fun_plot_heatmaps)
+  
   
   levels(md$data)
   levels(md$day)
@@ -494,7 +446,9 @@ if(!plot_only){
     ### add p-value info
     expr_all <- merge(expr_norm, pvs, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
     
-    plot_heatmaps_for_sign_freqs_merged()
+    prefix2 <- paste0(k, "_")
+    
+    plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = FDR_cutoff, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
     
     
   }

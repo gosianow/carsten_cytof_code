@@ -1,7 +1,7 @@
 
 
 
-plot_expression_merged <- function(){
+plot_expression <- function(ggdf, ggds, color_groups, outdir, prefix, prefix2){
   
   
   clusters <- levels(ggdf$cluster)
@@ -38,7 +38,7 @@ plot_expression_merged <- function(){
     
   }
   
-  pdf(file.path(outdir, paste0(prefix, "expr_", out_name, ".pdf")), w = 18, h = 12, onefile=TRUE)
+  pdf(file.path(outdir, paste0(prefix, "expr_", prefix2, ".pdf")), w = 18, h = 12, onefile=TRUE)
   for(i in seq(length(ggp)))
     print(ggp[[i]])
   dev.off()

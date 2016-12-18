@@ -203,11 +203,11 @@ fi
 for perplexity in 50 100 200 1000
 do
 
-#   if ${runtsne}; then
-#     echo ">>> 03_runtsne"
-#     R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsne_prefix='${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_' tsne_outdir='040_tsnemaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' tsne_pmin=${tsne_pmin} perplexity=${perplexity}" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
-#     tail $ROUT/03_runtsne.Rout
-#   fi
+  if ${runtsne}; then
+    echo ">>> 03_runtsne"
+    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsne_prefix='${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_' tsne_outdir='040_tsnemaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' tsne_pmin=${tsne_pmin} perplexity=${perplexity}" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
+    tail $ROUT/03_runtsne.Rout
+  fi
 
   if ${plottsne}; then
     echo ">>> 03_plottsne"
@@ -230,7 +230,7 @@ fi
 ### Get cluster frequencies
 if ${frequencies}; then
   echo ">>> 04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' freq_outdir='050_frequencies_auto' path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}' freq_outdir='050_frequencies_auto' path_metadata='${METADATA}/${file_metadata}'  path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_freqs.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 fi
 
@@ -241,11 +241,11 @@ if ${expression}; then
 
   ## Based on raw data
   # For all the cells
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' expr_outdir='080_expression' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R' analysis_type='all'" $RCODE/04_expression.R $ROUT/04_expression.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' expr_outdir='080_expression' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_expr.R' analysis_type='all'" $RCODE/04_expression.R $ROUT/04_expression.Rout
   tail $ROUT/04_expression.Rout
 
   # Per cluster
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' expr_outdir='080_expression' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R' analysis_type='clust'" $RCODE/04_expression.R $ROUT/04_expression.Rout
+  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_' expr_outdir='080_expression' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls'  path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_expr.R' analysis_type='clust'" $RCODE/04_expression.R $ROUT/04_expression.Rout
   tail $ROUT/04_expression.Rout
 
 fi

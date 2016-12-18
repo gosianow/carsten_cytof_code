@@ -34,7 +34,13 @@ path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_
 data_name=c('data23','data29')
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
+path_fun_plot_frequencies <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_frequencies.R"
+path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
+
+
+### Optional arguments
 pdf_hight=4
+plot_only=FALSE
 FDR_cutoff=0.1
 suffix='_top01'
 
@@ -53,12 +59,6 @@ for (i in 1:length(args)) {
 cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
-
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs_merged.R"
-source(path_fun_plot_heatmaps)
-
-path_fun_plot_frequencies <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_frequencies_merged.R"
-source(path_fun_plot_frequencies)
 
 
 if(!file.exists(rwd)) 
@@ -85,7 +85,7 @@ if(!any(grepl("FDR_cutoff=", args))){
 }
 
 if(!any(grepl("suffix=", args))){
-  suffix=""
+  suffix="_top005"
 }
 
 # ------------------------------------------------------------
@@ -252,6 +252,9 @@ freq_out_list <- lapply(freq_list, function(x){
 # Plot frequencies
 # ------------------------------------------------------------
 
+source(path_fun_plot_frequencies)
+
+
 ggdf <- melt(prop_out, id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
 
 ## use labels as clusters
@@ -272,7 +275,7 @@ ggdf$day <- strsplit2(ggdf$group, "\n")[, 1]
 ggdf$day <- factor(ggdf$day)
 
 
-plot_frequencies_merged()
+plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, outdir = outdir, prefix = prefix, pdf_hight = pdf_hight)
 
 
 
@@ -365,6 +368,7 @@ if(!plot_only){
   ### Load formulas that are fit in the models - this function may change the md object!!!
   source(path_fun_formulas)
   
+  source(path_fun_plot_heatmaps)
   
   levels(md$data)
   levels(md$day)
@@ -499,7 +503,9 @@ if(!plot_only){
     ### add p-value info
     expr_all <- merge(expr_norm, pvs, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
     
-    plot_heatmaps_for_sign_freqs_merged()
+    prefix2 <- paste0(k, "_")
+    
+    plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = FDR_cutoff, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
     
   }
   

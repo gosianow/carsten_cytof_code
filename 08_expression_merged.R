@@ -35,23 +35,14 @@ path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/080_e
 data_name=c('data23','data29')
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
-analysis_type='all'
-
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/03'
-expr_prefix='23m4_29m2_'
-expr_outdir='08_expression_merged'
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03.xlsx')
-path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/080_expression/23_03_pca1_merging4_raw_expr_all.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03/080_expression/29_03_pca1_merging2_raw_expr_all.xls')
-data_name=c('data23','data29')
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
+path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_expr.R"
+path_fun_plot_expression <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_expression.R"
+path_marker_exclusion='23m4_29m2_expr_marker_exclusion.txt'
 analysis_type='all'
 
 ### Optional arguments
 FDR_cutoff=0.05
 suffix="_top005"
-
-path_marker_exclusion='23m4_29m2_expr_marker_exclusion.txt'
 
 ##############################################################################
 # Read in the arguments
@@ -68,13 +59,8 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_expr_merged.R"
-source(path_fun_plot_heatmaps)
-
-path_fun_plot_frequencies <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_expression_merged.R"
-source(path_fun_plot_frequencies)
-
+if(!file.exists(rwd)) 
+  dir.create(rwd, recursive = TRUE)
 
 setwd(rwd)
 
@@ -97,7 +83,7 @@ if(!any(grepl("FDR_cutoff=", args))){
 }
 
 if(!any(grepl("suffix=", args))){
-  suffix=""
+  suffix="_top005"
 }
 
 # ------------------------------------------------------------
@@ -242,6 +228,8 @@ if(file.exists(file.path(path_marker_exclusion))){
 ### Plot expression per cluster
 # -----------------------------------------------------------------------------
 
+source(path_fun_plot_expression)
+
 
 ggdf <- melt(a, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
 
@@ -266,7 +254,7 @@ ggdf$marker <- factor(ggdf$marker, levels = colnames(a)[!grepl("cluster|label|sa
 ggds <- ddply(ggdf, .(group, cluster, marker, data), summarise, mean = mean(expr), sd = sd(expr))
 
 
-plot_expression_merged()
+plot_expression(ggdf = ggdf, ggds = ggds, color_groups = color_groups, outdir = outdir, prefix = prefix, prefix2 = out_name)
 
 
 # -----------------------------------------------------------------------------
@@ -401,6 +389,9 @@ source(path_fun_models)
 ### Load formulas that are fit in the models - this function may change the md object!!!
 source(path_fun_formulas)
 
+source(path_fun_plot_heatmaps)
+
+
 levels(md$data)
 levels(md$day)
 levels(md$response)
@@ -410,8 +401,6 @@ levels(md$response)
 
 # models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
 models2fit <- c("lmer_interglht")
-
-suffix_org <- suffix
 
 
 for(k in models2fit){
@@ -468,21 +457,20 @@ for(k in models2fit){
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
   
+  prefix2 <- paste0(out_name, "_", k, "_")
   
-  suffix <- suffix_org
+  plot_heatmaps_for_sign_expr(expr_all = expr_all, md = md, FDR_cutoff = FDR_cutoff, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
-  plot_heatmaps_for_sign_expr_merged()
   
   ## Plot only those markers that are not excluded
   if(!is.null(marker_exclusion)){
+    
     expr_all <- expr_all[!expr_all$marker %in% marker_exclusion, , drop = FALSE]
     
-    suffix <- paste0(suffix_org, "_ex")
-    
-    plot_heatmaps_for_sign_expr_merged()
+    plot_heatmaps_for_sign_expr(expr_all = expr_all, md = md, FDR_cutoff = FDR_cutoff, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = paste0(suffix, "_ex"))
     
   }
-
+  
   
   
 } # models2fit

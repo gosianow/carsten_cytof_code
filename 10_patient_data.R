@@ -1,8 +1,10 @@
-# source("/Users/gosia/Dropbox/UZH/carsten_cytof_code/10_patient_data.R")
-
 # BioC 3.3
 # Created 21 Oct 2016
 # Updated 09 Dec 2016
+
+##############################################################################
+Sys.time()
+##############################################################################
 
 library(gdata)
 library(gplots)
@@ -14,27 +16,45 @@ library(RColorBrewer)
 library(pheatmap)
 library(gtools) # for logit
 
+##############################################################################
+# Test arguments
+##############################################################################
 
 rwd <- "/Users/gosia/Dropbox/UZH/carsten_cytof/Patientdata/"
+outdir <- "ck_analysis"
+
+path_data <- "ck_orig_files/Patient_data_cytof_FACS_09_12_16_CK_GN.xlsx"
+path_variables <- "ck_orig_files/variables_to_use.xlsx"
+
+path_fun_models <- '/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
+path_fun_formulas <- '/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_2responses_base.R'
+path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_expr.R"
+
+
+
+##############################################################################
+# Read in the arguments
+##############################################################################
+
+rm(list = ls())
+
+args <- (commandArgs(trailingOnly = TRUE))
+for (i in 1:length(args)) {
+  eval(parse(text = args[[i]]))
+}
+
+cat(paste0(args, collapse = "\n"), fill = TRUE)
+
+
+##############################################################################
 
 setwd(rwd)
 
-outdir <- "ck_analysis"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 prefix <- ""
 suffix <- ""
 out_name <- "patientdata"
-
-path_fun_models <- '/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas <- '/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_2responses_base.R'
-
-path_data <- "Patient_data_cytof_FACS_09_12_16_CK_GN.xlsx"
-path_variables <- "variables_to_use.xlsx"
-
-
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_expr.R"
-source(path_fun_plot_heatmaps)
 
 
 color_groups <- c(base_NR = "#CC79A7", base_R = "#009E73", tx_NR = "#CC79A7", tx_R = "#009E73")
@@ -44,9 +64,9 @@ color_groups <- c(base_NR = "#CC79A7", base_R = "#009E73", tx_NR = "#CC79A7", tx
 # Read in the data
 # ----------------------------------------------------------
 
-data_orig <- read.xls(file.path(rwd, "ck_orig_files", path_data), as.is = TRUE, check.names = FALSE)
+data_orig <- read.xls(path_data, as.is = TRUE, check.names = FALSE)
 
-variables_orig <- read.xls(file.path(rwd, "ck_orig_files", path_variables), as.is = TRUE, check.names = FALSE)
+variables_orig <- read.xls(path_variables, as.is = TRUE, check.names = FALSE)
 
 
 ### Create metadata
@@ -118,7 +138,7 @@ ggp <- ggplot(ggdf, aes(x = group, y = expr, color = group)) +
     strip.text = element_text(size = 10, hjust = 0), strip.background = element_blank()) +
   scale_color_manual(values = color_groups)
 
-pdf(file.path(outdir, paste0("expr_", out_name, "_plot.pdf")), w=18, h=16, onefile=TRUE)
+pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_plot.pdf")), w=18, h=16, onefile=TRUE)
 print(ggp)
 dev.off()
 
@@ -176,6 +196,7 @@ legend_breaks = seq(from = -round(th), to = round(th), by = 1)
 
 source(path_fun_models)
 source(path_fun_formulas)
+source(path_fun_plot_heatmaps)
 
 
 models2fit <- c("lmer_interglht")
@@ -232,7 +253,9 @@ for(k in models2fit){
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
   
-  plot_heatmaps_for_sign_expr()
+  prefix2 <- paste0(out_name, "_", k, "_")
+  
+  plot_heatmaps_for_sign_expr(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
   
 }
@@ -301,7 +324,7 @@ ggp <- ggplot(ggdf, aes(x = group, color = group, fill = expr)) +
   scale_color_manual(values = color_groups) +
   scale_fill_manual(values = c("gray50", "gray80"))
 
-pdf(file.path(outdir, paste0("frequencies_", out_name, "_plot.pdf")), w=8, h=3, onefile=TRUE)
+pdf(file.path(outdir, paste0(prefix, "frequencies_", out_name, "_plot.pdf")), w=8, h=3, onefile=TRUE)
 print(ggp)
 dev.off()
 
@@ -357,6 +380,7 @@ legend_breaks = seq(from = -round(th), to = round(th), by = 1)
 
 source(path_fun_models)
 source(path_fun_formulas)
+source(path_fun_plot_heatmaps)
 
 
 models2fit <- c("glmer_binomial_interglht_01")
@@ -402,7 +426,9 @@ for(k in models2fit){
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
   
-  plot_heatmaps_for_sign_expr()
+  prefix2 <- paste0(out_name, "_", k, "_")
+  
+  plot_heatmaps_for_sign_expr(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
   
 }

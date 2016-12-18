@@ -34,19 +34,9 @@ path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
 path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
+path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_expr.R"
 analysis_type='all'
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03'
-expr_prefix='29_03_pca1_merging2_raw_'
-expr_outdir='080_expression'
-path_data='010_data/29_03_expr_raw.rds'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03.xlsx'
-path_clustering_observables='030_heatmaps/29_03_pca1_clustering_observables.xls'
-path_clustering='030_heatmaps/29_03_pca1_merging2_clustering.xls'
-path_clustering_labels='030_heatmaps/29_03_pca1_merging2_clustering_labels.xls'
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
-analysis_type='clust'
 
 ##############################################################################
 # Read in the arguments
@@ -64,9 +54,6 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_expr.R"
-source(path_fun_plot_heatmaps)
-
 setwd(rwd)
 
 prefix <- expr_prefix
@@ -75,7 +62,6 @@ suffix <- ""
 
 if( !file.exists(outdir) ) 
   dir.create(outdir, recursive = TRUE)
-
 
 if(!analysis_type %in% c("clust", "all"))
   stop("analysis_type must be 'all' or 'clust'!")
@@ -391,6 +377,9 @@ source(path_fun_models)
 ### Load formulas that are fit in the models - this function may change the md object!!!
 source(path_fun_formulas)
 
+source(path_fun_plot_heatmaps)
+
+
 levels(md$day)
 levels(md$response)
 
@@ -454,10 +443,12 @@ for(k in models2fit){
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label", "marker"), all.x = TRUE, sort = FALSE)
   
-  plot_heatmaps_for_sign_expr()
+  prefix2 <- paste0(out_name, "_", k, "_")
+  
+  plot_heatmaps_for_sign_expr(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
   
-} # models2fit
+}
 
 
 

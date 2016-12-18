@@ -33,15 +33,9 @@ path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
 path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
+path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_03all2_myeloid_merging3'
-freq_prefix='29mye_03_pca1_cl5_'
-freq_outdir='050_frequencies_auto'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_03all2.xlsx'
-path_clustering='030_heatmaps/29mye_03_pca1_cl5_clustering.xls'
-path_clustering_labels='030_heatmaps/29mye_03_pca1_cl5_clustering_labels.xls'
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
+### Optional arguments
 pdf_hight=8
 
 ##############################################################################
@@ -60,9 +54,6 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
-source(path_fun_plot_heatmaps)
-
 setwd(rwd)
 
 prefix <- freq_prefix
@@ -71,8 +62,6 @@ outdir <- freq_outdir
 
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
-
-source(path_fun_models)
 
 if(!any(grepl("pdf_hight=", args))){
   pdf_hight=4
@@ -294,6 +283,9 @@ source(path_fun_models)
 ### Load formulas that are fit in the models - this function may change the md object!!!
 source(path_fun_formulas)
 
+source(path_fun_plot_heatmaps)
+
+
 levels(md$day)
 levels(md$response)
 
@@ -392,7 +384,9 @@ for(k in models2fit){
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
   
-  plot_heatmaps_for_sign_freqs()
+  prefix2 <- paste0(k, "_")
+  
+  plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
 }
 

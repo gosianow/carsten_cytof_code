@@ -27,26 +27,29 @@ library(limma)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
-# pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_'
-# pd1_outdir='070_pd1_expression'
-# path_data='010_data/23CD4_02CD4_expr_raw.rds'
-# path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
-# path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging2_clustering.xls'
-# path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging2_clustering_labels.xls'
-# clsubset=c('CM','EM','TM','TE')
-# cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_02_CD4_merging2'
+pd1_prefix='23CD4_02CD4_pca1_merging_Tmem_cytCM_'
+pd1_outdir='070_pd1_expression'
+path_data='010_data/23CD4_02CD4_expr_raw.rds'
+path_cytokines_cutoffs='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel2CD4_cytokines_CM.xlsx'
+path_clustering='030_heatmaps/23CD4_02CD4_pca1_merging2_clustering.xls'
+path_clustering_labels='030_heatmaps/23CD4_02CD4_pca1_merging2_clustering_labels.xls'
+clsubset=c('CM','EM','TM','TE')
+cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')
 
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
+
 
 ##############################################################################
 

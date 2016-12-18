@@ -31,6 +31,9 @@ path_metadata='ck_orig_files/FACSvalidation_01_metadata.xlsx'
 path_freqs='ck_orig_files/FACSvalidation_01_frequencies.xlsx'
 path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
 path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses_base.R'
+path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
+
+### Optional arguments
 pdf_hight=4
 
 ##############################################################################
@@ -49,8 +52,6 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
-source(path_fun_plot_heatmaps)
 
 setwd(rwd)
 
@@ -226,6 +227,9 @@ source(path_fun_models)
 ### Load formulas that are fit in the models - this function may change the md object!!!
 source(path_fun_formulas)
 
+source(path_fun_plot_heatmaps)
+
+
 levels(md$day)
 levels(md$response)
 
@@ -281,7 +285,9 @@ for(k in models2fit){
   ### add p-value info
   expr_all <- merge(pvs, expr_norm, by = c("cluster", "label"), all.x = TRUE, sort = FALSE)
   
-  plot_heatmaps_for_sign_freqs()
+  prefix2 <- paste0(k, "_")
+  
+  plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
   
   
