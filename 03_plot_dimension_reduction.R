@@ -1,5 +1,5 @@
 ##############################################################################
-## <<03_plot_dimention_reduction.R.R>>
+## <<03_plot_dimension_reduction.R.R>>
 
 # BioC 3.3
 # Created 2 Nov 2016
@@ -24,9 +24,9 @@ library(RColorBrewer)
 
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 dr_prefix='23_01_pca1_cl20_raw_'
-dr_outdir='040_dimention_reduction'
+dr_outdir='040_dimension_reduction'
 path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-path_dr_data='040_dimention_reduction/23_01_pca1_raw_pca_data.xls'
+path_dr_data='040_dimension_reduction/23_01_pca1_raw_pca_data.xls'
 path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
 path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
 dr_suffix='_pca'
@@ -104,7 +104,7 @@ names(colors_tsne) <- levels(labels$label)
 
 
 # ------------------------------------------------------------
-# Load dimention reduction data
+# Load dimension reduction data
 # ------------------------------------------------------------
 
 
@@ -115,7 +115,7 @@ cells2keep <- dr_data$cell_index %in% clustering[, "cell_id"]
 
 
 # ------------------------------------------------------------
-# Dimention reduction plots
+# Dimension reduction plots
 # ------------------------------------------------------------
 
 # get clustering for cells that were used in tSNE
@@ -183,5 +183,5 @@ sessionInfo()
 
 
 ################################
-### 03_plot_dimention_reduction.R done!
+### 03_plot_dimension_reduction.R done!
 ################################

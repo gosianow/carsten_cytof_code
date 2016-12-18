@@ -1,5 +1,5 @@
 ##############################################################################
-## <<03_run_dimention_reduction.R>>
+## <<03_run_dimension_reduction.R>>
 
 # BioC 3.3
 # Created 2 Nov 2016
@@ -23,7 +23,7 @@ library(cytofkit)
 
 rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
 dr_prefix='23_01_pca1_raw_'
-dr_outdir='040_dimention_reduction'
+dr_outdir='040_dimension_reduction'
 path_data='010_data/23_01_expr_raw.rds'
 path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
@@ -188,5 +188,5 @@ write.table(pca_data, file.path(outdir, paste0(prefix, "pca_data.xls")), sep = "
 
 
 ################################
-### 03_run_dimention_reduction.R done!
+### 03_run_dimension_reduction.R done!
 ################################

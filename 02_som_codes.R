@@ -185,7 +185,7 @@ dev.off()
 
 
 # -------------------------------------
-# Dimention reduction 
+# Dimension reduction 
 # -------------------------------------
 
 dr <- list()
