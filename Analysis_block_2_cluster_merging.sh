@@ -148,17 +148,17 @@ fi
 
 ### Plot tSNE with different perplexity
 
-for perplexity in 50 100 200 1000
-do
-
-  if ${plottsne}; then
-    echo ">>> 03_plottsne"
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}raw_perp${perplexity}_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls'  pdf_width=22 pdf_height=7 tsne_distse=1 tsne_quantse=0.9" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
-    tail $ROUT/03_plottsne.Rout
-
-  fi
-
-done
+# for perplexity in 50 100 200 1000
+# do
+# 
+#   if ${plottsne}; then
+#     echo ">>> 03_plottsne"
+#     R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}raw_perp${perplexity}_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls'  pdf_width=22 pdf_height=7 tsne_distse=1 tsne_quantse=0.9" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+#     tail $ROUT/03_plottsne.Rout
+#
+#   fi
+#
+# done
 
 
 ### Get cluster frequencies

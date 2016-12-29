@@ -200,22 +200,22 @@ fi
 
 ### Run and plot tSNE with different perplexity
 
-for perplexity in 50 100 200 1000
-do
-
-  if ${runtsne}; then
-    echo ">>> 03_runtsne"
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsne_prefix='${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_' tsne_outdir='040_tsnemaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' tsne_pmin=${tsne_pmin} perplexity=${perplexity}" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
-    tail $ROUT/03_runtsne.Rout
-  fi
-
-  if ${plottsne}; then
-    echo ">>> 03_plottsne"
-    R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_perp${perplexity}_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  pdf_width=22 pdf_height=7 tsne_distse=1 tsne_quantse=0.9" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
-    tail $ROUT/03_plottsne.Rout
-  fi
-
-done
+# for perplexity in 50 100 200 1000
+# do
+#
+#   if ${runtsne}; then
+#     echo ">>> 03_runtsne"
+#     R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsne_prefix='${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_' tsne_outdir='040_tsnemaps' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}'  path_clustering_observables='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}clustering_observables.xls' tsne_pmin=${tsne_pmin} perplexity=${perplexity}" $RCODE/03_runtsne.R $ROUT/03_runtsne.Rout
+#     tail $ROUT/03_runtsne.Rout
+#   fi
+#
+#   if ${plottsne}; then
+#     echo ">>> 03_plottsne"
+#     R CMD BATCH --no-save --no-restore "--args rwd='$RWD' tsnep_prefix='${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}raw_perp${perplexity}_' tsnep_outdir='040_tsnemaps' path_metadata='${METADATA}/${file_metadata}'  path_rtsne_out='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_out.rda' path_rtsne_data='040_tsnemaps/${prefix_data}${prefix_panel}${prefix_pca}raw_perp${perplexity}_rtsne_data.xls' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_clust}clustering_labels.xls'  pdf_width=22 pdf_height=7 tsne_distse=1 tsne_quantse=0.9" $RCODE/03_plottsne.R $ROUT/03_plottsne.Rout
+#     tail $ROUT/03_plottsne.Rout
+#   fi
+#
+# done
 
 
 ### Plot tSNE with marker expression as a heat
