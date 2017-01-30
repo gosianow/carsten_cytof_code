@@ -10,7 +10,7 @@ RCODE=/Users/gosia/Dropbox/UZH/carsten_cytof_code
 # Analysis of Patientdata
 ###############################################################################################################
 
-data_dir="FACS_validation"
+data_dir="FACSvalidation"
 
 RWD=$RWD_MAIN/${data_dir}
 ROUT=$RWD/Rout
