@@ -24,16 +24,15 @@ library(gtools) # for logit
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/FACS_validation'
-freq_prefix='facs_valid_'
+rwd='/home/Shared/data/cytof/carsten_cytof/FACSvalidation3'
+freq_prefix='facs_valid3_'
 freq_outdir='ck_analysis'
-path_metadata='ck_orig_files/FACSvalidation_01_metadata.xlsx'
-path_freqs='ck_orig_files/FACSvalidation_01_frequencies.xlsx'
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses_base.R'
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
+path_metadata='ck_orig_files/CK_2017-01-27_ValidationDataset_metadata.xlsx'
+path_freqs='ck_orig_files/CK_2017-01-27_ValidationDataset_frequencies.xlsx'
+path_fun_models='/home/gosia/R/carsten_cytof_code/00_models.R'
+path_fun_formulas='/home/gosia/R/carsten_cytof_code/00_formulas_1dataset_3responses_base.R'
+path_fun_plot_heatmaps='/home/gosia/R/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R'
 
-### Optional arguments
 pdf_hight=4
 
 ##############################################################################
@@ -100,6 +99,9 @@ names(color_groupsb) <- colors$condition
 color_samples <- md$color
 names(color_samples) <- md$shortname
 
+colors <- unique(md[, c("response", "color")])
+color_response <- colors$color
+names(color_response) <- colors$response
 
 # ---------------------------------------
 # Load frequencies
@@ -157,7 +159,8 @@ ggp <- ggplot(ggdf, aes(x = cluster, y = prop, color = group, fill = group)) +
     panel.border = element_blank(), 
     axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
     axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-    legend.title = element_blank(), legend.position = "right", legend.key = element_blank()) +
+    legend.title = element_blank(), legend.position = "right", legend.key = element_blank(), 
+    strip.background = element_blank()) +
   guides(color = guide_legend(ncol = 1)) +
   scale_color_manual(values = color_groups) +
   scale_fill_manual(values = color_groupsb) +
@@ -287,7 +290,9 @@ for(k in models2fit){
   
   prefix2 <- paste0(k, "_")
   
-  plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
+  FDR_cutoff <- 0.05
+  
+  plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = FDR_cutoff, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, color_response = color_response, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
   
   

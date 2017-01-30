@@ -1,5 +1,8 @@
 #!/bin/bash
 
+shopt -s expand_aliases
+source ~/.bash_aliases
+
 # -----------------------------------------------------
 # argument parcing
 # -----------------------------------------------------
@@ -113,7 +116,7 @@ if ${cytokines_bimatrix_cluster_merging}; then
 
   ### Cluster merging
   echo ">>> 02_cluster_merging"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_cytokines}${prefix_merging_cyt}' merging_outdir='${outdir}/01_clustering' path_cluster_merging='${file_merging_cyt}' path_clustering='${outdir}/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' merging_prefix='${prefix_cytokines}${prefix_merging_cyt}' merging_outdir='${outdir}/01_clustering' path_cluster_merging='${file_merging_cyt}' path_clustering='${outdir}/01_clustering/${prefix_cytokines}${prefix_clust}clustering.xls'" $RCODE/02_cluster_merging.R $ROUT/02_cluster_merging.Rout
   tail $ROUT/02_cluster_merging.Rout
 
 
@@ -125,13 +128,13 @@ if ${cytokines_bimatrix_cluster_merging}; then
 
   ### Heatmaps of merged clusters
   echo ">>> 02_heatmaps"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_merging_cyt}' heatmap_outdir='${outdir}/01_clustering' path_data='${outdir}/01_clustering/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='${outdir}/01_clustering/${prefix_cytokines}clustering_observables.xls' path_clustering='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls'  path_clustering_labels='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' heatmap_prefix='${prefix_cytokines}${prefix_merging_cyt}' heatmap_outdir='${outdir}/01_clustering' path_data='${outdir}/01_clustering/${prefix_cytokines}bimatrix.txt' path_metadata='${METADATA}/${file_metadata}'   path_clustering_observables='${outdir}/01_clustering/${prefix_cytokines}clustering_observables.xls' path_clustering='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls'  path_clustering_labels='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_marker_selection='${prefix_cytokines}marker_selection.txt' aggregate_fun='mean' pheatmap_palette='RdYlBu' pheatmap_palette_rev=TRUE pheatmap_scale=FALSE" $RCODE/02_heatmaps.R $ROUT/02_heatmaps.Rout
   tail $ROUT/02_heatmaps.Rout
 
 
   ### Get cluster frequencies
   echo ">>> 04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='${outdir}/03_frequencies' path_metadata='${METADATA}/${file_metadata}'  path_clustering='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_cytokines}${prefix_merging_cyt}' freq_outdir='${outdir}/03_frequencies' path_metadata='${METADATA}/${file_metadata}'  path_clustering='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering.xls' path_clustering_labels='${outdir}/01_clustering/${prefix_cytokines}${prefix_merging_cyt}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 

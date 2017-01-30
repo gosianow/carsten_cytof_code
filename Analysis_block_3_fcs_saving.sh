@@ -1,5 +1,8 @@
 #!/bin/bash
 
+shopt -s expand_aliases
+source ~/.bash_aliases
+
 # -----------------------------------------------------
 # argument parcing
 # -----------------------------------------------------
@@ -68,7 +71,7 @@ if ${fcs_saving}; then
   echo "$RWD"
   echo "02_fcs_saving"
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' save_prefix='${prefix_data}${prefix_panel}' save_outdir='060_dumpfcs' path_metadata='${METADATA}/${file_metadata}' path_panel='${PANELS}/${file_panel}'" $RCODE/02_fcs_saving.R $ROUT/02_fcs_saving.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' save_prefix='${prefix_data}${prefix_panel}' save_outdir='060_dumpfcs' path_metadata='${METADATA}/${file_metadata}' path_panel='${PANELS}/${file_panel}'" $RCODE/02_fcs_saving.R $ROUT/02_fcs_saving.Rout
   tail $ROUT/02_fcs_saving.Rout
 
 fi

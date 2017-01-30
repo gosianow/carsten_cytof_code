@@ -1,0 +1,171 @@
+\documentclass[a4paper, 12pt]{article}
+\renewcommand*{\familydefault}{\sfdefault}
+
+% \usepackage[paperheight=12cm, paperwidth=16cm, top=0cm, bottom=0cm, left=0cm, right=0cm]{geometry}
+
+% \usepackage[top=2cm, bottom=2.5cm, left=1.5cm, right=1.5cm]{geometry}
+\usepackage[top=1cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
+
+\usepackage{graphicx}
+\usepackage[font=small, labelformat=empty]{caption}
+\usepackage{subcaption}
+\captionsetup[subfigure]{position=top, labelfont=bf, textfont=bf, labelformat=empty, font=scriptsize}
+
+
+\begin{document}
+\pagestyle{empty}
+
+Results using linear mixed model (lmer) and generalized mixed model - binomial (glmer). 
+
+\begin{itemize}
+  \item Data 23\_01, merging6. 
+  \item Data 29\_01, merging4.
+\end{itemize}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.9\textwidth}
+    \vskip 0pt
+    \caption{}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01/08_expression_merged/23m6_29m4_expr_all_ComplexHeatmap_colclust.pdf}
+    \end{subfigure}
+
+\end{figure}
+
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Global differential marker expression - data 23  + 29}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize C}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.9\textwidth}
+    \vskip 0pt
+    \caption{FDR = 5\%}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01/08_expression_merged/23m6_29m4_expr_all_lmer_interglht_pheatmap2_top005.pdf}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize C}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.9\textwidth}
+    \vskip 0pt
+    \caption{FDR = 10\%}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01/08_expression_merged/23m6_29m4_expr_all_lmer_interglht_pheatmap2_top01.pdf}
+    \end{subfigure}
+
+\end{figure}
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Global differential marker expression - data 23  + 29}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize C}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.9\textwidth}
+    \vskip 0pt
+    \caption{FDR = 5\%}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01/08_expression_merged/23m6_29m4_expr_all_lmer_interglht_pheatmap3pvs_top01.pdf}
+    \end{subfigure}
+    
+\end{figure}
+
+
+\begin{figure}[!thb]
+\centering
+
+        \caption{}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize D}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.97\textwidth}
+    \vskip 0pt
+    \caption{tSNE from all samples - data 23}
+        \includegraphics[width=\textwidth]{CK_2016-06-23_01/040_tsnemaps/23_01_pca1_merging6_raw_tSNEgroup.pdf}
+    \end{subfigure}
+    
+\end{figure}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Immune cell frequencies}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize E}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{BASE}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01/08_frequencies_merged/23m6_29m4_frequencies_plot_boxplotpoints_base.pdf}
+    \end{subfigure}
+    \quad
+        \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize }}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{TX}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01/08_frequencies_merged/23m6_29m4_frequencies_plot_boxplotpoints_tx.pdf}
+    \end{subfigure}
+        
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01/08_frequencies_merged/23m6_29m4_frequencies_glmer_binomial_interglht_pheatmap3pvs_top01.pdf}
+    \end{subfigure}
+    
+    
+\end{figure}
+
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

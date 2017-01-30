@@ -1,5 +1,8 @@
 #!/bin/bash
 
+shopt -s expand_aliases
+source ~/.bash_aliases
+
 # -----------------------------------------------------
 # argument parcing
 # -----------------------------------------------------
@@ -97,7 +100,7 @@ if ${cytokines_bimatrix}; then
 
   ### Create the bimatrix
   echo ">>> 06_cytokines_bimatrix"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${prefix_cytokines}' cytokines_outdir='${outdir}/01_clustering' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}' path_cytokines_cutoffs='${PANELS}/${file_cytokines_cutoffs}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')" $RCODE/06_cytokines_bimatrix.R $ROUT/06_cytokines_bimatrix.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' cytokines_prefix='${prefix_cytokines}' cytokines_outdir='${outdir}/01_clustering' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}' path_cytokines_cutoffs='${PANELS}/${file_cytokines_cutoffs}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx')" $RCODE/06_cytokines_bimatrix.R $ROUT/06_cytokines_bimatrix.Rout
   tail $ROUT/06_cytokines_bimatrix.Rout
 
 

@@ -194,6 +194,8 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, outdir, prefix, 
     
   }else{
     
+    days <- levels(ggdf$day)
+    
     pdf(file.path(outdir, paste0(prefix, "frequencies_plot.pdf")))
     plot(1, type="n", axes=F, xlab="", ylab="")
     dev.off()

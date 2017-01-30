@@ -1,5 +1,8 @@
 #!/bin/bash
 
+shopt -s expand_aliases
+source ~/.bash_aliases
+
 # -----------------------------------------------------
 # argument parcing
 # -----------------------------------------------------
@@ -80,7 +83,7 @@ if ${cytokines_fcs_saving}; then
   echo "$RWD"
   echo ">>> 06_cytokines_fcs_saving"
 
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' save_prefix='${prefix_data_merging}${prefix_clust}${data_name}_' save_outdir='${outdir}/06_dumpfcs' path_panel='${PANELS}/${file_panel}' path_metadata='${METADATA}/${file_metadata}' path_fcs='$RWD_MAIN/${data_dir}/010_cleanfcs' path_clustering='${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name}_clustering.xls' path_clustering_labels='${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name}_clustering_labels.xls'" $RCODE/06_cytokines_fcs_saving.R $ROUT/06_cytokines_fcs_saving.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' save_prefix='${prefix_data_merging}${prefix_clust}${data_name}_' save_outdir='${outdir}/06_dumpfcs' path_panel='${PANELS}/${file_panel}' path_metadata='${METADATA}/${file_metadata}' path_fcs='$RWD_MAIN/${data_dir}/010_cleanfcs' path_clustering='${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name}_clustering.xls' path_clustering_labels='${outdir}/01_clustering/${prefix_data_merging}${prefix_clust}${data_name}_clustering_labels.xls'" $RCODE/06_cytokines_fcs_saving.R $ROUT/06_cytokines_fcs_saving.Rout
   tail $ROUT/06_cytokines_fcs_saving.Rout
 
 fi

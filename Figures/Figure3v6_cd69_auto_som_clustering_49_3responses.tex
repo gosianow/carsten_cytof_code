@@ -1,0 +1,210 @@
+\documentclass[a4paper, 12pt]{article}
+\renewcommand*{\familydefault}{\sfdefault}
+
+% \usepackage[paperheight=12cm, paperwidth=16cm, top=0cm, bottom=0cm, left=0cm, right=0cm]{geometry}
+
+% \usepackage[top=2cm, bottom=2.5cm, left=1.5cm, right=1.5cm]{geometry}
+\usepackage[top=1cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
+
+\usepackage{graphicx}
+\usepackage[font=small, labelformat=empty]{caption}
+\usepackage{subcaption}
+\captionsetup[subfigure]{position=top, labelfont=bf, textfont=bf, labelformat=empty, font=scriptsize}
+
+
+\begin{document}
+\pagestyle{empty}
+
+
+
+Results using generalized linear mixed model - binomial (glmer).
+
+Using 49 SOM clusters of cd69 combinations. 
+
+
+Tmem cells extracted from:
+\begin{itemize}
+  \item  CD4 (cd69\_CM)
+      \begin{itemize}
+      \item data 23: merging 2, 
+      \item data 29: merging 3,
+    \end{itemize}
+
+  \item  CD8 (cd69\_CM\_new)
+  \begin{itemize}
+  \item data 23, merging 2,
+  \item data 29, merging 3, 
+\end{itemize}
+  
+\end{itemize}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize A}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD4/10_cd69_merged/03_frequencies_auto/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_pheatmap3pvs_top005.pdf}
+    \end{subfigure}
+\quad
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD8/10_cd69_merged/03_frequencies_auto/23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_pheatmap3pvs_top005.pdf}
+    \end{subfigure}
+    
+    
+\end{figure}
+
+\clearpage
+
+
+\begin{figure}[!thb]
+\centering
+    \caption{Significant cytokine combinations for TX (adjusted p-value $<$ 0.05)}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize A}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD4/10_cd69_merged/03_frequencies_auto/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top005_pheatmap_NRvsR_tx.pdf}
+    \end{subfigure}
+\quad
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD8/10_cd69_merged/03_frequencies_auto/23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top005_pheatmap_NRvsR_tx.pdf}
+    \end{subfigure}
+    
+    
+\end{figure}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize A}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD4/10_cd69_merged/03_frequencies_auto/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top005_selection_NRvsR_tx_frequencies_plot_boxplotpoints_tx2.pdf}
+    \end{subfigure}
+\quad
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD8/10_cd69_merged/03_frequencies_auto/23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top005_selection_NRvsR_tx_frequencies_plot_boxplotpoints_tx2.pdf}
+    \end{subfigure}
+    
+\end{figure}
+
+\clearpage
+
+
+\begin{figure}[!thb]
+\centering
+    \caption{Significant cytokine combinations for TX (adjusted p-value $<$ 0.1)}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize A}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD4/10_cd69_merged/03_frequencies_auto/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top01_pheatmap_NRvsR_tx.pdf}
+    \end{subfigure}
+\quad
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD8/10_cd69_merged/03_frequencies_auto/23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top01_pheatmap_NRvsR_tx.pdf}
+    \end{subfigure}
+    
+    
+\end{figure}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize A}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD4/10_cd69_merged/03_frequencies_auto/23_29_CD4_02CD4_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top01_selection_NRvsR_tx_frequencies_plot_boxplotpoints_tx2.pdf}
+    \end{subfigure}
+\quad
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/02_CD8/10_cd69_merged/03_frequencies_auto/23_29_CD8_02CD8_pca1_merging2_Tmem_cytCM_raw2_cd69_positive_cl49_frequencies_glmer_binomial_interglht_top01_selection_NRvsR_tx_frequencies_plot_boxplotpoints_tx2.pdf}
+    \end{subfigure}
+    
+\end{figure}
+
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

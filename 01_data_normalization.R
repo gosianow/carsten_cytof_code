@@ -23,18 +23,11 @@ library(reshape2)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# data_prefix='23_01_'
-# data_outdir='010_data'
-# path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-11-02'
-data_prefix='02_val_'
+rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
+data_prefix='23_01_'
 data_outdir='010_data'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_validation.xlsx'
-path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel_validation.xlsx'
-
+path_panel='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.xlsx'
+path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
 
 ##############################################################################
 # Read in the arguments

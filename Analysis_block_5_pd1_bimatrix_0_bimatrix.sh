@@ -1,5 +1,8 @@
 #!/bin/bash
 
+shopt -s expand_aliases
+source ~/.bash_aliases
+
 # -----------------------------------------------------
 # argument parcing
 # -----------------------------------------------------
@@ -102,13 +105,13 @@ if ${pd1_bimatrix}; then
 
   ### Create the bimatrix
   echo ">>> 07_pd1_bimatrix"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' pd1_prefix='${prefix_pd1main}' pd1_outdir='${outdir}/01_clustering' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}' path_cytokines_cutoffs='${PANELS}/${file_cytokines_cutoffs}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx') marker='${marker}'" $RCODE/07_pd1_bimatrix.R $ROUT/07_pd1_bimatrix.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' pd1_prefix='${prefix_pd1main}' pd1_outdir='${outdir}/01_clustering' path_data='010_data/${prefix_data}${prefix_panel}expr_raw.rds' path_metadata='${METADATA}/${file_metadata}' path_cytokines_cutoffs='${PANELS}/${file_cytokines_cutoffs}' path_clustering='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering.xls' path_clustering_labels='030_heatmaps/${prefix_data}${prefix_panel}${prefix_pca}${prefix_merging}clustering_labels.xls' clsubset=${clsubset} cutoff_colname=c('positive_cutoff_raw_base','positive_cutoff_raw_tx') marker='${marker}'" $RCODE/07_pd1_bimatrix.R $ROUT/07_pd1_bimatrix.Rout
   tail $ROUT/07_pd1_bimatrix.Rout
 
 
   ### Frequency analysis of PD1+ and PD1-
   echo ">>> 04_frequencies"
-  R CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}' freq_outdir='${outdir}/03_frequencies_auto' path_metadata='${METADATA}/${file_metadata}'  path_clustering='${outdir}/01_clustering/${prefix_pd1main}clustering.xls' path_clustering_labels='${outdir}/01_clustering/${prefix_pd1main}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
+  R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_pd1main}' freq_outdir='${outdir}/03_frequencies_auto' path_metadata='${METADATA}/${file_metadata}'  path_clustering='${outdir}/01_clustering/${prefix_pd1main}clustering.xls' path_clustering_labels='${outdir}/01_clustering/${prefix_pd1main}clustering_labels.xls' path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_1dataset_3responses.R'" $RCODE/04_frequencies.R $ROUT/04_frequencies.Rout
   tail $ROUT/04_frequencies.Rout
 
 

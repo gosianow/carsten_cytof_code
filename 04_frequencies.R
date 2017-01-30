@@ -25,16 +25,15 @@ library(gtools) # for logit
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-freq_prefix='23_01_pca1_merging6_'
+rwd='/home/Shared/data/cytof/carsten_cytof/CK_2016-06-23_01_CD8_mergingNEW2'
+freq_prefix='23CD8_01CD8_pca1_merging6_'
 freq_outdir='050_frequencies'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
-path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_1dataset_3responses.R'
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
-
+path_metadata='/home/Shared/data/cytof/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
+path_clustering='030_heatmaps/23CD8_01CD8_pca1_merging6_clustering.xls'
+path_clustering_labels='030_heatmaps/23CD8_01CD8_pca1_merging6_clustering_labels.xls'
+path_fun_models='/home/gosia/R/carsten_cytof_code/00_models.R'
+path_fun_formulas='/home/gosia/R/carsten_cytof_code/00_formulas_1dataset_3responses.R'
+path_fun_plot_heatmaps='/home/gosia/R/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R'
 ### Optional arguments
 pdf_hight=8
 
@@ -100,6 +99,11 @@ names(color_groupsb) <- colors$condition
 
 color_samples <- md$color
 names(color_samples) <- md$shortname
+
+
+colors <- unique(md[, c("response", "color")])
+color_response <- colors$color
+names(color_response) <- colors$response
 
 
 # ------------------------------------------------------------
@@ -386,7 +390,7 @@ for(k in models2fit){
   
   prefix2 <- paste0(k, "_")
   
-  plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
+  plot_heatmaps_for_sign_freqs(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, color_response = color_response, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
 }
 

@@ -1,20 +1,27 @@
 
 
 
-plot_heatmaps_for_sign_freqs <- function(expr_all, md, FDR_cutoff, pval_name2, adjpval_name2, pval_name_list, adjpval_name_list, breaks, legend_breaks, outdir, prefix, prefix2, suffix){
+plot_heatmaps_for_sign_freqs <- function(expr_all, md, FDR_cutoff, pval_name2, adjpval_name2, pval_name_list, adjpval_name_list, breaks, legend_breaks, outdir, prefix, prefix2, suffix, color_response){
   # pval_name2, adjpval_name2 - p-value for plotting pheatmap2
   # pval_name_list, adjpval_name_list - p-value for plotting the pheatmap3
   
+  rownames(md) <- md$shortname
   
   # -----------------------------
   ### Plot one heatmap with R vs NR
+  ### pheatmap2
   
-  ## group the expression by cluster
-  adjpval_name <- adjpval_name2
-  pval_name <- pval_name2
-  expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
-  
-  which_top_pvs <- expr_all[, adjpval_name] < FDR_cutoff & !is.na(expr_all[, adjpval_name])
+  ## order by p-value
+  if(is.null(adjpval_name2)){
+      which_top_pvs <- FALSE
+    }else{
+      adjpval_name <- adjpval_name2
+      pval_name <- pval_name2
+      expr_all <- expr_all[order(expr_all[, pval_name]), , drop = FALSE]
+      
+      which_top_pvs <- expr_all[, adjpval_name] < FDR_cutoff & !is.na(expr_all[, adjpval_name])
+    }
+
   which(which_top_pvs)
   
   if(sum(which_top_pvs) > 0) {
@@ -112,6 +119,7 @@ plot_heatmaps_for_sign_freqs <- function(expr_all, md, FDR_cutoff, pval_name2, a
   
   # -----------------------------
   ### Plot one heatmap with R vs NR + heatmap with p-values for NRvsR_base, NRvsR_tx and NRvsR_basevstx
+  ### pheatmap3
   
   ## group the expression by cluster and order by adjpval
   for(i in length(pval_name_list):1){

@@ -1,0 +1,216 @@
+\documentclass[a4paper, 12pt]{article}
+\renewcommand*{\familydefault}{\sfdefault}
+
+% \usepackage[paperheight=12cm, paperwidth=16cm, top=0cm, bottom=0cm, left=0cm, right=0cm]{geometry}
+
+% \usepackage[top=2cm, bottom=2.5cm, left=1.5cm, right=1.5cm]{geometry}
+\usepackage[top=1cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
+
+\usepackage{graphicx}
+\usepackage[font=small, labelformat=empty]{caption}
+\usepackage{subcaption}
+\captionsetup[subfigure]{position=top, labelfont=bf, textfont=bf, labelformat=empty, font=scriptsize}
+
+
+\begin{document}
+\pagestyle{empty}
+
+Results using linear mixed model (lmer) and generalized linear mixed model - binomial (glmer).
+
+Data:
+\begin{itemize}
+  \item  23\_01\_CD4 - merging5 and 29\_01\_CD4 - merging5,
+  \item  23\_01\_CD8 - merging3 and 29\_01\_CD8 - merging3.
+\end{itemize}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Global differential marker expression - FDR = 5\%}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize A}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.95\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD4/08_expression_merged/23CD4m5_29CD4m5_expr_all_lmer_interglht_pheatmap2_top005.pdf}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.95\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD8/08_expression_merged/23CD8m3_29CD8m3_expr_all_lmer_interglht_pheatmap2_top005.pdf}
+    \end{subfigure}
+
+
+\end{figure}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Global differential marker expression - FDR = 10\%}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize A}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.95\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD4/08_expression_merged/23CD4m5_29CD4m5_expr_all_lmer_interglht_pheatmap2_top01.pdf}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize B}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.95\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD8/08_expression_merged/23CD8m3_29CD8m3_expr_all_lmer_interglht_pheatmap2_top01.pdf}
+    \end{subfigure}
+
+
+\end{figure}
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Global differential marker expression}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize }}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD4}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD4/08_expression_merged/23CD4m5_29CD4m5_expr_all_lmer_interglht_pheatmap3pvs_top01.pdf}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize }}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{CD8}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD8/08_expression_merged/23CD8m3_29CD8m3_expr_all_lmer_interglht_pheatmap3pvs_top01.pdf}
+    \end{subfigure}
+
+
+\end{figure}
+
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Frequencies CD4}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize C}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{BASE}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD4/08_frequencies_merged/23CD4m5_29CD4m5_frequencies_plot_boxplotpoints_base.pdf}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize }}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{TX}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD4/08_frequencies_merged/23CD4m5_29CD4m5_frequencies_plot_boxplotpoints_tx.pdf}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize }}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.5\textwidth}
+    \vskip 0pt
+    \caption{}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD4/08_frequencies_merged/23CD4m5_29CD4m5_frequencies_glmer_binomial_interglht_pheatmap3pvs_top01.pdf}
+    \end{subfigure}
+
+
+\end{figure}
+
+
+\begin{figure}[!thb]
+\centering
+
+    \caption{Frequencies CD8}
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize D}}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{BASE}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD8/08_frequencies_merged/23CD8m3_29CD8m3_frequencies_plot_boxplotpoints_base.pdf}
+    \end{subfigure}
+    \quad
+        \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize }}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.45\textwidth}
+    \vskip 0pt
+    \caption{TX}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD8/08_frequencies_merged/23CD8m3_29CD8m3_frequencies_plot_boxplotpoints_tx.pdf}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{0.02\textwidth}
+    \vskip 0pt
+        \textbf{\textsf{\normalsize }}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.5\textwidth}
+    \vskip 0pt
+    \caption{}
+        \includegraphics[width=\textwidth]{CK_2016-06-merged_23_29/01_CD8/08_frequencies_merged/23CD8m3_29CD8m3_frequencies_glmer_binomial_interglht_pheatmap3pvs_top01.pdf}
+    \end{subfigure}
+
+
+\end{figure}
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

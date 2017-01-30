@@ -2,3 +2,8 @@
 .Rproj.user/
 *.Rproj
 *tmp*.sh
+._*
+.DS_Store
+Figures/._*
+Figures/.DS_Store
+

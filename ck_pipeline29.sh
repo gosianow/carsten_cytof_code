@@ -3,8 +3,10 @@
 ###############################################################################################################
 ## Define paths to software and reference files
 
-RWD_MAIN=/Users/gosia/Dropbox/UZH/carsten_cytof
-RCODE=/Users/gosia/Dropbox/UZH/carsten_cytof_code
+# RWD_MAIN=/Users/gosia/Dropbox/UZH/carsten_cytof
+# RCODE=/Users/gosia/Dropbox/UZH/carsten_cytof_code
+RWD_MAIN=/home/Shared/data/cytof/carsten_cytof
+RCODE=/home/gosia/R/carsten_cytof_code
 METADATA=$RWD_MAIN/CK_metadata
 PANELS=$RWD_MAIN/CK_panels
 
@@ -138,6 +140,7 @@ file_panel=('panel1CD4.xlsx' 'panel1CD8.xlsx')
 prefix_panel=('01CD4_' '01CD8_')
 pca_score_cutoff=(1.9 1.9)
 
+
 for i in 0 1
 do
   ./Analysis_block_1_main.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --data_normalization ${data_normalization} --pcascores ${pcascores} --select_observables ${select_observables} --flowsom ${flowsom} --flowsom_validation ${flowsom_validation} --heatmaps ${heatmaps} --runtsne ${runtsne} --plottsne ${plottsne} --plottsne_expr ${plottsne_expr} --frequencies ${frequencies} --expression false --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust} --pca_score_cutoff ${pca_score_cutoff[$i]} --rand_seed_consensus ${rand_seed_consensus} --nmetaclusts ${nmetaclusts} --tsne_pmin ${tsne_pmin}
@@ -180,21 +183,11 @@ done
 # Use Analysis block 2
 # --------------------------------------------------
 
-prefix_clust="cl20_"
 
-file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust}cluster_merging2.xlsx")
-prefix_merging=('merging2_' 'merging2_')
+prefix_clust=('cl5_' 'cl5_')
 
-for i in 0 1
-do
-  ./Analysis_block_2_cluster_merging.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cluster_merging ${cluster_merging} --heatmaps ${heatmaps} --plottsne ${plottsne} --frequencies ${frequencies} --expression ${expression} --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust} --prefix_merging ${prefix_merging[$i]} --file_merging ${file_merging[$i]}
-done
-
-
-prefix_clust=('cl8_' 'cl5_')
-
-file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust[0]}cluster_merging4.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust[1]}cluster_merging3.xlsx")
-prefix_merging=('merging4_' 'merging3_')
+file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust[0]}cluster_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust[1]}cluster_merging3.xlsx")
+prefix_merging=('merging5_' 'merging3_')
 
 for i in 0 1
 do
@@ -202,12 +195,12 @@ do
 done
 
 
-prefix_clust=('cl5_' 'cl8_')
+prefix_clust=('cl5_' 'cl5_')
 
-file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust[0]}cluster_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust[1]}cluster_merging4.xlsx")
-prefix_merging=('merging5_' 'merging4_')
+file_merging=("${prefix_data[0]}${prefix_panel[0]}${prefix_pca}${prefix_clust[0]}cluster_merging5.xlsx" "${prefix_data[1]}${prefix_panel[1]}${prefix_pca}${prefix_clust[1]}cluster_merging6.xlsx")
+prefix_merging=('merging5_' 'merging6_')
 
-for i in 0 1
+for i in 1 # run only for CD8
 do
   ./Analysis_block_2_cluster_merging.sh --RCODE ${RCODE} --RWD_MAIN ${RWD_MAIN} --data_dir ${data_dir[$i]} --cluster_merging ${cluster_merging} --heatmaps ${heatmaps} --plottsne ${plottsne} --frequencies ${frequencies} --expression ${expression} --METADATA ${METADATA} --PANELS ${PANELS} --file_metadata ${file_metadata} --file_panel ${file_panel[$i]} --prefix_data ${prefix_data[$i]} --prefix_panel ${prefix_panel[$i]} --prefix_pca ${prefix_pca} --prefix_clust ${prefix_clust[$i]} --prefix_merging ${prefix_merging[$i]} --file_merging ${file_merging[$i]}
 done

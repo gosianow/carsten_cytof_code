@@ -111,6 +111,9 @@ levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
 color_groups <- colors$color
 names(color_groups) <- colors$condition
 
+colors <- unique(md[, c("response", "color")])
+color_response <- colors$color
+names(color_response) <- colors$response
 
 # ------------------------------------------------------------
 # Load clustering data
@@ -445,7 +448,7 @@ for(k in models2fit){
   
   prefix2 <- paste0(out_name, "_", k, "_")
   
-  plot_heatmaps_for_sign_expr(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
+  plot_heatmaps_for_sign_expr(expr_all = expr_all, md = md, FDR_cutoff = 0.05, pval_name2 = pval_name2, adjpval_name2 = adjpval_name2, pval_name_list = pval_name_list, adjpval_name_list = adjpval_name_list, breaks = breaks, legend_breaks = legend_breaks, color_response = color_response, outdir = outdir, prefix = prefix, prefix2 = prefix2, suffix = suffix)
   
   
 }
