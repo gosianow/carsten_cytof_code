@@ -2,6 +2,7 @@
 .Rproj.user/
 *.Rproj
 *tmp*.sh
+*tmp*.R
 ._*
 .DS_Store
 Figures/._*

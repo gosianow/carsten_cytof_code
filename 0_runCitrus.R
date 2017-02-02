@@ -6,16 +6,22 @@
 # Prepare the FCS files
 # ==================================================================================================
 
+# ---------------------------------------
+### First run that manually
+
+## Copy the fcs files from CK_2016-06-23_01/010_cleanfcs/ info CK_2016-06-23_01/0_citrus/
+
+## In R:
 # library("citrus")
 # citrus.checkFileParameterConsistencyUI()
 
-### First, generate  panel3.csv file from CK_panels/panel3.csv
+## Generate  CK_panels/panel1.csv file from CK_panels/panel1.xlsx. panel1.csv is a data frame with two columns without column names. The first column corresponds to fcs_colname elements and the second to Antigen elements from panel1.xlsx for which transform equals to 1.
 
-
+## In R:
 # library("cytofCore")
-# cytofCore.updatePanel(fcsFolder = "/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/0_citrus", templateFile = "/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03/0_citrus/panel3.csv")
+# cytofCore.updatePanel(fcsFolder = "/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/0_citrus", templateFile = "/Users/gosia/Dropbox/UZH/carsten_cytof/CK_panels/panel1.csv")
 
-### Split base and tx samples from relabeled/ into relabeled_base/ and relabeled_tx/ and remove HD samples
+## Split base and tx samples from relabeled/ into relabeled_base/ and relabeled_tx/ and remove HD samples
 
 # ==================================================================================================
 # Run citrus
