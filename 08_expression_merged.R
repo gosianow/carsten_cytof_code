@@ -400,7 +400,7 @@ levels(md$response)
 ### Fit all the models
 
 # models2fit <- c("lm_interglht", "lmer_interglht", "rlm_interglht")
-models2fit <- c("lmer_interglht")
+models2fit <- c("lm_interglht", "lmer_interglht")
 
 
 for(k in models2fit){

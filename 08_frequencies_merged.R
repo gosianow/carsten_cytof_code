@@ -25,19 +25,19 @@ library(tools)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
+rwd='/home/Shared/data/cytof/carsten_cytof/CK_2016-06-merged_23_29/01'
 freq_prefix='23m6_29m4_'
 freq_outdir='08_frequencies_merged_2responses'
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
-path_counts=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_counts.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_counts.xls')
+path_metadata=c('/home/Shared/data/cytof/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/home/Shared/data/cytof/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+path_counts=c('/home/Shared/data/cytof/carsten_cytof/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_counts.xls','/home/Shared/data/cytof/carsten_cytof/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_counts.xls')
 data_name=c('data23','data29')
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_2responses.R'
-path_fun_plot_frequencies <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_frequencies.R"
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
+path_fun_models='/home/gosia/R/carsten_cytof_code/00_models.R'
+path_fun_formulas='/home/gosia/R/carsten_cytof_code/00_formulas_2datasets_2responses.R'
+path_fun_plot_frequencies <- "/home/gosia/R/carsten_cytof_code/00_plot_frequencies.R"
+path_fun_plot_heatmaps <- "/home/gosia/R/carsten_cytof_code/00_plot_heatmaps_for_sign_freqs.R"
 
 ### Optional arguments
-pdf_hight=8
+pdf_hight=4
 plot_only=FALSE
 FDR_cutoff=0.05
 suffix="_top005"
@@ -86,6 +86,8 @@ if(!any(grepl("suffix=", args))){
 if(!any(grepl("plot_only=", args))){
   plot_only=FALSE
 }
+
+if_cluster_selection <- any(grepl("path_cluster_selection=", args))
 
 
 # ------------------------------------------------------------
@@ -153,14 +155,19 @@ freq <- lapply(1:length(data_name), function(i){
 
 freq_out <- Reduce(function(...) merge(..., by = c("label"), all=TRUE, sort = FALSE), freq)
 
+## Drop the 'drop' cluster
 freq_out <- freq_out[freq_out$label != "drop", , drop = FALSE]
+
+
+if(all(!complete.cases(freq_out))){
+  stop("There is no common cluster in the merged data sets!")
+}else{
+  freq_out <- freq_out[complete.cases(freq_out), , drop = FALSE]
+  }
 
 freq_out$cluster <- 1:nrow(freq_out)
 
 freq_out <- freq_out[, c("cluster", "label", md$shortname)]
-
-if(all(!complete.cases(freq_out)))
-  stop("There is no common cluster in the merged data sets!")
 
 prop_out <- freq_out
 prop_out[md$shortname] <- t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)) * 100
@@ -174,33 +181,28 @@ labels
 write.table(prop_out, file=file.path(outdir, paste0(prefix, "frequencies.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 write.table(freq_out, file=file.path(outdir, paste0(prefix, "counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
-# ---------------------------------------
-# Keep only those samples that have enough cells 
-# ---------------------------------------
 
-min_cells <- 0
+# ------------------------------------------------------------
+### Colors for clusters
+# ------------------------------------------------------------
 
-table_samp <- colSums(freq_out[md$shortname], na.rm = TRUE)
-names(table_samp) <- md$shortname
+# ------------------------------ 
+# palette 1
 
-keep_samps <- names(table_samp)[which(table_samp > min_cells)]
+# ggplot palette
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length=n+1)
+  hcl(h=hues, l=60 , c=100)[1:n]
+}
 
+# ------------------------------ 
+# color blind palette
 
-prop_out <- prop_out[, colnames(prop_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
-freq_out <- freq_out[, colnames(freq_out) %in% c("cluster", "label", keep_samps), drop = FALSE]
+colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(labels$label) - length(colors_muted))))
 
-table(md$shortname %in% keep_samps)
-
-md <- md[md$shortname %in% keep_samps, , drop = FALSE]
-
-
-## drop unused levels
-md$response <- factor(md$response)
-md$day <- factor(md$day)
-md$patient_id <- factor(md$patient_id)
-md$data <- factor(md$data)
-md$data_day <- factor(md$data_day)
-
+colors_clusters <- color_ramp[1:nlevels(labels$label)]
+names(colors_clusters) <- levels(labels$label)
 
 
 # ------------------------------------------------------------
@@ -210,7 +212,7 @@ md$data_day <- factor(md$data_day)
 source(path_fun_plot_frequencies)
 
 
-ggdf <- melt(prop_out[complete.cases(freq_out), , drop = FALSE], id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
+ggdf <- melt(prop_out, id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
 
 ## use labels as clusters
 ggdf$cluster <- factor(ggdf$label, levels = labels$label)
@@ -234,7 +236,8 @@ ggdf$day <- factor(ggdf$day)
 ### Cluster selection
 ### Use only the clusters that are specified in the cluster_selection.txt file
 
-if(any(grepl("path_cluster_selection=", args))){
+
+if(if_cluster_selection){
   
   if(file.exists(path_cluster_selection)){
     
@@ -255,7 +258,7 @@ if(any(grepl("path_cluster_selection=", args))){
 }
 
 
-plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, outdir = outdir, prefix = prefix, pdf_hight = pdf_hight)
+plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, colors_clusters = colors_clusters, outdir = outdir, prefix = prefix, pdf_hight = pdf_hight)
 
 
 # -----------------------------------------------------------------------------
@@ -268,8 +271,6 @@ plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color
 ### normalize the expression
 ass_freq_out <- freq_out
 ass_freq_out[md$shortname] <- asin(sqrt((t(t(freq_out[md$shortname]) / colSums(freq_out[md$shortname], na.rm = TRUE)))))
-
-ass_freq_out <- ass_freq_out[complete.cases(ass_freq_out), , drop = FALSE]
 
 expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
 th <- 2.5
@@ -343,7 +344,6 @@ if(!plot_only){
   source(path_fun_formulas)
   
   source(path_fun_plot_heatmaps)
-  
   
   levels(md$data)
   levels(md$day)

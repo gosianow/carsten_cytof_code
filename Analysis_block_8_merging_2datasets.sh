@@ -122,22 +122,37 @@ suffix=('_top005' '_top01')
 for j in 0 1
 do
 
-  ### Get cluster frequencies - models with NR, R and HD
+  ### Get cluster frequencies - models with [NR, R, HD] and [base, tx]
   if ${frequencies_merged}; then
     echo ">>> 08_frequencies_merged"
     R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses.R' path_fun_plot_frequencies='$RCODE/00_plot_frequencies.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
     tail $ROUT/08_frequencies_merged.Rout
   fi
 
-  ### Get cluster frequencies - models with NR, R
+  ### Get cluster frequencies - models with [NR, R] and [base, tx]
   if ${frequencies_merged}; then
     echo ">>> 08_frequencies_merged"
     R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' path_fun_plot_frequencies='$RCODE/00_plot_frequencies.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
     tail $ROUT/08_frequencies_merged.Rout
   fi
 
+  ### Get cluster frequencies - models with [NR, R, HD] and [base]
+  if ${frequencies_merged}; then
+    echo ">>> 08_frequencies_merged"
+    R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged_base' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses_base.R' path_fun_plot_frequencies='$RCODE/00_plot_frequencies.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+    tail $ROUT/08_frequencies_merged.Rout
+  fi
 
-  ### Marker expression analysis - models with NR, R and HD
+  ### Get cluster frequencies - models with [NR, R] and [base]
+  if ${frequencies_merged}; then
+    echo ">>> 08_frequencies_merged"
+    R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' freq_prefix='${prefix_data_merging}' freq_outdir='08_frequencies_merged_2responses_base' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_counts=c('${RWD_MAIN}/${data_dir1}/050_frequencies/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}counts.xls','${RWD_MAIN}/${data_dir2}/050_frequencies/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}counts.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses_base.R' path_fun_plot_frequencies='$RCODE/00_plot_frequencies.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}'" $RCODE/08_frequencies_merged.R $ROUT/08_frequencies_merged.Rout
+    tail $ROUT/08_frequencies_merged.Rout
+  fi
+
+### -------------------------------------------------------------------
+
+  ### Marker expression analysis - models with [NR, R, HD] and [base, tx]
   if ${expression_merged}; then
     echo ">>> 08_expression_merged"
     # all
@@ -149,7 +164,7 @@ do
   fi
 
 
-  ### Marker expression analysis - models with NR, R
+  ### Marker expression analysis - models with [NR, R] and [base, tx]
   if ${expression_merged}; then
     echo ">>> 08_expression_merged"
     # all
@@ -159,6 +174,33 @@ do
     R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged_2responses' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_clust.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_clust.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_expr.R' path_fun_plot_expression='$RCODE/00_plot_expression.R' analysis_type='clust' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}' path_marker_exclusion='${prefix_data_merging}expr_marker_exclusion.txt'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
     tail $ROUT/08_expression_merged.Rout
   fi
+
+
+  ### Marker expression analysis - models with [NR, R, HD] and [base]
+  if ${expression_merged}; then
+    echo ">>> 08_expression_merged"
+    # all
+    R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged_base' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_all.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_all.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses_base.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_expr.R' path_fun_plot_expression='$RCODE/00_plot_expression.R' analysis_type='all' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}' path_marker_exclusion='${prefix_data_merging}expr_marker_exclusion.txt'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
+    tail $ROUT/08_expression_merged.Rout
+    # clust
+    R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged_base' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_clust.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_clust.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_3responses_base.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_expr.R' path_fun_plot_expression='$RCODE/00_plot_expression.R' analysis_type='clust' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}' path_marker_exclusion='${prefix_data_merging}expr_marker_exclusion.txt'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
+    tail $ROUT/08_expression_merged.Rout
+  fi
+
+
+  ### Marker expression analysis - models with [NR, R] and [base]
+  if ${expression_merged}; then
+    echo ">>> 08_expression_merged"
+    # all
+    R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged_2responses_base' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_all.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_all.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses_base.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_expr.R' path_fun_plot_expression='$RCODE/00_plot_expression.R' analysis_type='all' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}' path_marker_exclusion='${prefix_data_merging}expr_marker_exclusion.txt'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
+    tail $ROUT/08_expression_merged.Rout
+    # clust
+    R33 CMD BATCH --no-save --no-restore "--args rwd='$RWD' expr_prefix='${prefix_data_merging}' expr_outdir='08_expression_merged_2responses_base' path_metadata=c('${METADATA}/${file_metadata1}','${METADATA}/${file_metadata2}')  path_expression=c('${RWD_MAIN}/${data_dir1}/080_expression/${prefix_data1}${prefix_panel}${prefix_pca}${prefix_merging1}raw_expr_clust.xls','${RWD_MAIN}/${data_dir2}/080_expression/${prefix_data2}${prefix_panel}${prefix_pca}${prefix_merging2}raw_expr_clust.xls') data_name=c('${data_name1}','${data_name2}') path_fun_models='$RCODE/00_models.R' path_fun_formulas='$RCODE/00_formulas_2datasets_2responses_base.R' path_fun_plot_heatmaps='$RCODE/00_plot_heatmaps_for_sign_expr.R' path_fun_plot_expression='$RCODE/00_plot_expression.R' analysis_type='clust' FDR_cutoff=${FDR_cutoff[$j]} suffix='${suffix[$j]}' path_marker_exclusion='${prefix_data_merging}expr_marker_exclusion.txt'" $RCODE/08_expression_merged.R $ROUT/08_expression_merged.Rout
+    tail $ROUT/08_expression_merged.Rout
+  fi
+
+
+
 
 
 done

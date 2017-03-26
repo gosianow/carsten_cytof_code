@@ -1,9 +1,9 @@
 
 
 
-plot_heatmaps_for_sign_freqs <- function(expr_all, md, FDR_cutoff, pval_name2, adjpval_name2, pval_name_list, adjpval_name_list, breaks, legend_breaks, outdir, prefix, prefix2, suffix, color_response){
-  # pval_name2, adjpval_name2 - p-value for plotting pheatmap2
-  # pval_name_list, adjpval_name_list - p-value for plotting the pheatmap3
+plot_heatmaps_for_sign_freqs <- function(expr_all, md, FDR_cutoff, pval_name2 = NULL, adjpval_name2 = NULL, pval_name_list, adjpval_name_list, breaks, legend_breaks, outdir, prefix, prefix2, suffix, color_response){
+  # pval_name2, adjpval_name2 - p-value for plotting pheatmap2 - adjp_NRvsR contrast
+  # pval_name_list, adjpval_name_list - p-value for plotting the pheatmap3 with everything
   
   rownames(md) <- md$shortname
   

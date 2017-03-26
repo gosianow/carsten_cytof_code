@@ -4,11 +4,11 @@ md <- md[md$response %in% c("NR", "R"), , drop = FALSE]
 md$response <- factor(md$response)
 
 
-mm <- model.matrix(y ~ response + data_day + response:data_day, data = data.frame(y = 1, md))
+model.matrix( ~ response + data_day + response:data_day, data = md)
 
 
 
-if(identical(levels(md$data), c("data23", "data29")) && identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R"))){
+if(identical(levels(md$data), c("data23", "data29")) && identical(levels(md$day), c("base", "tx")) && identical(levels(md$response), c("NR", "R")) && identical(levels(md$data_day), c("data23.base", "data23.tx", "data29.base", "data29.tx"))){
   
   ## create formulas
   formula_lm <- y ~ response + data_day + response:data_day
