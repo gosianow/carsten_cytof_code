@@ -27,23 +27,24 @@ library(ConsensusClusterPlus)
 # Test arguments
 ##############################################################################
 
-rwd='/home/Shared/data/cytof/carsten_cytof/CK_2016-06-23_01'
-heatmap_prefix='23_01_pca1_merging6_raw_'
+rwd='/home/Shared/data/cytof/carsten_cytof/CK_2016-06-23_03all'
+heatmap_prefix='23all_03v2_pca1_cl20_raw_'
 heatmap_outdir='030_heatmaps'
-path_data='010_data/23_01_expr_raw.rds'
-path_metadata='/home/Shared/data/cytof/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-path_clustering_observables='030_heatmaps/23_01_pca1_clustering_observables.xls'
-path_clustering='030_heatmaps/23_01_pca1_merging6_clustering.xls'
-path_clustering_labels='030_heatmaps/23_01_pca1_merging6_clustering_labels.xls'
-path_marker_selection='23_01_pca1_merging6_marker_selection.txt'
+path_data='010_data/23all_03v2_expr_raw.rds'
+path_clustering_observables='030_heatmaps/23all_03v2_pca1_clustering_observables.xls'
+path_clustering='030_heatmaps/23all_03v2_pca1_cl20_clustering.xls'
+path_clustering_labels='030_heatmaps/23all_03v2_pca1_cl20_clustering_labels.xls'
+path_marker_selection='23all_03v2_pca1_cl20_marker_selection.txt'
 aggregate_fun='median'
 pheatmap_palette='YlGnBu'
 pheatmap_palette_rev=FALSE
 pheatmap_scale=TRUE
-extra_path_data='010_data/23_01_expr_norm.rds'
-extra_pheatmap_palette='Greys'
-extra_pheatmap_palette_rev=FALSE
+extra_path_data='010_data/23all_03v2_expr_norm.rds'
+extra_pheatmap_palette='RdYlBu'
+extra_pheatmap_palette_rev=TRUE
 extra_suffix='_norm'
+
+
 
 ##############################################################################
 # Read in the arguments
@@ -68,11 +69,16 @@ outdir <- heatmap_outdir
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
 
-
-
-if(all(!grepl("linkage=", args))){
+if(all(!grepl("linkage", ls()))){
   linkage <- "average"
 }
+
+if_path_cluster_merging <- any(grepl("path_cluster_merging", ls()))
+
+if_merging_suffix <- any(grepl("merging_suffix", ls()))
+
+if_extra_path_data <- any(grepl("extra_path_data", ls()))
+
 
 # ------------------------------------------------------------
 # Load data
@@ -115,16 +121,42 @@ clust_observ <- clustering_observables[clustering_observables$clustering_observa
 
 
 # ------------------------------------------------------------
-# Load cluster merging data
+# Prepare a color annotation for heatmaps 
 # ------------------------------------------------------------
-### Used to plot an annotation on the heatmap of how the mering looks like 
+
+
+# --------------------
+# Colors for clusters
+# --------------------
+
+# ggplot palette
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length=n+1)
+  hcl(h=hues, l=60 , c=100)[1:n]
+}
+
+# ------------------------------ 
+# color blind palette
+
+colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(labels$label) - length(colors_muted))))
+
+colors_clusters <- color_ramp[1:nlevels(labels$label)]
+names(colors_clusters) <- levels(labels$label)
+
+# ------------------------------ 
+
 
 # elements for the heatmap
-annotation_row <- NA
-annotation_colors = NA
+annotation_row <- data.frame(cluster = labels$label)
+rownames(annotation_row) <- rownames(labels$label)
+
+annotation_colors <- list(cluster = colors_clusters)
 rows_order <- 1:nrow(labels)
 
-if(any(grepl("path_cluster_merging=", args))){
+
+
+if(if_path_cluster_merging){
   
   # read cluster merging file
   cm <- read.xls(path_cluster_merging)
@@ -142,26 +174,10 @@ if(any(grepl("path_cluster_merging=", args))){
   
   cmm <- merge(labels, cm[, c("old_cluster", "new_cluster", "new_label"), drop = FALSE], by.x = "cluster", by.y = "old_cluster", all.x = TRUE)
   
-  
-  # ------------------------------------------------------------
-  # Colors for clusters
-  # ------------------------------------------------------------
-  
-  # ggplot palette
-  gg_color_hue <- function(n) {
-    hues = seq(15, 375, length=n+1)
-    hcl(h=hues, l=60 , c=100)[1:n]
-  }
-  
-  # ------------------------------ 
-  # color blind palette
-  
-  colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
   color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(cmm$new_label) - length(colors_muted))))
   
   colors_clusters <- color_ramp[1:nlevels(cmm$new_label)]
   names(colors_clusters) <- levels(cmm$new_label)
-  
   
   # elements for the heatmap
   annotation_row <- data.frame(cluster = cmm$new_label)
@@ -176,6 +192,8 @@ if(any(grepl("path_cluster_merging=", args))){
 
 # ------------------------------------------------------------
 # load marker selection for plotting on the heatmaps
+# ------------------------------------------------------------
+
 marker_selection <- NULL
 
 if(file.exists(file.path(path_marker_selection))){
@@ -236,7 +254,8 @@ subset_samp[[2]] <- unique(samp)[grep("_HD", unique(samp))]
 
 suffix_subset <- c("", "_HD")
 
-if(any(grepl("merging_suffix=", args))){
+
+if(if_merging_suffix){
   
   suffix_subset <- paste0(c("", "_HD"), merging_suffix)
   
@@ -377,8 +396,8 @@ for(ii in 1:length(subset_samp)){
   # Had to do this way because I want to plot the 01 normalized data, but I want to keep row clustering from the raw data
   # ------------------------------------------------------------
   
-  
-  if(any(grepl("extra_path_data=", args))){
+
+  if(if_extra_path_data){
     
     
     # ------------------------------------------------------------

@@ -205,15 +205,11 @@ colnames(e) <- fcs_panel$Antigen[cols]
 
 plotting_wrapper(e = e, suffix = "_raw")
 
-
 ## Expression of normalized data
 
 colnames(el) <- fcs_panel$Antigen[cols]
 
 plotting_wrapper(e = el, suffix = "_norm")
-
-
-
 
 # ------------------------------------------------------------
 # Plot number of cells per sample

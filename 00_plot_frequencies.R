@@ -146,10 +146,11 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
     
     
     # ------------------------------------
-    # plot for each sample the barplot with cluster composition
+    # plot for each sample as a bar with cluster composition
     
     days <- levels(ggdf$day)
-    
+    h <- 4
+
     for(i in 1:nlevels(ggdf$day)){
       # i = 1
       
