@@ -3,7 +3,7 @@
 
 # BioC 3.3
 # Created 13 Oct 2016
-# Updated 20 Oct 2016
+# Updated 6 Jun 2017
 
 ##############################################################################
 Sys.time()
@@ -27,22 +27,21 @@ library(ComplexHeatmap)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-merged_23_29/01'
+rwd='/home/Shared/data/cytof/carsten_cytof/CK_2016-06-merged_23_29/01'
 expr_prefix='23m6_29m4_'
-expr_outdir='08_expression_merged'
-path_metadata=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
-path_expression=c('/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_raw_expr_all.xls','/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_raw_expr_all.xls')
+expr_outdir='08_expression_merged_2responses_base'
+path_metadata=c('/home/Shared/data/cytof/carsten_cytof/CK_metadata/metadata_23_01.xlsx','/home/Shared/data/cytof/carsten_cytof/CK_metadata/metadata_29_01.xlsx')
+path_expression=c('/home/Shared/data/cytof/carsten_cytof/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_raw_expr_all.xls','/home/Shared/data/cytof/carsten_cytof/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_raw_expr_all.xls')
 data_name=c('data23','data29')
-path_fun_models='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_models.R'
-path_fun_formulas='/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_formulas_2datasets_3responses.R'
-path_fun_plot_heatmaps <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_heatmaps_for_sign_expr.R"
-path_fun_plot_expression <- "/Users/gosia/Dropbox/UZH/carsten_cytof_code/00_plot_expression.R"
-path_marker_exclusion='23m4_29m2_expr_marker_exclusion.txt'
+path_fun_models='/home/gosia/R/carsten_cytof_code/00_models.R'
+path_fun_formulas='/home/gosia/R/carsten_cytof_code/00_formulas_2datasets_2responses_base.R'
+path_fun_plot_heatmaps='/home/gosia/R/carsten_cytof_code/00_plot_heatmaps_for_sign_expr.R'
+path_fun_plot_expression='/home/gosia/R/carsten_cytof_code/00_plot_expression.R'
 analysis_type='all'
+FDR_cutoff=0.1
+suffix='_top01'
+path_marker_exclusion='23m6_29m4_expr_marker_exclusion.txt'
 
-### Optional arguments
-FDR_cutoff=0.05
-suffix="_top005"
 
 ##############################################################################
 # Read in the arguments
@@ -230,7 +229,6 @@ if(file.exists(file.path(path_marker_exclusion))){
 
 source(path_fun_plot_expression)
 
-
 ggdf <- melt(a, id.vars = c("cluster", "label", "sample"), value.name = "expr", variable.name = "marker")
 
 ## use labels as clusters
@@ -346,7 +344,15 @@ if(analysis_type == "all"){
   pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust", ".pdf")), width = 10, height = 7)
   draw(ht1)
   dev.off()
+
+  ### Reorder the dendrogram
+  ht1 <- Heatmap(expr, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = TRUE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
   
+  pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust_reord", ".pdf")), width = 10, height = 7)
+  draw(ht1)
+  dev.off()
+
+
   ## Plot only those markers that are not excluded
   if(!is.null(marker_exclusion)){
     
@@ -368,8 +374,75 @@ if(analysis_type == "all"){
     draw(ht1)
     dev.off()
     
+  }
+
+  ### --------------------------------
+  ### Plot using only the base samples
+  ### --------------------------------
+  
+  expr_base <- expr_heat[, md[md$response != "HD" & md$day == "base", "shortname"]]
+  labels_col_base <- colnames(expr_base)
+
+  annotation_col <- data.frame(response = factor(md[md$response != "HD" & md$day == "base", "response"]))
+  rownames(annotation_col) <- md[md$response != "HD" & md$day == "base", "shortname"]
+  
+  annotation_colors <- list(response = color_response[levels(annotation_col$response)])
+  
+  cluster_cols <- hclust(dist(t(expr_base)), method = "ward.D2")
+  cluster_rows <- hclust(dist(expr_base), method = "ward.D2")
+  
+  # Using pheatmap
+  
+  pheatmap(expr_base, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = cluster_cols, cluster_rows = cluster_rows, labels_col = labels_col_base, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = TRUE, filename = file.path(outdir, paste0(prefix, "expr_", out_name,  "_pheatmap_colclust_base", ".pdf")))
+  
+  
+  ### Using ComplexHeatmap
+  
+  ha <-  HeatmapAnnotation(df = annotation_col, col = list(response = color_response[levels(annotation_col$response)]))
+  
+  ht1 <- Heatmap(expr_base, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
+  
+  pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust_base", ".pdf")), width = 7, height = 7)
+  draw(ht1)
+  dev.off()
+
+  ### Reorder the dendrogram
+  ht1 <- Heatmap(expr_base, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = TRUE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
+  
+  pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust_base_reord", ".pdf")), width = 7, height = 7)
+  draw(ht1)
+  dev.off()
+
+  ## Plot only those markers that are not excluded
+  if(!is.null(marker_exclusion)){
+    
+    expr_sub <- expr_base[!rownames(expr_base) %in% marker_exclusion, , drop = FALSE]
+    labels_row_sub <- rownames(expr_sub)
+    
+    cluster_cols <- hclust(dist(t(expr_sub)), method = "ward.D2")
+    cluster_rows <- hclust(dist(expr_sub), method = "ward.D2")
+    
+    # Using pheatmap
+    pheatmap(expr_sub, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), breaks = breaks, legend_breaks = legend_breaks, cluster_cols = cluster_cols, cluster_rows = cluster_rows, labels_col = labels_col_base, labels_row = labels_row_sub, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_col = annotation_col, annotation_colors = annotation_colors, annotation_legend = TRUE, filename = file.path(outdir, paste0(prefix, "expr_", out_name,  "_pheatmap_colclust_base_ex", ".pdf")))
+    
+    
+    ### Using ComplexHeatmap
+    ha <-  HeatmapAnnotation(df = annotation_col, col = list(response = color_response[levels(annotation_col$response)]))
+    ht1 <- Heatmap(expr_sub, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
+    
+    pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust_base_ex", ".pdf")), width = 7, height = 7)
+    draw(ht1)
+    dev.off()
+
+    ### Reorder the dendrogram
+    ht1 <- Heatmap(expr_sub, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = TRUE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
+    
+    pdf(file.path(outdir, paste0(prefix, "expr_", out_name,  "_ComplexHeatmap_colclust_base_reord_ex", ".pdf")), width = 7, height = 7)
+    draw(ht1)
+    dev.off()
     
   }
+
   
 }
 
