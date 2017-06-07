@@ -42,6 +42,7 @@ FDR_cutoff=0.1
 suffix='_top01'
 path_marker_exclusion='23m6_29m4_expr_marker_exclusion.txt'
 
+args <- NULL
 
 ##############################################################################
 # Read in the arguments
