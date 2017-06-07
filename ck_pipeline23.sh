@@ -3,10 +3,10 @@
 ###############################################################################################################
 ## Define paths to software and reference files
 
-# RWD_MAIN=/Users/gosia/Dropbox/UZH/carsten_cytof
-# RCODE=/Users/gosia/Dropbox/UZH/carsten_cytof_code
-RWD_MAIN=/home/Shared/data/cytof/carsten_cytof
-RCODE=/home/gosia/R/carsten_cytof_code
+RWD_MAIN=/Users/gosia/Dropbox/UZH/carsten_cytof/PD1_project
+RCODE=/Users/gosia/Dropbox/UZH/carsten_cytof_code
+# RWD_MAIN=/home/Shared/data/cytof/carsten_cytof
+# RCODE=/home/gosia/R/carsten_cytof_code
 METADATA=$RWD_MAIN/CK_metadata
 PANELS=$RWD_MAIN/CK_panels
 
