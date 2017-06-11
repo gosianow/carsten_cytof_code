@@ -1,40 +1,22 @@
-##############################################################################
-## <<02_cluster_extracting.R>>
 
-# BioC 3.3
-# Created 28 July 2016
-# Updated 25 Aug 2016
-
-##############################################################################
 Sys.time()
-##############################################################################
+
 
 library(flowCore)
 library(gdata)
-library(Repitools)
-library(gplots)
-library(ggplot2)
-library(plyr)
-library(reshape2)
 
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# extract_outdir='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01_CD4/010_cleanfcs'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-# path_clustering='030_heatmaps/23_01_pca1_mergingNEW2_clustering.xls'
-# path_clustering_labels='030_heatmaps/23_01_pca1_mergingNEW2_clustering_labels.xls'
-# extract_cluster='CD4'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_cleanfcs'
+dir_fcs='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_cleanfcs'
+path_metadata='../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx'
+path_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_mergingNEW2_clustering.xls'
+path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_mergingNEW2_clustering_labels.xls'
+extract_cluster='CD4'
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/MyeEUNITER'                                      
-# extract_outdir='/Users/gosia/Dropbox/UZH/carsten_cytof/MyeEUNITER_CD66b_merging/010_cleanfcs'
-# path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/MyeEUNITER_metadata/metadata_MyeEUNITER.xlsx'   
-# path_clustering='030_heatmaps/mye_mye_pca1_merging_clustering.xls'                           
-# path_clustering_labels='030_heatmaps/mye_mye_pca1_merging_clustering_labels.xls'             
-# extract_cluster='CD66b+'
 
 ##############################################################################
 # Read in the arguments
@@ -52,29 +34,24 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-setwd(rwd)
-
-outdir <- extract_outdir
-
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
 
-fcsDir <- "010_cleanfcs"
 
 # ------------------------------------------------------------
 # Load data
 # ------------------------------------------------------------
 
-# read metadata
-md <- read.xls(path_metadata, stringsAsFactors=FALSE)
+# read in metadata
+md <- gdata::read.xls(path_metadata, stringsAsFactors=FALSE)
 
 
 # define FCS file names
-f <- file.path(fcsDir, md$filename)
+f <- file.path(dir_fcs, md$filename)
 names(f) <- md$shortname
 
 
-# read raw FCS files in
+# read in raw FCS files 
 fcs <- lapply(f, read.FCS)
 
 
@@ -132,14 +109,3 @@ sessionInfo()
 
 
 
-
-
-
-
-
-
-
-
-################################
-### 02_cluster_extracting done!
-################################

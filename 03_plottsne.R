@@ -1,23 +1,13 @@
-##############################################################################
-## <<03_plottsne.R>>
 
-# BioC 3.3
-# Created 28 July 2016
-# Updated 
 
-##############################################################################
 Sys.time()
-##############################################################################
 
 # Load packages
 library(gdata)
-library(Repitools)
-library(gplots)
-library(ggplot2)
-library(plyr)
-library(reshape2) # melt
-library(RColorBrewer)
 library(Rtsne)
+library(ggplot2)
+library(reshape2)
+library(RColorBrewer)
 library(coop) # cosine
 library(limma) 
 
@@ -26,33 +16,16 @@ library(limma)
 # Test arguments
 ##############################################################################
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-tsnep_prefix='23_01_pca1_cl20_raw_'
-tsnep_outdir='040_tsnemaps'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_01.xlsx'
-path_rtsne_out='040_tsnemaps/23_01_pca1_raw_rtsne_out.rda'
-path_rtsne_data='040_tsnemaps/23_01_pca1_raw_rtsne_data.xls'
-path_clustering='030_heatmaps/23_01_pca1_cl20_clustering.xls'
-path_clustering_labels='030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
-tsne_cmin=1000 ### minimal size of a cluster to plot
-tsne_distse=1
-tsne_quantse=0.9
-pdf_width=22
-pdf_height=7
+args <- NULL
 
+tsnep_prefix='23_01_pca1_cl20_'
+tsnep_outdir='CK_2016-06-23_01/CK_2016-06-23_01/040_tsnemaps'
+path_metadata='CK_metadata/metadata_23_01.xlsx'
+path_rtsne_out='CK_2016-06-23_01/040_tsnemaps/23_01_pca1_raw_rtsne_out.rda'
+path_rtsne_data='CK_2016-06-23_01/040_tsnemaps/23_01_pca1_raw_rtsne_data.xls'
+path_clustering='CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_clustering.xls'
+path_clustering_labels='CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_clustering_labels.xls'
 
-rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_03'
-tsnep_prefix='23_03_pca1_merging4_raw_perp1000_'
-tsnep_outdir='040_tsnemaps'
-path_metadata='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_metadata/metadata_23_03.xlsx'
-path_rtsne_out='040_tsnemaps/23_03_pca1_raw_perp1000_rtsne_out.rda'
-path_rtsne_data='040_tsnemaps/23_03_pca1_raw_perp1000_rtsne_data.xls'
-path_clustering='030_heatmaps/23_03_pca1_merging4_clustering.xls'
-path_clustering_labels='030_heatmaps/23_03_pca1_merging4_clustering_labels.xls'
-pdf_width=22
-pdf_height=7
-tsne_distse=1
-tsne_quantse=0.9
 
 ##############################################################################
 # Read in the arguments
@@ -69,19 +42,17 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-setwd(rwd)
-
-prefix <- tsnep_prefix
-suffix <- ""
-outdir <- tsnep_outdir
 
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
 
 
-if(!file.exists(path_rtsne_data))
-  stop(paste0("File ", path_rtsne_data, " does not exists!!!"))
-
+suffix <- ""
+pdf_width=22
+pdf_height=7
+tsne_cmin=1000 
+tsne_distse=1
+tsne_quantse=0.9
 
 # ------------------------------------------------------------
 # Load metadata
@@ -117,11 +88,9 @@ labels$label <- factor(labels$label, levels = unique(labels$label))
 labels
 
 # ------------------------------------------------------------
-### Colors for tSNE maps
+# Colors for tSNE maps
 # ------------------------------------------------------------
 
-# ------------------------------ 
-# palette 1
 
 # ggplot palette
 gg_color_hue <- function(n) {
@@ -129,7 +98,6 @@ gg_color_hue <- function(n) {
   hcl(h=hues, l=60 , c=100)[1:n]
 }
 
-# ------------------------------ 
 # color blind palette
 
 colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
@@ -143,7 +111,7 @@ names(colors_tsne) <- levels(labels$label)
 # Load tSNE data
 # ------------------------------------------------------------
 
-load(path_rtsne_out)
+rtsne_out <- readRDS(path_rtsne_out)
 
 rtsne_data <- read.table(path_rtsne_data, header = TRUE, sep = "\t", as.is = TRUE)
 
@@ -184,7 +152,9 @@ clust_tsne <- clust_tsne[skipp_drop]
 rtsne_data <- rtsne_data[cells2keep_rtsne, ]
 rtsne_data <- rtsne_data[skipp_drop, ]
 
-# -----------------------------------
+
+
+# ----------------------------------------------------------------------
 ### Plot of tsne - all cells, all clusters
 
 ## one plot 
@@ -233,7 +203,7 @@ write.table(cell_count, file = file.path(outdir, paste0(prefix, "tSNEgroup", suf
 
 
 
-# -----------------------------------
+# ----------------------------------------------------------------------
 ### Plot of tsne - large clusters
 if(any(grepl("tsne_cmin=", args))){
   
@@ -283,7 +253,7 @@ if(any(grepl("tsne_cmin=", args))){
 
 
 
-# -----------------------------------
+# ----------------------------------------------------------------------
 # Plot of tsne - cells that are close to the centers of clusters (no outliers), all clusters
 # Approach 1 - removing all the cells that are further than 1 from its cluster center
 if(any(grepl("tsne_distse=", args))){
@@ -303,7 +273,7 @@ if(any(grepl("tsne_distse=", args))){
     cent <- a[i,-1,drop=FALSE]
     
     ### cosine distance of cells from the center - per cluster
-    # d <- 1 - cosine( t(rbind(cent,data)) )[1,-1]
+    # d <- 1 - coop::cosine( t(rbind(cent,data)) )[1,-1]
     # dists[clust_tsne == clust_lev[i]] <- d
     
     ### Euclidean distance
@@ -362,7 +332,7 @@ if(any(grepl("tsne_distse=", args))){
 
 
 
-# -----------------------------------
+# ----------------------------------------------------------------------
 # Plot of tsne - cells that are close to the centers of clusters (no outliers), all clusters
 # Approach 2 - removing 5% of most distant cells from the center in each cluster
 if(any(grepl("tsne_quantse=", args))){

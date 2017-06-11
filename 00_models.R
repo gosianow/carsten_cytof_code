@@ -1,94 +1,15 @@
 library(lme4) # for fitting mixed models
 library(multcomp) # for contrasts glht()
 
-# library(glmmADMB) # for glmmadmb()
-# library(robustbase) # glmrob
-# library(robust) # glmRob
-# library(MASS) # rlm
-# library(betareg) # betareg() does not work with glht()
-
-# -----------------------------
-# Wilcoxon / Mann-Whitney U test
-# -----------------------------
-
-test_wilcoxon <- function(data, md){
-  
-  ## Keep only the NR and R samples
-  md <- md[md$response %in% c("NR", "R"), ]
-  md$response <- factor(md$response)
-  days <- levels(md$day)
-  contrast_names <- paste0("NRvsR_", days)
-  
-  ### Fit the LM
-  fit <- lapply(1:nrow(data), function(i){
-    # i = 25
-    y <- data[i, md$shortname]
-    NAs <- is.na(y)
-    data_tmp <- data.frame(y = as.numeric(y), md)[!NAs, , drop = FALSE]
-    
-    out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
-    colnames(out) <- c("coeff", "pval")
-    rownames(out) <- contrast_names
-    
-    data_tmp$response <- factor(data_tmp$response)
-    if(nlevels(data_tmp$response) < 2){
-      return(out)
-    }
-    
-    if(any(y[!NAs] %in% c(-Inf, Inf)) || sum(y[!NAs] == 0) > length(y[!NAs])/2){
-      return(out)
-    }
-    
-    for(j in 1:nlevels(data_tmp$day)){
-      # j = 2
-      
-      test_tmp <- wilcox.test(formula = y ~ response, data = data_tmp, subset = data_tmp$day == days[j])
-      out[paste0("NRvsR_", days[j]), "pval"] <- test_tmp$p.value
-      
-    }
-    
-    return(out)
-    
-  })
-  
-  ### Extract p-values
-  pvals <- lapply(fit, function(x){
-    x[, "pval"]
-  })
-  pvals <- do.call(rbind, pvals)
-  
-  ### Extract fitted coefficients
-  coeffs <- lapply(fit, function(x){
-    x[, "coeff"]
-  })
-  coeffs <- do.call(rbind, coeffs)
-  
-  movars <- contrast_names
-  
-  colnames(pvals) <- paste0("pval_", movars)
-  colnames(coeffs) <- movars
-  
-  ## get adjusted p-values
-  adjp <- apply(pvals, 2, p.adjust, method = "BH")
-  colnames(adjp) <- paste0("adjp_", movars)
-  
-  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
-  
-  return(out)
-  
-}
-
-
-
 # ---------------------------------------------------------------------------------------
 # normal models
 # ---------------------------------------------------------------------------------------
 
 # -----------------------------
-### Fit a LM with inteactions + test contrasts with multcomp pckg
+# Fit a LM with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
-fit_lm_interglht <- function(data, md, method = "lm", formula, K, skippNAs = TRUE){
+fit_lm_interglht <- function(data, md, formula, K, skippNAs = TRUE){
   
   contrast_names <- rownames(K)
   
@@ -112,31 +33,9 @@ fit_lm_interglht <- function(data, md, method = "lm", formula, K, skippNAs = TRU
     ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
     if(any(NAs) && skippNAs)
       return(out)
-      
-      
-    switch(method, 
-      lm = {
-        fit_tmp <- lm(formula, data = data_tmp)
-        summary(fit_tmp)
-      },
-      lmrob = {
-        fit_tmp <- robustbase::lmrob(formula, data = data_tmp, setting = "KS2014")
-        summary(fit_tmp)
-      },
-      rlm = {
-        fit_tmp <- rlm(formula, data = data_tmp)
-        summary(fit_tmp)
-      }
-    )
-    
-    
-    ## fit all contrasts at once
-    # contr_tmp <- glht(fit_tmp, linfct = K)
-    # summ_tmp <- summary(contr_tmp)
-    # 
-    # out <- cbind(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
-    # colnames(out) <- c("coeff", "pval")
-    # out
+
+    fit_tmp <- lm(formula, data = data_tmp)
+    summary(fit_tmp)
     
     ## fit contrasts one by one
     out <- t(apply(K, 1, function(k){
@@ -186,7 +85,7 @@ fit_lm_interglht <- function(data, md, method = "lm", formula, K, skippNAs = TRU
 
 
 # -----------------------------
-### Fit a lmer with inteactions + test contrasts with multcomp pckg
+# Fit a lmer with inteactions + test contrasts with multcomp pckg
 # -----------------------------
 
 fit_lmer_interglht <- function(data, md, formula, K, skippNAs = TRUE){
@@ -272,8 +171,8 @@ fit_lmer_interglht <- function(data, md, formula, K, skippNAs = TRUE){
 
 
 # -----------------------------
-### Fit a logit GLM with inteactions + test contrasts with multcomp pckg
-### Response is a count of 1s
+# Fit a logit GLM with inteactions + test contrasts with multcomp pckg
+# Response is a count of 1s
 # -----------------------------
 
 fit_glm_interglht <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
@@ -303,6 +202,7 @@ fit_glm_interglht <- function(data, md, family = "binomial", formula, K, skippNA
       return(out)
     
     switch(family,
+
       binomial = {
         fit_tmp <- glm(formula, family = binomial(link = "logit"), data = data_tmp)
         summary(fit_tmp)
@@ -310,34 +210,12 @@ fit_glm_interglht <- function(data, md, family = "binomial", formula, K, skippNA
       quasibinomial = {
         fit_tmp <- glm(formula, family = quasibinomial(link = "logit"), data = data_tmp)
         summary(fit_tmp)
-      },
-      beta = {
-        fit_tmp <- NULL
-        try(fit_tmp <- glmmadmb(formula, family = "beta", data = data_tmp), silent = TRUE)
-        summary(fit_tmp)
-      },
-      betabinomial = {
-        fit_tmp <- NULL
-        try(fit_tmp <- glmmadmb(formula, family = "betabinomial", data = data_tmp), silent = TRUE)
-        summary(fit_tmp)
-      },
-      binomial_rob = {
-        fit_tmp <- glmrob(formula, family = binomial, data = data_tmp)
-        summary(fit_tmp)
       }
       
     )
     
     if(is.null(fit_tmp))
       return(out)
-    
-    ## fit all contrasts at once
-    # contr_tmp <- glht(fit_tmp, linfct = K)
-    # summ_tmp <- summary(contr_tmp)
-    # 
-    # out <- cbind(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
-    # colnames(out) <- c("coeff", "pval")
-    # out
     
     ## fit contrasts one by one
     out <- t(apply(K, 1, function(k){
@@ -388,8 +266,8 @@ fit_glm_interglht <- function(data, md, family = "binomial", formula, K, skippNA
 
 
 # -----------------------------
-### Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
-### Response is a count of 1s
+# Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
+# Response is a count of 1s
 # -----------------------------
 
 
@@ -419,19 +297,9 @@ fit_glmer_interglht <- function(data, md, family = "binomial", formula, K, skipp
       return(out)
     
     switch(family, 
+
       binomial = {
         fit_tmp <- glmer(formula, weights = total, family = binomial, data = data_tmp)
-        summary(fit_tmp)
-      },
-      beta = {
-        data_tmp$prop <- data_tmp$y/data_tmp$total
-        fit_tmp <- NULL
-        try(fit_tmp <- glmmadmb(formula, family = "beta", data = data_tmp), silent = TRUE)
-        summary(fit_tmp)
-      },
-      betabinomial = {
-        fit_tmp <- NULL
-        try(fit_tmp <- glmmadmb(formula, family = "betabinomial", data = data_tmp), silent = TRUE)
         summary(fit_tmp)
       }
       
@@ -487,100 +355,6 @@ fit_glmer_interglht <- function(data, md, family = "binomial", formula, K, skipp
   return(out)
   
 }
-
-
-
-
-
-
-# -----------------------------
-### Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
-### Response is 0s and 1s
-# -----------------------------
-
-
-fit_glmer_interglht_01 <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
-  
-  contrast_names <- rownames(K)
-  
-  ### Fit the GLM
-  fit <- lapply(1:nrow(data), function(i){
-    # i = 2
-    print(i)
-    
-    y <- data[i, md$shortname]
-    NAs <- is.na(y)
-    data_tmp <- data.frame(y = as.numeric(y), md)[!NAs, , drop = FALSE]
-    
-    out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
-    colnames(out) <- c("coeff", "pval")
-    rownames(out) <- contrast_names
-    
-    if(sum(y[!NAs] == 0) > length(y[!NAs])/2)
-      return(out)
-      
-    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
-    if(any(NAs) && skippNAs)
-      return(out)
-    
-    switch(family, 
-      binomial = {
-        fit_tmp <- glmer(formula, family = binomial, data = data_tmp)
-        summary(fit_tmp)
-      }      
-    )
-    
-    if(is.null(fit_tmp))
-      return(out)
-    
-    ## fit contrasts one by one
-    out <- t(apply(K, 1, function(k){
-      # k = K[1, ]
-      
-      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
-      summ_tmp <- summary(contr_tmp)
-      summ_tmp
-      
-      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
-      names(out) <- c("coeff", "pval")
-      out
-      
-    }))
-    out
-    
-    return(out)
-    
-  })
-  
-  ### Extract p-values
-  pvals <- lapply(fit, function(x){
-    x[, "pval"]
-  })
-  pvals <- do.call(rbind, pvals)
-  
-  ### Extract fitted coefficients
-  coeffs <- lapply(fit, function(x){
-    x[, "coeff"]
-  })
-  coeffs <- do.call(rbind, coeffs)
-  
-  movars <- contrast_names
-  
-  colnames(pvals) <- paste0("pval_", movars)
-  colnames(coeffs) <- movars
-  
-  colnames(pvals) <- paste0("pval_", movars)
-  
-  ## get adjusted p-values
-  adjp <- apply(pvals, 2, p.adjust, method = "BH")
-  colnames(adjp) <- paste0("adjp_", movars)
-  
-  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
-  
-  return(out)
-  
-}
-
 
 
 

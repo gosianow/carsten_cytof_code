@@ -2,7 +2,7 @@
 ### Bioconductor version 3.3
 
 ### Various
-library(gdata) # to read in xlsx 
+library(gdata) # to read in xlsx read.xls()
 library(limma) # for strsplit2
 library(Repitools)
 library(plyr)

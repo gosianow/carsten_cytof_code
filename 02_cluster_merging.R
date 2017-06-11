@@ -1,13 +1,6 @@
-##############################################################################
-## <<02_cluster_merging.R>>
 
-# BioC 3.3
-# Created 28 July 2016
-# Updated 
 
-##############################################################################
 Sys.time()
-##############################################################################
 
 library(gdata)
 
@@ -15,29 +8,28 @@ library(gdata)
 # Test arguments
 ##############################################################################
 
-# rwd='/Users/gosia/Dropbox/UZH/carsten_cytof/CK_2016-06-23_01'
-# merging_prefix='pca1_mergingNEW_'
-# merging_outdir='030_heatmaps'
-# path_cluster_merging='cluster_mergingNEW.xlsx'
-# path_clustering='030_heatmaps/pca1_cl20_clustering.xls'
+prefix='23_01_pca1_mergingNEW_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps'
+path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_cluster_mergingNEW2.xlsx'
+path_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_clustering.xls'
+
+
 
 ##############################################################################
 # Read in the arguments
 ##############################################################################
+
+rm(list = ls())
 
 args <- (commandArgs(trailingOnly = TRUE))
 for (i in 1:length(args)) {
   eval(parse(text = args[[i]]))
 }
 
-print(args)
+cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 ##############################################################################
 
-setwd(rwd)
-
-prefix <- merging_prefix
-outdir <- merging_outdir
 
 if( !file.exists(outdir) ) 
   dir.create(outdir)
@@ -48,7 +40,7 @@ if( !file.exists(outdir) )
 # ------------------------------------------------------------
 
 # read cluster merging file
-cm <- read.xls(path_cluster_merging)
+cm <- gdata::read.xls(path_cluster_merging)
 
 cm
 
@@ -100,10 +92,10 @@ labels
 ### Save cluster merging results
 
 clust_out <- data.frame(cluster = clustm, cell_id = clustering$cell_id, sample_id = clustering$sample_id, stringsAsFactors = FALSE)
-write.table(clust_out, file = file.path(outdir, paste0(merging_prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(clust_out, file = file.path(outdir, paste0(prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
-write.table(labels, file = file.path(outdir, paste0(merging_prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
+write.table(labels, file = file.path(outdir, paste0(prefix, "clustering_labels.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 
@@ -116,17 +108,3 @@ write.table(labels, file = file.path(outdir, paste0(merging_prefix, "clustering_
 sessionInfo()
 
 
-
-
-
-
-
-
-
-
-
-
-
-################################
-### 02_cluster_merging done!
-################################
