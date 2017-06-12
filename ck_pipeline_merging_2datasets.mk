@@ -1,5 +1,5 @@
 
-make_args := -f
+MAKEARGS :=
 
 R := R CMD BATCH --no-restore --no-save
 
@@ -43,7 +43,7 @@ panel := 01
 
 Analysis_block_8_merging_2datasets_main_$(panel)_goal:
 	echo "\n>> make"
-	make $(make_args) Analysis_block_8_merging_2datasets_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir_merged="$(data_dir_merged)" data_dir1="$(data_dir1)" data_dir2="$(data_dir2)" file_metadata1="$(file_metadata1)" file_metadata2="$(file_metadata2)" data1="$(data1)" data2="$(data2)" panel="$(panel)" pca1="$(pca1)" pca2="$(pca2)" merging1="$(merging1)" merging2="$(merging2)"
+	make $(MAKEARGS) -f Analysis_block_8_merging_2datasets_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir_merged="$(data_dir_merged)" data_dir1="$(data_dir1)" data_dir2="$(data_dir2)" file_metadata1="$(file_metadata1)" file_metadata2="$(file_metadata2)" data1="$(data1)" data2="$(data2)" panel="$(panel)" pca1="$(pca1)" pca2="$(pca2)" merging1="$(merging1)" merging2="$(merging2)"
 
 
 ###############################################################################################################

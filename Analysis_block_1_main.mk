@@ -108,7 +108,7 @@ flowsom_goal: $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_clust
 
 $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_clustering.xls: $(RCODE)/02_flowsom.R $(RWD)/010_data/$(data)_$(panel)_expr_raw.rds $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_clustering_observables.xls
 	echo "\n>>> 02_flowsom"
-	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/030_heatmaps' path_data='$(RWD)/010_data/$(data)_$(panel)_expr_raw.rds' path_clustering_observables='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_clustering_observables.xls' nmetaclusts=$(nmetaclusts) rand_seed_consensus=$(rand_seed_consensus)" $(RCODE)/02_flowsom.R $(ROUT)/02_flowsom.Rout
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/030_heatmaps' path_data='$(RWD)/010_data/$(data)_$(panel)_expr_raw.rds' path_clustering_observables='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_clustering_observables.xls' nmetaclusts=$(nmetaclusts) rand_seed_consensus=$(rand_seed_consensus) som_dim=10" $(RCODE)/02_flowsom.R $(ROUT)/02_flowsom.Rout
 
 
 

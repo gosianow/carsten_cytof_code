@@ -5,17 +5,30 @@ Sys.time()
 # Load packages
 library(FlowSOM)
 library(ConsensusClusterPlus)
+library(plyr) # for rbind.fill
 
 ##############################################################################
 # Test arguments
 ##############################################################################
 
 prefix='23_01_pca1_cl20_'
-outdir='CK_2016-06-23_01/030_heatmaps'
-path_data='CK_2016-06-23_01/010_data/23_01_expr_raw.rds'
-path_clustering_observables='CK_2016-06-23_01/030_heatmaps/23_01_pca1_clustering_observables.xls'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data/23_01_expr_raw.rds'
+path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_clustering_observables.xls'
 rand_seed_consensus=123
+som_dim=10
 nmetaclusts=20
+
+
+prefix='23CD4TmemCD69_02CD4_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix/23CD4TmemCD69_02CD4_bimatrix.rds'
+path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix/23CD4TmemCD69_02CD4_clustering_observables.xls'
+rand_seed_consensus=1234
+som_dim=7
+nmetaclusts=49
+
+
 
 ##############################################################################
 # Read in the arguments
@@ -45,7 +58,16 @@ if(!file.exists(outdir))
 # Load data
 # ------------------------------------------------------------
 
-expr <- readRDS(path_data)
+expr <- lapply(1:length(path_data), function(i){
+  expr <- readRDS(path_data)
+  expr
+})
+
+expr <- plyr::rbind.fill(expr)
+
+if(!all(complete.cases(expr))){
+  stop("Different sets of markers are measured in the merged data!")
+}
 
 cell_id <- expr[, "cell_id"]
 samp <- expr[, "sample_id"]
@@ -79,40 +101,48 @@ ef <- as.matrix(e[, scols])
 # -------------------------------------
 
 set.seed(rand_seed)
-fsom <- FlowSOM::SOM(ef, rlen = 10)
+fsom <- FlowSOM::SOM(ef, xdim = som_dim, ydim = som_dim)
 
 
-# -------------------------------------
-# metaClustering_consensus 
-# -------------------------------------
-# consensus clustering that is reproducible with seed
+if(som_dim^2 > nmetaclusts){
+  
+  # -------------------------------------
+  # metaClustering_consensus 
+  # -------------------------------------
+  # consensus clustering that is reproducible with seed
+  
+  ### Sometimes not all the codes are used in mapping
+  codes <- fsom$codes
+  k <- nmetaclusts
+  
+  pdf(file.path(outdir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 7)
+  
+  fccp <- ConsensusClusterPlus::ConsensusClusterPlus(t(codes),
+    maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
+    plot = NULL, verbose = FALSE, clusterAlg = "hc", innerLinkage = linkage, finalLinkage = "average", distance = "euclidean", seed = rand_seed_consensus)
+  
+  dev.off()
+  
+  
+  ### Get cluster ids
+  fsom_mc <- fccp[[k]]$consensusClass
+  
+  clust <- fsom_mc[fsom$mapping[,1]]
+  
+  # Save clustering results
+  saveRDS(fccp, file = file.path(outdir, paste0(prefix, "fccp.rds")))
+  
+}else{
+  
+  clust <- fsom$mapping[,1]
+  
+}
 
-### Sometimes not all the codes are used in mapping
-codes <- fsom$codes
-k <- nmetaclusts
-
-pdf(file.path(outdir, paste0(prefix, "ConsensusClusterPlus.pdf")), width = 7, height = 7)
-
-fccp <- ConsensusClusterPlus::ConsensusClusterPlus(t(codes),
-  maxK = k, reps = 100, pItem = 0.9, pFeature = 1, title = tempdir(),
-  plot = NULL, verbose = FALSE, clusterAlg = "hc", innerLinkage = linkage, finalLinkage = "average", distance = "euclidean", seed = rand_seed_consensus)
-
-dev.off()
 
 
-### Get cluster ids
-fsom_mc <- fccp[[k]]$consensusClass
-
-clust <- fsom_mc[fsom$mapping[,1]]
-
-
-# -------------------------------------
 # Save clustering results
-# -------------------------------------
 
 saveRDS(fsom, file = file.path(outdir, paste0(prefix, "fsom.rds")))
-saveRDS(fccp, file = file.path(outdir, paste0(prefix, "fccp.rds")))
-
 
 clust_out <- data.frame(cluster = clust, cell_id = cell_id, sample_id = samp, stringsAsFactors = FALSE)
 write.table(clust_out, file = file.path(outdir, paste0(prefix, "clustering.xls")), row.names=FALSE, quote=FALSE, sep="\t")

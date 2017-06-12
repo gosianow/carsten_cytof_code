@@ -120,6 +120,8 @@ a <- a[, colnames(a) %in% c(marker_overlap, "label", "sample"), drop = FALSE]
 
 ## drop the "drop" cluster
 a <- a[a$label != "drop", , drop = FALSE]
+
+## keep only those samples that are also in the metadata file
 a <- a[a$sample %in% md$shortname, , drop = FALSE]
 
 

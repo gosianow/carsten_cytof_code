@@ -1,5 +1,5 @@
 
-make_args := -f
+MAKEARGS :=
 
 R := R CMD BATCH --no-restore --no-save
 
@@ -13,7 +13,8 @@ PANELS := $(RWD_MAIN)/CK_panels
 .PHONY: all
 all: Analysis_block_1_main_29_01_goal Analysis_block_2_cluster_merging_29_01_cl20_goal Analysis_block_3_cluster_extracting_29_01_goal \
 	Analysis_block_1_main_29CD4_01CD4_goal Analysis_block_1_main_29CD8_01CD8_goal \
-	Analysis_block_1_main_29_02v2_goal \
+	Analysis_block_2_cluster_merging_29CD4_01CD4_cl20_goal Analysis_block_2_cluster_merging_29CD8_01CD8_cl20_goal \
+	Analysis_block_1_main_29_02v2_goal Analysis_block_2_cluster_merging_29_02v2_cl20_goal \
 	Analysis_block_1_main_29_03_goal \
 	Analysis_block_1_main_29all3_03v2_goal Analysis_block_2_cluster_merging_29all3_03v2_cl20_goal
 
@@ -46,7 +47,7 @@ Analysis_block_1_main_$(data)_$(panel)_goal: $(foreach i,$(nmetaclusts),Analysis
 define Analysis_block_1_main_rule
 Analysis_block_1_main_$(data)_$(panel)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
+	make $(MAKEARGS) -f Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
 endef
 $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 
@@ -65,7 +66,7 @@ Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(forea
 define Analysis_block_2_cluster_merging_rule
 Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
+	make $(MAKEARGS) -f Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
 endef
 $(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
 
@@ -86,7 +87,7 @@ Analysis_block_3_cluster_extracting_$(data)_$(panel)_goal: $(foreach i,$(extract
 define Analysis_block_3_cluster_extracting_rule
 Analysis_block_3_cluster_extracting_$(data)_$(panel)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_3_cluster_extracting.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" extract_cluster="$(1)"
+	make $(MAKEARGS) -f Analysis_block_3_cluster_extracting.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" extract_cluster="$(1)"
 endef
 $(foreach i,$(extract_cluster),$(eval $(call Analysis_block_3_cluster_extracting_rule,$(i))))
 
@@ -116,31 +117,28 @@ Analysis_block_1_main_$(data)_$(panel)_goal: $(foreach i,$(nmetaclusts),Analysis
 define Analysis_block_1_main_rule
 Analysis_block_1_main_$(data)_$(panel)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
+	make $(MAKEARGS) -f Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
 endef
 $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 
 
 # --------------------------------------------------
-# Analysis of CK_2016-06-29_01 cluster_merging
+# Analysis of CK_2016-06-29_01_CD4_mergin2 cluster merging
 # Use Analysis block 2
 # --------------------------------------------------
 
+nmetaclusts := 20
+merging := merging6
 
-# nmetaclusts := 20
-# merging := mergingNEW2 merging6
-#
-#
-# .PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
-# Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(foreach i,$(merging),Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(i))
-#
-#
-# define Analysis_block_2_cluster_merging_rule
-# Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
-# 	echo "\n>> make"
-# 	make $(make_args) Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
-# endef
-# $(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
+.PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
+Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(foreach i,$(merging),Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(i))
+
+define Analysis_block_2_cluster_merging_rule
+Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
+	echo "\n>> make"
+	make $(MAKEARGS) -f Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
+endef
+$(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
 
 
 # ----------------------------------------------------------------------------------------------------
@@ -167,31 +165,29 @@ Analysis_block_1_main_$(data)_$(panel)_goal: $(foreach i,$(nmetaclusts),Analysis
 define Analysis_block_1_main_rule
 Analysis_block_1_main_$(data)_$(panel)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
+	make $(MAKEARGS) -f Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
 endef
 $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 
 
 # --------------------------------------------------
-# Analysis of CK_2016-06-29_01 cluster_merging
+# Analysis of CK_2016-06-29_01_CD8_merging2 cluster merging
 # Use Analysis block 2
 # --------------------------------------------------
 
 
-# nmetaclusts := 20
-# merging := mergingNEW2 merging6
-#
-#
-# .PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
-# Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(foreach i,$(merging),Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(i))
-#
-#
-# define Analysis_block_2_cluster_merging_rule
-# Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
-# 	echo "\n>> make"
-# 	make $(make_args) Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
-# endef
-# $(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
+nmetaclusts := 20
+merging := merging7
+
+.PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
+Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(foreach i,$(merging),Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(i))
+
+define Analysis_block_2_cluster_merging_rule
+Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
+	echo "\n>> make"
+	make $(MAKEARGS) -f Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
+endef
+$(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
 
 
 ###############################################################################################################
@@ -218,7 +214,7 @@ Analysis_block_1_main_$(data)_$(panel)_goal: $(foreach i,$(nmetaclusts),Analysis
 define Analysis_block_1_main_rule
 Analysis_block_1_main_$(data)_$(panel)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
+	make $(MAKEARGS) -f Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
 endef
 $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 
@@ -228,19 +224,18 @@ $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 # Use Analysis block 2
 # --------------------------------------------------
 
+nmetaclusts := 20
+merging := merging3
 
-# nmetaclusts := 20
-# merging := merging
-#
-# .PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
-# Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(foreach i,$(merging),Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(i))
-#
-# define Analysis_block_2_cluster_merging_rule
-# Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
-# 	echo "\n>> make"
-# 	make $(make_args) Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
-# endef
-# $(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
+.PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
+Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(foreach i,$(merging),Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(i))
+
+define Analysis_block_2_cluster_merging_rule
+Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
+	echo "\n>> make"
+	make $(MAKEARGS) -f Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
+endef
+$(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
 
 # --------------------------------------------------
 # CK_2016-06-29_02 - CD4 and CD8 cluster extracting from merging
@@ -256,7 +251,7 @@ $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 # define Analysis_block_3_cluster_extracting_rule
 # Analysis_block_3_cluster_extracting_$(data)_$(panel)_goal$(1):
 # 	echo "\n>> make"
-# 	make $(make_args) Analysis_block_3_cluster_extracting.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" extract_cluster="$(1)"
+# 	make $(MAKEARGS) -f Analysis_block_3_cluster_extracting.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" extract_cluster="$(1)"
 # endef
 # $(foreach i,$(extract_cluster),$(eval $(call Analysis_block_3_cluster_extracting_rule,$(i))))
 
@@ -287,7 +282,7 @@ Analysis_block_1_main_$(data)_$(panel)_goal: $(foreach i,$(nmetaclusts),Analysis
 define Analysis_block_1_main_rule
 Analysis_block_1_main_$(data)_$(panel)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
+	make $(MAKEARGS) -f Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
 endef
 $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 
@@ -306,7 +301,7 @@ $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 # define Analysis_block_2_cluster_merging_rule
 # Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
 # 	echo "\n>> make"
-# 	make $(make_args) Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
+# 	make $(MAKEARGS) -f Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
 # endef
 # $(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
 
@@ -334,7 +329,7 @@ Analysis_block_1_main_$(data)_$(panel)_goal: $(foreach i,$(nmetaclusts),Analysis
 define Analysis_block_1_main_rule
 Analysis_block_1_main_$(data)_$(panel)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
+	make $(MAKEARGS) -f Analysis_block_1_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_panel="$(file_panel)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" rand_seed_consensus="$(rand_seed_consensus)" nmetaclusts="$(1)"
 endef
 $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 
@@ -353,7 +348,7 @@ Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(forea
 define Analysis_block_2_cluster_merging_rule
 Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(1):
 	echo "\n>> make"
-	make $(make_args) Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
+	make $(MAKEARGS) -f Analysis_block_2_cluster_merging.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" nmetaclusts="$(nmetaclusts)" merging="$(1)"
 endef
 $(foreach i,$(merging),$(eval $(call Analysis_block_2_cluster_merging_rule,$(i))))
 

@@ -160,9 +160,18 @@ rtsne_data <- rtsne_data[skipp_drop, ]
 ## one plot 
 ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   geom_point(size = 1) +
-  labs(x = "tSNE 1", y="tSNE 2")+ 
+  labs(x = "t-SNE1", y="t-SNE2")+ 
   theme_bw() +
-  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
+  theme(axis.text = element_text(size = 12), 
+    axis.title  = element_text(size = 15),
+    strip.text = element_text(size = 15, hjust = 0),
+    strip.background = element_blank(),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    axis.title = element_text(size=12), 
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(), 
+    panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
   scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
@@ -175,9 +184,18 @@ dev.off()
 ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
   geom_point(size=1) +
   facet_wrap(~ group) +
-  labs(x = "tSNE 1", y="tSNE 2")+
+  labs(x = "t-SNE1", y="t-SNE2")+
   theme_bw() +
-  theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
+  theme(axis.text = element_text(size = 12), 
+    axis.title  = element_text(size = 15),
+    strip.text = element_text(size = 15, hjust = 0), 
+    strip.background = element_blank(),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    axis.title = element_text(size=12), 
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(), 
+    panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
   scale_color_manual(values = colors_tsne[levels(ggdf$cluster)]) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 
@@ -224,9 +242,18 @@ if(any(grepl("tsne_cmin=", args))){
   ## one plot 
   ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
     geom_point(size=1) +
-    labs(x = "tSNE 1", y="tSNE 2")+
+    labs(x = "t-SNE1", y="t-SNE2")+
     theme_bw() +
-    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
+    theme(axis.text = element_text(size = 12), 
+      axis.title  = element_text(size = 15),
+      strip.text = element_text(size = 15, hjust = 0), 
+      strip.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_blank(),
+      axis.title = element_text(size=12), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
     scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
@@ -238,9 +265,18 @@ if(any(grepl("tsne_cmin=", args))){
   ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster )) +
     geom_point(size=1) +
     facet_wrap( ~ group)+
-    labs(x = "tSNE 1", y="tSNE 2")+
+    labs(x = "t-SNE1", y="t-SNE2")+
     theme_bw() +
-    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank()) +
+    theme(axis.text = element_text(size = 12), 
+      axis.title  = element_text(size = 15),
+      strip.text = element_text(size = 15, hjust = 0), 
+      strip.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_blank(),
+      axis.title = element_text(size=12), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
     scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
@@ -303,9 +339,18 @@ if(any(grepl("tsne_distse=", args))){
   ## one plot
   ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
     geom_point(size=1) + 
-    labs(x = "tSNE 1", y="tSNE 2")+ 
+    labs(x = "t-SNE1", y="t-SNE2")+ 
     theme_bw() +
-    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
+    theme(axis.text = element_text(size = 12), 
+      axis.title  = element_text(size = 15),
+      strip.text = element_text(size = 15, hjust = 0), 
+      strip.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_blank(),
+      axis.title = element_text(size=12), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
     scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
@@ -318,9 +363,18 @@ if(any(grepl("tsne_distse=", args))){
   ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
     geom_point(size=1) +
     facet_wrap( ~ group) +
-    labs(x = "tSNE 1", y="tSNE 2")+
+    labs(x = "t-SNE1", y="t-SNE2")+
     theme_bw() +
-    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
+    theme(axis.text = element_text(size = 12), 
+      axis.title  = element_text(size = 15),
+      strip.text = element_text(size = 15, hjust = 0), 
+      strip.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_blank(),
+      axis.title = element_text(size=12), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
     scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
@@ -381,9 +435,18 @@ if(any(grepl("tsne_quantse=", args))){
   ## one plot
   ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
     geom_point(size=1) + 
-    labs(x = "tSNE 1", y="tSNE 2")+ 
+    labs(x = "t-SNE1", y="t-SNE2")+ 
     theme_bw() +
-    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
+    theme(axis.text = element_text(size = 12), 
+      axis.title  = element_text(size = 15),
+      strip.text = element_text(size = 15, hjust = 0), 
+      strip.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_blank(),
+      axis.title = element_text(size=12), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
     scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   
@@ -396,9 +459,18 @@ if(any(grepl("tsne_quantse=", args))){
   ggp <- ggplot(ggdf_sub,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
     geom_point(size=1) +
     facet_wrap( ~ group) +
-    labs(x = "tSNE 1", y="tSNE 2")+
+    labs(x = "t-SNE1", y="t-SNE2")+
     theme_bw() +
-    theme(strip.text = element_text(size=15, face="bold"), axis.title  = element_text(size=15, face="bold"), legend.key = element_blank())+
+    theme(axis.text = element_text(size = 12), 
+      axis.title  = element_text(size = 15),
+      strip.text = element_text(size = 15, hjust = 0), 
+      strip.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_blank(),
+      axis.title = element_text(size=12), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
     scale_color_manual(values = colors_tsne[levels(ggdf_sub$cluster)]) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
   

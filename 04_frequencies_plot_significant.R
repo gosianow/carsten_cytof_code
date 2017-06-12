@@ -16,19 +16,13 @@ library(plyr) # for rbind.fill
 # Test arguments
 ##############################################################################
 
-prefix='23_01_pca1_cl20_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_auto'
-path_metadata='../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx'
-path_frequencies='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_auto/23_01_pca1_cl20_frequencies.xls'
-path_fun_plot_frequencies='00_plot_frequencies.R'
-
-
-prefix='01_23m6_29m4_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/01/08_frequencies_merged_2responses_both'
-path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_01.xlsx')
-path_frequencies=c('../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_frequencies.xls','../carsten_cytof/PD1_project/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_frequencies.xls')
-path_fun_plot_frequencies='00_plot_frequencies.R'
-
+prefix='23CD4TmemCD69_02CD4_cl49_top_glmer_binomial_interglht_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering'
+path_metadata='../carsten_cytof/PD1_project/CK_metadata/metadata_23_02.xlsx'
+path_frequencies='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering/23CD4TmemCD69_02CD4_cl49_frequencies.xls'
+path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering/23CD4TmemCD69_02CD4_cl49_frequencies_pvs_glmer_binomial_interglht_top05.xls'
+path_fun_plot_frequencies='./00_plot_frequencies.R'
+FDR_cutoff='05'
 
 ##############################################################################
 # Read in the arguments
@@ -48,6 +42,11 @@ cat(paste0(args, collapse = "\n"), fill = TRUE)
 
 if(!file.exists(outdir)) 
   dir.create(outdir, recursive = TRUE)
+
+suffix <- paste0("_top", FDR_cutoff)
+FDR_cutoff <- as.numeric(paste0("0.", FDR_cutoff))
+FDR_cutoff
+
 
 # ------------------------------------------------------------
 # Load metadata
@@ -121,6 +120,16 @@ labels <- data.frame(cluster = prop_out$cluster, label = prop_out$label)
 labels$label <- factor(labels$label, levels = unique(labels$label))
 labels
 
+# ------------------------------------------------------------
+# Load pvalues
+# ------------------------------------------------------------
+
+pvs <- read.table(path_pvs, header = TRUE, sep = "\t", as.is = TRUE)
+
+
+comparisons <- colnames(pvs)[grep("adjp_", colnames(pvs))]
+
+
 
 # ------------------------------------------------------------
 # Colors for clusters
@@ -145,24 +154,50 @@ names(colors_clusters) <- levels(labels$label)
 # Plot frequencies
 # ------------------------------------------------------------
 
-ggdf <- melt(prop_out, id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
-
-## use labels as clusters
-ggdf$cluster <- factor(ggdf$label, levels = labels$label)
-
-# add more info about samples
-mm <- match(ggdf$samp, md$shortname)
-ggdf$group <- factor(md$condition[mm])
-ggdf$day <- factor(md$day[mm])
-ggdf$data <- factor(md$data[mm])
-
-## replace _ with \n
-levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
-
-
 source(path_fun_plot_frequencies)
 
-plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, colors_clusters = colors_clusters, outdir = outdir, prefix = prefix)
+
+for(i in 1:length(comparisons)){
+  # i = 1
+  
+  comparison <- comparisons[i]
+  comparison_prefix <- paste0(gsub("adjp_", "", comparison), "_")
+  
+  pvs_sign <- pvs[pvs[, comparison] < FDR_cutoff, , drop = FALSE]
+  pvs_sign
+  
+  if(nrow(pvs_sign) == 0){
+    
+    ggdf <- NULL
+    
+  }else{
+    
+    prop_sign <- prop_out[prop_out$label %in% pvs_sign$label, , drop = FALSE]
+    
+    ggdf <- melt(prop_sign, id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
+    
+    ## use labels as clusters
+    ggdf$cluster <- factor(ggdf$label, levels = labels$label)
+    ggdf$cluster <- factor(ggdf$cluster)
+    
+    # add more info about samples
+    mm <- match(ggdf$samp, md$shortname)
+    ggdf$group <- factor(md$condition[mm])
+    ggdf$day <- factor(md$day[mm])
+    ggdf$data <- factor(md$data[mm])
+    
+    ## replace _ with \n
+    levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
+    
+  }
+  
+  prefix_sign <- paste0(prefix, comparison_prefix)
+  
+  plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, colors_clusters = colors_clusters, outdir = outdir, prefix = prefix_sign)
+  
+  
+}
+
 
 
 

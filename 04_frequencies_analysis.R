@@ -110,34 +110,27 @@ names(color_response) <- colors$response
 
 freq <- lapply(1:length(path_counts), function(i){
   # i = 1
-  
   freq <- read.table(path_counts[i], header = TRUE, sep = "\t", as.is = TRUE)
-  
-  freq[, -which(colnames(freq) == "cluster")]
-  
 })
 
-freq_out <- Reduce(function(...) merge(..., by = c("label"), all=TRUE, sort = FALSE), freq)
-
+freq_out <- Reduce(function(...) merge(..., by = c("cluster", "label"), all=TRUE, sort = FALSE), freq)
 
 ## Drop the 'drop' cluster
 freq_out <- freq_out[freq_out$label != "drop", , drop = FALSE]
 
-
-if(all(!complete.cases(freq_out))){
-  stop("There are some clusters that are not common in the merged data sets!")
-}else{
-  freq_out <- freq_out[complete.cases(freq_out), , drop = FALSE]
+if(!all(complete.cases(freq_out))){
+  stop("There are some clusters that are not common in the merged data sets or have different cluster number!")
 }
 
-freq_out$cluster <- 1:nrow(freq_out)
+
+## keep only those samples that are also in the metadata file
 freq_out <- freq_out[, c("cluster", "label", md$shortname)]
 
+freq_out <- freq_out[order(freq_out$cluster), , drop = FALSE]
 
 labels <- data.frame(cluster = freq_out$cluster, label = freq_out$label)
 labels$label <- factor(labels$label, levels = unique(labels$label))
 labels
-
 
 
 # ---------------------------------------
@@ -160,7 +153,6 @@ md <- md[md$shortname %in% keep_samps, , drop = FALSE]
 md$response <- factor(md$response)
 md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
-
 
 
 # ------------------------------------------------------------
