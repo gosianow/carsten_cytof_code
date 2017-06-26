@@ -28,6 +28,11 @@ path_fun_plot_heatmaps="00_plot_heatmaps_for_sign_expr.R"
 path_marker_exclusion='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_all_marker_exclusion.txt'
 FDR_cutoff='05'
 
+
+### Can be NULL
+# path_marker_exclusion
+
+
 ##############################################################################
 # Read in the arguments
 ##############################################################################
@@ -70,7 +75,7 @@ md$day <- factor(md$day, levels = c("base", "tx"))
 md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
 md$data <- factor(md$data)
-
+md$data_day <- interaction(md$data, md$day, lex.order = TRUE, drop = TRUE)
 
 ### Colors 
 colors <- unique(md[, c("condition", "color")])
@@ -168,16 +173,17 @@ md$patient_id <- factor(md$patient_id)
 
 marker_exclusion <- NULL
 
-if(file.exists(path_marker_exclusion)){
-  
-  marker_exclusion <- read.table(path_marker_exclusion, header = TRUE, sep = "\t", as.is = TRUE)
-  marker_exclusion <- marker_exclusion[, 1]
-  
-  if(!all(marker_exclusion %in% markers_ordered))
-    stop("Marker exclusion is wrong")
-  
+if(!is.null(path_marker_exclusion)){
+  if(file.exists(path_marker_exclusion)){
+    
+    marker_exclusion <- read.table(path_marker_exclusion, header = TRUE, sep = "\t", as.is = TRUE)
+    marker_exclusion <- marker_exclusion[, 1]
+    
+    if(!all(marker_exclusion %in% markers_ordered))
+      stop("Marker exclusion is wrong")
+    
+  }
 }
-
 
 
 # -----------------------------------------------------------------------------
@@ -261,7 +267,7 @@ if(all(a$label == "all")){
   ht1 <- Heatmap(expr, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
   
   pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_both_asis.pdf")), width = 10, height = 7)
-  draw(ht1)
+  try(draw(ht1), silent = TRUE)
   dev.off()
   
   
@@ -269,7 +275,7 @@ if(all(a$label == "all")){
   ht1 <- Heatmap(expr, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = TRUE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
   
   pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_both_reord.pdf")), width = 10, height = 7)
-  draw(ht1)
+  try(draw(ht1), silent = TRUE)
   dev.off()
   
   
@@ -291,14 +297,14 @@ if(all(a$label == "all")){
     ht1 <- Heatmap(expr_sub, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
     
     pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_both_asis_ex.pdf")), width = 10, height = 7)
-    draw(ht1)
+    try(draw(ht1), silent = TRUE)
     dev.off()
     
     ### Reorder the dendrogram
     ht1 <- Heatmap(expr_sub, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = TRUE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
     
     pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_both_reord_ex.pdf")), width = 10, height = 7)
-    draw(ht1)
+    try(draw(ht1), silent = TRUE)
     dev.off()
     
   }
@@ -332,14 +338,14 @@ if(all(a$label == "all")){
     ht1 <- Heatmap(expr_subday, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
     
     pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_", i, "_asis.pdf")), width = 7, height = 7)
-    draw(ht1)
+    try(draw(ht1), silent = TRUE)
     dev.off()
     
     ### Reorder the dendrogram
     ht1 <- Heatmap(expr_subday, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = TRUE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
     
     pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_", i, "_reord.pdf")), width = 7, height = 7)
-    draw(ht1)
+    try(draw(ht1), silent = TRUE)
     dev.off()
     
     ## Plot only those markers that are not excluded
@@ -360,14 +366,14 @@ if(all(a$label == "all")){
       ht1 <- Heatmap(expr_sub, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = FALSE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
       
       pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_", i, "_asis_ex.pdf")), width = 7, height = 7)
-      draw(ht1)
+      try(draw(ht1), silent = TRUE)
       dev.off()
       
       ### Reorder the dendrogram
       ht1 <- Heatmap(expr_sub, name = "", col = colorRampPalette(c("#87CEFA", "#56B4E9", "#0072B2", "#000000", "#D55E00", "#E69F00", "#FFD700"), space = "Lab")(100), cluster_columns = cluster_cols, cluster_rows = cluster_rows, column_dend_reorder = TRUE, row_dend_reorder = FALSE, top_annotation = ha, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"))
       
       pdf(file.path(outdir, paste0(prefix, "expr_ComplexHeatmap_colclust_", i, "_reord_ex.pdf")), width = 7, height = 7)
-      draw(ht1)
+      try(draw(ht1), silent = TRUE)
       dev.off()
       
     }

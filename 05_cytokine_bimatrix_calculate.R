@@ -4,7 +4,6 @@ Sys.time()
 
 library(gdata)
 library(limma)
-library(UpSetR)
 
 ##############################################################################
 # Test arguments
@@ -48,8 +47,8 @@ expr <- readRDS(path_data)
 # read panel, pick which columns to use
 panel_cytokines <- read.xls(path_panel_cytokines, stringsAsFactors=FALSE)
 
-if(!all(c("fcs_colname", "Isotope", "Antigen", "transform") %in% colnames(panel_cytokines)))
-  stop("Wrong columns in the panel!!!")
+if(!all(c("fcs_colname", "Isotope", "Antigen", "transform", "positive_cutoff_raw_base", "positive_cutoff_raw_tx") %in% colnames(panel_cytokines)))
+  stop("Wrong columns in the cytokine panel!!!")
 
 
 cutoff_cytokines <- panel_cytokines[complete.cases(panel_cytokines), , drop = FALSE]
@@ -103,56 +102,6 @@ head(bimatrixdf)
 
 write.table(bimatrixdf, file = file.path(outdir, paste0(prefix, "bimatrix.txt")), row.names = FALSE, quote = FALSE, sep = "\t")
 saveRDS(bimatrixdf, file = file.path(outdir, paste0(prefix, "bimatrix.rds")))
-
-
-# ------------------------------------------------------------
-# Upsetr plots
-# ------------------------------------------------------------
-
-
-pdf(file.path(outdir, paste0(prefix, "upsetr.pdf")), w = 16, h = 6)
-upset(data.frame(bimatrix, check.names = FALSE), sets = colnames(bimatrix), nintersects = 50, order.by = "freq")
-dev.off()
-
-
-# ------------------------------------------------------------
-# Create a table with clustering observables - needed to run the 02_flowsom.R script
-# ------------------------------------------------------------
-
-clustering_observables <- data.frame(mass = colnames(bimatrix), marker = colnames(bimatrix), clustering_observable = TRUE, stringsAsFactors = FALSE)
-clustering_observables
-
-write.table(clustering_observables, file.path(outdir, paste0(prefix, "clustering_observables.xls")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-
-
-# --------------------------------------------------------------------------
-# Calculate the positive marker frequencies per marker
-# --------------------------------------------------------------------------
-
-samp <- expr$sample_id
-
-freq_list <- lapply(colnames(bimatrix), function(i){
-  freq_tmp <- table(bimatrix[, i], samp)
-  rownames(freq_tmp) <- paste0(i, c("-", "+"))
-  freq_tmp
-})
-
-
-prop_list <- lapply(freq_list, function(x){
-  prop_tmp <- t(t(x[2, , drop = FALSE]) / colSums(x, na.rm = TRUE)) * 100
-})
-
-
-prop <- do.call(rbind, prop_list)
-prop_out <- data.frame(cluster = rownames(prop), label = rownames(prop), prop)
-
-
-freq <- do.call(rbind, freq_list)
-freq_out <- data.frame(cluster = rownames(freq), label = rownames(freq), freq)
-
-
-write.table(prop_out, file=file.path(outdir, paste0(prefix, "frequencies.xls")), row.names=FALSE, quote=FALSE, sep="\t")
-write.table(freq_out, file=file.path(outdir, paste0(prefix, "counts.xls")), row.names=FALSE, quote=FALSE, sep="\t")
 
 
 

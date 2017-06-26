@@ -69,7 +69,7 @@ md$day <- factor(md$day, levels = c("base", "tx"))
 md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
 md$data <- factor(md$data)
-
+md$data_day <- interaction(md$data, md$day, lex.order = TRUE, drop = TRUE)
 
 ### Colors 
 colors <- unique(md[, c("condition", "color")])
@@ -141,13 +141,14 @@ ass_freq_out <- data.frame(cluster = names(freq_out_split), label = names(freq_o
 expr_norm <- ass_freq_out[, c("cluster", "label", md[md$response != "HD", "shortname"])]
 th <- 2.5
 
-days <- levels(md$day)
 
+md$data_day <- factor(md$data_day)
+data_days <- levels(md$data_day)
 
-### Normalized to mean = 0 and sd = 1 per day
-for(i in days){
-  # i = "base"
-  expr_norm[, md[md$response != "HD" & md$day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$day == i, "shortname"], drop = FALSE], 1, function(x){ 
+### Normalized to mean = 0 and sd = 1 per data and day
+for(i in data_days){
+  # i = "data23.base"
+  expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"]] <- t(apply(expr_norm[, md[md$response != "HD" & md$data_day == i, "shortname"], drop = FALSE], 1, function(x){
     
     if(sum(!is.na(x)) == 0)
       return(x)
@@ -158,7 +159,7 @@ for(i in days){
     sdx <- sd(x, na.rm = TRUE)
     if(sdx == 0)
       x <- (x-mean(x, na.rm = TRUE))
-    else 
+    else
       x <- (x-mean(x, na.rm = TRUE))/sdx
     
     x[x > th] <- th
@@ -208,6 +209,10 @@ pheatmap(expr, cellwidth = 28, cellheight = 24, color = colorRampPalette(c("#87C
 ## For merged data it means such cluster was not present in all the datasets
 ## For expression data clusters with no cells are skipped
 
+levels(md$day)
+levels(md$response)
+levels(md$data)
+levels(md$data_day)
 
 ### Load functions fitting models
 source(path_fun_models)
@@ -215,10 +220,6 @@ source(path_fun_models)
 source(path_fun_formulas)
 
 source(path_fun_plot_heatmaps)
-
-
-levels(md$day)
-levels(md$response)
 
 
 models2fit <- c("glmer_binomial_interglht")

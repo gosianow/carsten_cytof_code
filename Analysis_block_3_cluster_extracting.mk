@@ -28,6 +28,8 @@ extract_cluster := CD4
 RWD := $(RWD_MAIN)/$(data_dir)
 ROUT := $(RWD)/Rout
 
+make_file := Analysis_block_3_cluster_extracting.mk
+
 ### --------------------------------------------------------------------------
 ## Define the default rule (makefiles are usually written so that the first target is for compiling the entire program)
 .PHONY: all
@@ -45,8 +47,8 @@ all: cluster_extracting_goal
 .PHONY: cluster_extracting_goal
 cluster_extracting_goal: $(RWD)_$(extract_cluster)_$(merging)/010_cleanfcs/*.fcs
 
-$(RWD)_$(extract_cluster)_$(merging)/010_cleanfcs/*.fcs: $(RCODE)/02_cluster_extracting.R $(file_metadata) $(RWD)/010_cleanfcs/*.fcs
-	echo "\n>>> 02_cluster_extracting"
+$(RWD)_$(extract_cluster)_$(merging)/010_cleanfcs/*.fcs: $(RCODE)/02_cluster_extracting.R $(file_metadata) $(RWD)/010_cleanfcs/*.fcs $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_clustering.xls
+	echo "\n>> $(make_file)\n>>> 02_cluster_extracting"
 	$(R) "--args outdir='$(RWD)_$(extract_cluster)_$(merging)/010_cleanfcs' dir_fcs='$(RWD)/010_cleanfcs' path_metadata='$(file_metadata)'  path_clustering='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_clustering.xls'  path_clustering_labels='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_clustering_labels.xls' extract_cluster='$(extract_cluster)'" $(RCODE)/02_cluster_extracting.R $(ROUT)/02_cluster_extracting.Rout
 
 

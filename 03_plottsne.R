@@ -168,7 +168,6 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
     strip.background = element_blank(),
     legend.key = element_blank(),
     legend.title = element_blank(),
-    axis.title = element_text(size=12), 
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), 
     panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
@@ -192,7 +191,6 @@ ggp <- ggplot(ggdf,  aes(x = tSNE1, y = tSNE2, color = cluster)) +
     strip.background = element_blank(),
     legend.key = element_blank(),
     legend.title = element_blank(),
-    axis.title = element_text(size=12), 
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), 
     panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
@@ -250,7 +248,6 @@ if(any(grepl("tsne_cmin=", args))){
       strip.background = element_blank(),
       legend.key = element_blank(),
       legend.title = element_blank(),
-      axis.title = element_text(size=12), 
       panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), 
       panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
@@ -273,7 +270,6 @@ if(any(grepl("tsne_cmin=", args))){
       strip.background = element_blank(),
       legend.key = element_blank(),
       legend.title = element_blank(),
-      axis.title = element_text(size=12), 
       panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), 
       panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
@@ -347,7 +343,6 @@ if(any(grepl("tsne_distse=", args))){
       strip.background = element_blank(),
       legend.key = element_blank(),
       legend.title = element_blank(),
-      axis.title = element_text(size=12), 
       panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), 
       panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
@@ -371,7 +366,6 @@ if(any(grepl("tsne_distse=", args))){
       strip.background = element_blank(),
       legend.key = element_blank(),
       legend.title = element_blank(),
-      axis.title = element_text(size=12), 
       panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), 
       panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
@@ -443,7 +437,6 @@ if(any(grepl("tsne_quantse=", args))){
       strip.background = element_blank(),
       legend.key = element_blank(),
       legend.title = element_blank(),
-      axis.title = element_text(size=12), 
       panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), 
       panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +
@@ -467,7 +460,6 @@ if(any(grepl("tsne_quantse=", args))){
       strip.background = element_blank(),
       legend.key = element_blank(),
       legend.title = element_blank(),
-      axis.title = element_text(size=12), 
       panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), 
       panel.border = element_rect(size = 0.3, linetype = "solid", color = "black")) +

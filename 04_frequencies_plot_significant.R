@@ -12,6 +12,8 @@ library(pheatmap)
 library(gtools) # for logit
 library(plyr) # for rbind.fill
 
+
+
 ##############################################################################
 # Test arguments
 ##############################################################################
@@ -67,7 +69,7 @@ md$day <- factor(md$day, levels = c("base", "tx"))
 md$day <- factor(md$day)
 md$patient_id <- factor(md$patient_id)
 md$data <- factor(md$data)
-
+md$data_day <- interaction(md$data, md$day, lex.order = TRUE, drop = TRUE)
 
 ### Colors 
 colors <- unique(md[, c("condition", "color")])
@@ -161,10 +163,11 @@ for(i in 1:length(comparisons)){
   # i = 1
   
   comparison <- comparisons[i]
+  print(comparison)
   comparison_prefix <- paste0(gsub("adjp_", "", comparison), "_")
   
-  pvs_sign <- pvs[pvs[, comparison] < FDR_cutoff, , drop = FALSE]
-  pvs_sign
+  pvs_sign <- pvs[pvs[, comparison] < FDR_cutoff & !is.na(pvs[, comparison]), , drop = FALSE]
+  print(pvs_sign)
   
   if(nrow(pvs_sign) == 0){
     

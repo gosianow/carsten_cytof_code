@@ -22,6 +22,7 @@ path_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_0
 path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_mergingNEW2_clustering_labels.xls'
 path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_mergingNEW2_marker_selection.txt'
 path_cluster_merging=NULL
+path_panel=NULL
 
 args <- NULL
 
@@ -63,6 +64,7 @@ if(!any(grepl("aggregate_fun=", args))){
 if(!any(grepl("scale=", args))){
   scale=TRUE
 }
+
 
 # ------------------------------------------------------------
 # Load expression data
