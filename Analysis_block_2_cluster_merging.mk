@@ -32,7 +32,7 @@ make_file := Analysis_block_2_cluster_merging.mk
 ### --------------------------------------------------------------------------
 ## Define the default rule (makefiles are usually written so that the first target is for compiling the entire program)
 .PHONY: all
-all: cluster_merging_goal heatmaps_merging_goal heatmaps_goal plottsne_goal frequencies_calculate_goal frequencies_goal expression_calculate_goal expression_goal
+all: cluster_merging_goal heatmaps_merging_goal heatmaps_goal heatmaps_merging_codes_goal codes_pvs_goal plottsne_goal frequencies_calculate_goal frequencies_goal expression_calculate_goal expression_goal
 
 
 ### Make sure no intermediate files are deleted
@@ -77,6 +77,22 @@ $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_pheatmap_all_all_row_clus
 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_$(merging)_' outdir='$(RWD)/030_heatmaps' path_data='$(RWD)/010_data/$(data)_$(panel)_expr_raw.rds' path_data_norm='$(RWD)/010_data/$(data)_$(panel)_expr_norm.rds' \
 	path_clustering_observables='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_clustering_observables.xls' path_clustering='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_clustering.xls'  path_clustering_labels='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_clustering_labels.xls' \
 	path_marker_selection='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_$(merging)_marker_selection.txt' path_cluster_merging=NULL" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
+
+
+### --------------------------------------------------------------------------
+### Heatmaps of the SOM codes with merging
+### --------------------------------------------------------------------------
+
+
+.PHONY: heatmaps_merging_codes_goal
+heatmaps_merging_codes_goal: $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_pheatmap_codes_codes_row_clust_raw.pdf
+
+$(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_pheatmap_codes_codes_row_clust_raw.pdf: $(RCODE)/02_heatmaps_codes.R $(RWD)/010_data/$(data)_$(panel)_expr_raw.rds $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds $(wildcard $(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_marker_selection.txt)
+	echo "\n>> $(make_file)\n>>> 02_heatmaps_codes"
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_' outdir='$(RWD)/030_codes' path_data='$(RWD)/010_data/$(data)_$(panel)_expr_raw.rds' path_data_norm='$(RWD)/010_data/$(data)_$(panel)_expr_norm.rds' \
+	path_clustering_observables='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_clustering_observables.xls' path_codes_clustering='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls'  path_codes_clustering_labels='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering_labels.xls' \
+	path_marker_selection='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_marker_selection.txt' path_cluster_merging='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_cluster_$(merging).xlsx' \
+	path_fsom='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds' path_fccp='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fccp.rds'" $(RCODE)/02_heatmaps_codes.R $(ROUT)/02_heatmaps_codes.Rout
 
 
 ### --------------------------------------------------------------------------
@@ -156,6 +172,17 @@ endef
 $(foreach i,$(analysis_type),$(eval $(call 04_expression_analysis_rule,$(i))))
 
 
+### --------------------------------------------------------------------------
+### Plot the SOM codes with p-values
+### --------------------------------------------------------------------------
+
+.PHONY: codes_pvs_goal
+codes_pvs_goal: $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_glmer_binomial_interglht_pheatmap_codes_pvs_no_clust_all.pdf
+
+$(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_glmer_binomial_interglht_pheatmap_codes_pvs_no_clust_all.pdf: $(RCODE)/02_codes_pvs.R $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds
+	echo "\n>> $(make_file)\n>>> 02_codes_pvs"
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_glmer_binomial_interglht_' outdir='$(RWD)/030_codes' path_pvs='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top05.xls' \
+	path_fsom='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds' path_fccp='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fccp.rds' path_cluster_merging='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_cluster_$(merging).xlsx' FDR_cutoff='05'" $(RCODE)/02_codes_pvs.R $(ROUT)/02_codes_pvs.Rout
 
 
 

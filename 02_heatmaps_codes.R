@@ -15,7 +15,7 @@ library(RColorBrewer)
 ##############################################################################
 
 
-prefix='23_01_pca1_cl20_'
+prefix='23_01_pca1_cl20_mergingNEW2_'
 outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_codes'
 path_data='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data/23_01_expr_raw.rds'
 path_data_norm='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data/23_01_expr_norm.rds'
@@ -23,12 +23,12 @@ path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_h
 path_codes_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_codes_clustering.xls'
 path_codes_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_codes_clustering_labels.xls'
 path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_marker_selection.txt'
-path_cluster_merging=NULL
 path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_fsom.rds'
 path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_fccp.rds'
+path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_cluster_mergingNEW2.xlsx'
 
 
-
+# path_cluster_merging=NULL
 args <- NULL
 
 ##############################################################################
@@ -138,11 +138,6 @@ fsom_mc_tree <- fccp[[k]]$consensusTree
 # Prepare a color annotation for heatmaps 
 # ------------------------------------------------------------
 
-
-# --------------------
-# Colors for clusters
-# --------------------
-
 # ggplot palette
 gg_color_hue <- function(n) {
   hues = seq(15, 375, length=n+1)
@@ -150,7 +145,6 @@ gg_color_hue <- function(n) {
 }
 
 # color blind palette
-
 colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
 color_ramp <- c(colors_muted, gg_color_hue(max(1, k - length(colors_muted))))
 
@@ -162,6 +156,13 @@ colors_clusters
 # ------------------------------ 
 # Annotation for merging or for the original clusters 
 # ------------------------------ 
+
+
+annotation_row <- data.frame(cluster = factor(fsom_mc))
+rownames(annotation_row) <- 1:ncodes
+
+annotation_colors <- list(cluster = colors_clusters)
+rows_order <- order(fsom_mc)
 
 
 if(!is.null(path_cluster_merging)){
@@ -177,32 +178,24 @@ if(!is.null(path_cluster_merging)){
   
   cm_unique <- unique(cm[, c("label", "new_cluster")])
   cm_unique <- cm_unique[order(cm_unique$new_cluster), ]
+
+  ### Add merging to the annotation
+  mm <- match(annotation_row$cluster, cm$old_cluster)
+  annotation_row$cluster_merging <- cm$label[mm]
+  annotation_row$cluster_merging <- factor(annotation_row$cluster_merging, levels = cm_unique$label)
   
-  cm$new_label <- factor(cm$label, levels = cm_unique$label)
+  ### Add colors for merging
+  color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(cm_unique$label) - length(colors_muted))))
   
-  cmm <- merge(labels, cm[, c("old_cluster", "new_cluster", "new_label"), drop = FALSE], by.x = "cluster", by.y = "old_cluster", all.x = TRUE)
+  colors_clusters_merging <- color_ramp[1:nlevels(cm_unique$label)]
+  names(colors_clusters_merging) <- cm_unique$label
   
-  color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(cmm$new_label) - length(colors_muted))))
+  annotation_colors[["cluster_merging"]] <- colors_clusters_merging
   
-  colors_clusters <- color_ramp[1:nlevels(cmm$new_label)]
-  names(colors_clusters) <- levels(cmm$new_label)
-  
-  
-  annotation_row <- data.frame(cluster = cmm$new_label)
-  rownames(annotation_row) <- rownames(cmm$label)
-  
-  annotation_colors <- list(cluster = colors_clusters)
-  rows_order <- order(cmm$new_label)
-  
-}else{
-  
-  annotation_row <- data.frame(cluster = factor(fsom_mc))
-  rownames(annotation_row) <- 1:ncodes
-  
-  annotation_colors <- list(cluster = colors_clusters)
-  rows_order <- order(fsom_mc)
+  rows_order <- order(annotation_row$cluster_merging, annotation_row$cluster)
   
 }
+
 
 
 # ------------------------------------------------------------
@@ -389,7 +382,7 @@ if(!is.null(path_data_norm)){
   # ------------------------------------------------------------
   # Get the median expression
   # ------------------------------------------------------------
-
+  
   colnames(e_norm) <- fcs_panel$Antigen
   
   a_norm <- aggregate(e_norm, by = list(clust), FUN = aggregate_fun)

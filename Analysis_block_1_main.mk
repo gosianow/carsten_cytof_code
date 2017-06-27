@@ -11,28 +11,17 @@ PANELS := $(RWD_MAIN)/CK_panels
 
 
 ## arguments for the specific data set
-# data_dir := CK_2016-06-23_01
-# file_panel := $(PANELS)/panel1.xlsx
-# file_metadata := $(METADATA)/metadata_23_01.xlsx
-#
-# data := 23
-# panel := 01
-# pca := pca1
-# nmetaclusts := 20
-#
-# rand_seed_consensus := 123
+data_dir := CK_2016-06-23_01
+file_panel := $(PANELS)/panel1.xlsx
+file_metadata := $(METADATA)/metadata_23_01.xlsx
 
-
-data_dir := CK_2016-06-29_03all3
-file_panel := $(PANELS)/panel3_v2.xlsx
-file_metadata := $(METADATA)/metadata_29_03all3.xlsx
-
-data := 29all3
-panel := 03v2
+data := 23
+panel := 01
 pca := pca1
 nmetaclusts := 20
 
-rand_seed_consensus := 1234
+rand_seed_consensus := 123
+
 
 ### --------------------------------------------------------------------------
 ### Those parameters do not need to be defined
@@ -50,7 +39,7 @@ make_file := Analysis_block_1_main.mk
 ### --------------------------------------------------------------------------
 ## Define the default rule (makefiles are usually written so that the first target is for compiling the entire program)
 .PHONY: all
-all: mkdir_rout data_normalization_goal data_plot_goal pcascores_goal select_observables_goal flowsom_goal heatmaps_goal heatmaps_codes_goal runtsne_goal plottsne_goal frequencies_calculate_goal frequencies_goal expression_calculate_goal expression_goal
+all: mkdir_rout data_normalization_goal data_plot_goal pcascores_goal select_observables_goal flowsom_goal heatmaps_goal heatmaps_codes_goal runtsne_goal plottsne_goal frequencies_calculate_goal frequencies_goal frequencies_calculate_codes_goal frequencies_codes_goal codes_pvs_goal expression_calculate_goal expression_goal
 
 
 ### Make sure no intermediate files are deleted
@@ -181,7 +170,7 @@ $(RWD)/040_tsnemaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_tSNEone.pdf: $(RCOD
 ### --------------------------------------------------------------------------
 
 .PHONY: frequencies_calculate_goal
-frequencies_calculate_goal: $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
+frequencies_calculate_codes_goal: $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
 
 $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls: $(RCODE)/04_frequencies_calculate.R $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_clustering.xls
 	echo "\n>> $(make_file)\n>>> 04_frequencies_calculate"
@@ -189,7 +178,7 @@ $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies
 
 
 .PHONY: frequencies_goal
-frequencies_goal: $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf
+frequencies_codes_goal: $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf
 
 
 $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
@@ -206,26 +195,26 @@ $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies
 ### Frequency analysis of the SOM codes
 ### --------------------------------------------------------------------------
 
-# .PHONY: frequencies_calculate_goal
-# frequencies_calculate_goal: $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
-#
-# $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls: $(RCODE)/04_frequencies_calculate.R $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_clustering.xls
-# 	echo "\n>> $(make_file)\n>>> 04_frequencies_calculate"
-# 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_auto' path_clustering='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_clustering.xls' path_clustering_labels='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_clustering_labels.xls'" $(RCODE)/04_frequencies_calculate.R $(ROUT)/04_frequencies_calculate.Rout
-#
-#
-# .PHONY: frequencies_goal
-# frequencies_goal: $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf
-#
-#
-# $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
-# 	echo "\n>> $(make_file)\n>>> 04_frequencies_plot"
-# 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_auto' path_metadata='$(file_metadata)' path_frequencies='$(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls' path_fun_plot_frequencies='$(RCODE)/00_plot_frequencies.R'" $(RCODE)/04_frequencies_plot.R $(ROUT)/04_frequencies_plot.Rout
-#
-#
-# $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf: $(RCODE)/04_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_counts.xls $(file_metadata)
-# 	echo "\n>> $(make_file)\n>>> 04_frequencies_analysis"
-# 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_auto' path_metadata='$(file_metadata)' path_counts='$(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='05'" $(RCODE)/04_frequencies_analysis.R $(ROUT)/04_frequencies_analysis.Rout
+.PHONY: frequencies_calculate_codes_goal
+frequencies_calculate_goal: $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
+
+$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls: $(RCODE)/04_frequencies_calculate.R $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls
+	echo "\n>> $(make_file)\n>>> 04_frequencies_calculate"
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_codes' path_clustering='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls' path_clustering_labels='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering_labels.xls'" $(RCODE)/04_frequencies_calculate.R $(ROUT)/04_frequencies_calculate.Rout
+
+
+.PHONY: frequencies_codes_goal
+frequencies_goal: $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf
+
+
+$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
+	echo "\n>> $(make_file)\n>>> 04_frequencies_plot"
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_codes' path_metadata='$(file_metadata)' path_frequencies='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls' path_fun_plot_frequencies='$(RCODE)/00_plot_frequencies.R'" $(RCODE)/04_frequencies_plot.R $(ROUT)/04_frequencies_plot.Rout
+
+
+$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf: $(RCODE)/04_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_counts.xls $(file_metadata)
+	echo "\n>> $(make_file)\n>>> 04_frequencies_analysis"
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_codes' path_metadata='$(file_metadata)' path_counts='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='05'" $(RCODE)/04_frequencies_analysis.R $(ROUT)/04_frequencies_analysis.Rout
 
 
 ### --------------------------------------------------------------------------
@@ -265,7 +254,16 @@ endef
 $(foreach i,$(analysis_type),$(eval $(call 04_expression_analysis_rule,$(i))))
 
 
+### --------------------------------------------------------------------------
+### Plot the SOM codes with p-values
+### --------------------------------------------------------------------------
 
+.PHONY: codes_pvs_goal
+codes_pvs_goal: $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_glmer_binomial_interglht_pheatmap_codes_pvs_no_clust_all.pdf
+
+$(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_glmer_binomial_interglht_pheatmap_codes_pvs_no_clust_all.pdf: $(RCODE)/02_codes_pvs.R $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds
+	echo "\n>> $(make_file)\n>>> 02_codes_pvs"
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_glmer_binomial_interglht_' outdir='$(RWD)/030_codes' path_pvs='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top05.xls' path_fsom='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds' path_fccp='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fccp.rds' path_cluster_merging=NULL FDR_cutoff='05'" $(RCODE)/02_codes_pvs.R $(ROUT)/02_codes_pvs.Rout
 
 
 
