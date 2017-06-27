@@ -151,6 +151,9 @@ if(!is.null(path_cluster_merging)){
   
   rows_order <- order(annotation_row$cluster_merging, annotation_row$cluster)
   
+  ### Drop the "drop" cluster
+  rows_order <- rows_order[annotation_row$cluster_merging[rows_order] != "drop"]
+  
 }
 
 
@@ -237,7 +240,7 @@ colors_pvs <- c("grey20", "grey60", "grey100")
 names(colors_pvs) <- levels(pvs_discrete[, 1])
 
 
-ggdf <- data.frame(dim1 = rtsne_out$Y[, 1], dim2 = rtsne_out$Y[, 2], pvs_discrete, annotation_row, code_sizes = code_sizes)
+ggdf <- data.frame(codes, dim1 = rtsne_out$Y[, 1], dim2 = rtsne_out$Y[, 2], pvs_discrete, annotation_row, code_sizes = code_sizes)
 
 
 if(is.null(path_cluster_merging)){
@@ -246,6 +249,11 @@ if(is.null(path_cluster_merging)){
 }else{
   colors <- colors_clusters_merging
   clustering <- "cluster_merging"
+  
+  ### Drop the "drop" cluster
+  codes2drop <- ggdf$cluster_merging == "drop"
+  ggdf <- ggdf[!codes2drop, ]
+  
 }
 
 
@@ -292,7 +300,7 @@ for(i in 1:length(comparisons)){
 # ------------------------------------------------------------
 
 
-adjacency <- stats::dist(codes, method = "euclidean")
+adjacency <- stats::dist(ggdf[, colnames(codes)], method = "euclidean")
 
 fullGraph <- igraph::graph.adjacency(as.matrix(adjacency), mode = "undirected", weighted = TRUE)
 
@@ -304,7 +312,7 @@ MST_l <- igraph::layout.kamada.kawai(MST_graph)
 layout <- MST_l
 lty <- 1
 
-vertex_sizes <- code_sizes/max(code_sizes) * 10
+vertex_sizes <- ggdf$code_sizes/max(ggdf$code_sizes) * 10
 # vertex_sizes[vertex_sizes < 2] <- 2
 
 

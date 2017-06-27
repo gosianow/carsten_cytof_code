@@ -194,6 +194,8 @@ if(!is.null(path_cluster_merging)){
   
   rows_order <- order(annotation_row$cluster_merging, annotation_row$cluster)
   
+  ### Drop the "drop" cluster
+  rows_order <- rows_order[annotation_row$cluster_merging[rows_order] != "drop"]
 }
 
 

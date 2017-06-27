@@ -22,7 +22,17 @@ path_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_0
 path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_mergingNEW2_clustering_labels.xls'
 path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_mergingNEW2_marker_selection.txt'
 path_cluster_merging=NULL
-path_panel=NULL
+
+
+prefix='23_03_pca1_cl20_merging4_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_data/23_03_expr_raw.rds'
+path_data_norm='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_data/23_03_expr_norm.rds'
+path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_clustering_observables.xls'
+path_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_cl20_clustering.xls'
+path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_cl20_clustering_labels.xls'
+path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_helpfiles/23_03_pca1_cl20_marker_selection.txt'
+path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_helpfiles/23_03_pca1_cl20_cluster_merging4.xlsx'
 
 args <- NULL
 
@@ -140,6 +150,16 @@ colors_clusters
 # ------------------------------ 
 
 
+annotation_row <- data.frame(cluster = labels$label)
+rownames(annotation_row) <- labels$label
+
+annotation_colors <- list(cluster = colors_clusters)
+rows_order <- 1:nrow(labels)
+
+### Drop the "drop" cluster
+rows_order <- rows_order[labels$label != "drop"]
+
+
 if(!is.null(path_cluster_merging)){
   
   ### Read in cluster merging file
@@ -154,29 +174,23 @@ if(!is.null(path_cluster_merging)){
   cm_unique <- unique(cm[, c("label", "new_cluster")])
   cm_unique <- cm_unique[order(cm_unique$new_cluster), ]
   
-  cm$new_label <- factor(cm$label, levels = cm_unique$label)
+  ### Add merging to the annotation
+  mm <- match(annotation_row$cluster, cm$old_cluster)
+  annotation_row$cluster_merging <- cm$label[mm]
+  annotation_row$cluster_merging <- factor(annotation_row$cluster_merging, levels = cm_unique$label)
   
-  cmm <- merge(labels, cm[, c("old_cluster", "new_cluster", "new_label"), drop = FALSE], by.x = "cluster", by.y = "old_cluster", all.x = TRUE)
+  ### Add colors for merging
+  color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(cm_unique$label) - length(colors_muted))))
   
-  color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(cmm$new_label) - length(colors_muted))))
+  colors_clusters_merging <- color_ramp[1:nlevels(cm_unique$label)]
+  names(colors_clusters_merging) <- cm_unique$label
   
-  colors_clusters <- color_ramp[1:nlevels(cmm$new_label)]
-  names(colors_clusters) <- levels(cmm$new_label)
+  annotation_colors[["cluster_merging"]] <- colors_clusters_merging
   
+  rows_order <- order(annotation_row$cluster_merging, annotation_row$cluster)
   
-  annotation_row <- data.frame(cluster = cmm$new_label)
-  rownames(annotation_row) <- rownames(cmm$label)
-  
-  annotation_colors <- list(cluster = colors_clusters)
-  rows_order <- order(cmm$new_label)
-  
-}else{
-  
-  annotation_row <- data.frame(cluster = labels$label)
-  rownames(annotation_row) <- labels$label
-  
-  annotation_colors <- list(cluster = colors_clusters)
-  rows_order <- 1:nrow(labels)
+  ### Drop the "drop" cluster
+  rows_order <- rows_order[annotation_row$cluster_merging[rows_order] != "drop"]
   
 }
 
@@ -198,8 +212,6 @@ if(!is.null(path_marker_selection)){
     
   }
 }
-
-
 
 # ------------------------------------------------------------
 # Marker information

@@ -185,10 +185,10 @@ $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nme
 
 
 
+# Calculate frequancies of the bimatrix clusters
+
 .PHONY: cytokine_bimatrix_frequencies_clustering_calculate_goal
 cytokine_bimatrix_frequencies_clustering_calculate_goal: $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies.xls
-
-# Calculate frequancies of the bimatrix clusters
 
 
 $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies.xls: $(RCODE)/04_frequencies_calculate.R $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_clustering.xls
@@ -197,14 +197,13 @@ $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nme
 
 
 
-model := glmer_binomial_interglht
+# Differential analysis of the frequancies of the bimatrix clusters
 
+model := glmer_binomial_interglht
 
 .PHONY: cytokine_bimatrix_frequencies_clustering_analysis_goal
 cytokine_bimatrix_frequencies_clustering_analysis_goal: $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_$(model)_pheatmap3pvs_top05.pdf
 
-
-# Differential analysis of the frequancies of the bimatrix clusters
 
 $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_$(model)_pheatmap3pvs_top05.pdf: $(RCODE)/04_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_counts.xls $(file_metadata)
 	echo "\n>> $(make_file)\n>>> 04_frequencies_analysis"
@@ -212,11 +211,11 @@ $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nme
 
 
 
+# Plot the significant bimatrix clusters
+
 .PHONY: cytokine_bimatrix_frequencies_clustering_plot_significant_goal
 cytokine_bimatrix_frequencies_clustering_plot_significant_goal:  $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top_$(model)_NRvsR_base_frequencies_plot_both2.pdf
 
-
-# Plot the significant bimatrix clusters
 
 $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top_$(model)_NRvsR_base_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot_significant.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies.xls $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_pvs_$(model)_top05.xls
 	echo "\n>> $(make_file)\n>>> 04_frequencies_plot_significant"
