@@ -34,6 +34,18 @@ path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatma
 path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_helpfiles/23_03_pca1_cl20_marker_selection.txt'
 path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_helpfiles/23_03_pca1_cl20_cluster_merging4.xlsx'
 
+### Cytokine profiles
+prefix='23CD4TmemCD69_29CD4TmemCD69_02CD4_cl49_clustering_data23CD4_cl1_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02_CD4/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2/010_data/23CD4_02CD4_expr_raw.rds'
+path_data_norm='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2/010_data/23CD4_02CD4_expr_norm.rds'
+path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2/030_heatmaps/23CD4_02CD4_pca1_clustering_observables.xls'
+path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2/030_heatmaps/23CD4_02CD4_pca1_merging2_clustering_labels.xls'
+path_clustering='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02_CD4/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/23CD4TmemCD69_29CD4TmemCD69_02CD4_cl49_clustering_data23CD4_cl1.txt'
+path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2/010_helpfiles/23CD4_02CD4_pca1_merging2_marker_selection.txt'
+path_cluster_merging=NULL
+
+
 args <- NULL
 
 ##############################################################################
@@ -145,6 +157,19 @@ names(colors_clusters) <- levels(labels$label)
 colors_clusters
 
 
+# ------------------------------------------------------------
+# Keep expression and clustering results for the cells that are common in both
+# ------------------------------------------------------------
+
+common_cells <- intersect(clustering[, "cell_id"], expr[, "cell_id"])
+
+samp <- expr[expr[, "cell_id"] %in% common_cells, "sample_id"]
+clust <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
+e <- expr[expr[, "cell_id"] %in% common_cells, fcs_colnames]
+
+labels <- labels[as.character(sort(unique(clust))), , drop = FALSE]
+labels
+
 # ------------------------------ 
 # Annotation for merging or for the original clusters 
 # ------------------------------ 
@@ -239,14 +264,8 @@ if("avg_score" %in% colnames(clustering_observables)){
 
 
 # ------------------------------------------------------------
-# Keep expression and clustering results for the cells that are common in both
+# Plotting heatmaps
 # ------------------------------------------------------------
-
-common_cells <- intersect(clustering[, "cell_id"], expr[, "cell_id"])
-
-samp <- expr[expr[, "cell_id"] %in% common_cells, "sample_id"]
-clust <- clustering[clustering[, "cell_id"] %in% common_cells, "cluster"]
-e <- expr[expr[, "cell_id"] %in% common_cells, fcs_colnames]
 
 samp_org <- samp
 clust_org <- clust
@@ -285,7 +304,7 @@ for(ii in 1:length(subset_samp)){
   
   colnames(e) <- fcs_panel$Antigen
   
-  a <- aggregate(e, by = list(clust), FUN = aggregate_fun)
+  a <- aggregate(e, by = list(clust = clust), FUN = aggregate_fun)
   
   # get cluster frequencies
   freq_clust <- table(clust)
@@ -304,9 +323,10 @@ for(ii in 1:length(subset_samp)){
   
   ### This clustering is based on the markers that were used for the main clustering, and it is used in all the heatmaps
   expr <- as.matrix(a[, fcs_panel$Antigen[scols]])
-  rownames(expr) <- labels$label
+  rownames(expr) <- labels[as.character(a[, "clust"]), "label"]
   
-  cluster_rows <- hclust(dist(expr), method = linkage)
+  if(nrow(expr) > 1)
+    cluster_rows <- hclust(dist(expr), method = linkage)
   
   # ------------------------------------------------------------
   # Heatmaps of raw median expression
@@ -314,9 +334,9 @@ for(ii in 1:length(subset_samp)){
   
   ### Use all markers for plotting
   expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
-  rownames(expr) <- labels$label
+  rownames(expr) <- labels[as.character(a[, "clust"]), "label"]
   
-  labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
+  labels_row <- paste0(rownames(expr), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
   labels_col <- colnames(expr)
   
   if(pheatmap_palette_rev){
@@ -327,11 +347,12 @@ for(ii in 1:length(subset_samp)){
   
   
   ## With row clustering
-  pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_raw.pdf")))
+  if(nrow(expr) > 1)
+    pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_raw.pdf")))
   
   
   ## No row clustering
-  pheatmap(expr[rows_order, ], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_raw.pdf")))
+  pheatmap(expr[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_raw.pdf")))
   
   
   ## Plot only the selected markers
@@ -340,9 +361,10 @@ for(ii in 1:length(subset_samp)){
     expr_sub <- expr[, marker_selection, drop = FALSE]
     labels_col_sub <- colnames(expr_sub)
     
-    pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_row_clust_raw.pdf")))
+    if(nrow(expr) > 1)
+      pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_row_clust_raw.pdf")))
     
-    pheatmap(expr_sub[rows_order, ], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row[rows_order], fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_no_clust_raw.pdf")))
+    pheatmap(expr_sub[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row[rows_order], fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_no_clust_raw.pdf")))
     
   }
   
@@ -379,10 +401,11 @@ for(ii in 1:length(subset_samp)){
     color <- colorRampPalette(brewer.pal(n = 8, name = "Greys"))(120)[11:110]
     
     ## With row clustering
-    pheatmap(expr_scaled, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_scale.pdf")))
+    if(nrow(expr) > 1)
+      pheatmap(expr_scaled, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_scale.pdf")))
     
     ## No row clustering
-    pheatmap(expr_scaled[rows_order, ], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_scale.pdf")))
+    pheatmap(expr_scaled[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_scale.pdf")))
     
     
     ## Plot only the selected markers
@@ -391,9 +414,10 @@ for(ii in 1:length(subset_samp)){
       expr_sub <- expr_scaled[, marker_selection, drop = FALSE]
       labels_col_sub <- colnames(expr_sub)
       
-      pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_row_clust_scale.pdf")))
+      if(nrow(expr) > 1)
+        pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_row_clust_scale.pdf")))
       
-      pheatmap(expr_sub[rows_order, ], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_no_clust_scale.pdf")))
+      pheatmap(expr_sub[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_no_clust_scale.pdf")))
       
     }
   }
@@ -415,7 +439,7 @@ for(ii in 1:length(subset_samp)){
     
     colnames(e_norm) <- fcs_panel$Antigen
     
-    a_norm <- aggregate(e_norm, by = list(clust), FUN = aggregate_fun)
+    a_norm <- aggregate(e_norm, by = list(clust = clust), FUN = aggregate_fun)
     
     # ------------------------------------------------------------
     # pheatmaps of median expression
@@ -423,9 +447,9 @@ for(ii in 1:length(subset_samp)){
     
     ### Use all markers for plotting
     expr <- as.matrix(a_norm[, fcs_panel$Antigen[c(scols, xcols)]])
-    rownames(expr) <- labels$label
+    rownames(expr) <- labels[as.character(a_norm[, "clust"]), "label"]
     
-    labels_row <- paste0(as.character(labels$label), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
+    labels_row <- paste0(rownames(expr), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
     labels_col <- colnames(expr)
     
     
@@ -440,10 +464,11 @@ for(ii in 1:length(subset_samp)){
     legend_breaks = seq(from = 0, to = 1, by = 0.2)
     
     ## With row clustering
-    pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_norm.pdf")))
+    if(nrow(expr) > 1)
+      pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_norm.pdf")))
     
     ## No row clustering
-    pheatmap(expr[rows_order, ], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_norm.pdf")))
+    pheatmap(expr[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_norm.pdf")))
     
     
     ## Plot only the selected markers
@@ -452,9 +477,10 @@ for(ii in 1:length(subset_samp)){
       expr_sub <- expr[, marker_selection, drop = FALSE]
       labels_col_sub <- colnames(expr_sub)
       
-      pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_row_clust_norm.pdf")))
+      if(nrow(expr) > 1)
+        pheatmap(expr_sub, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col_sub, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_row_clust_norm.pdf")))
       
-      pheatmap(expr_sub[rows_order, ], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_no_clust_norm.pdf")))
+      pheatmap(expr_sub[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col_sub, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_sel_no_clust_norm.pdf")))
       
     }
     

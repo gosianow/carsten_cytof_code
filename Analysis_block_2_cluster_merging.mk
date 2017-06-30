@@ -191,9 +191,9 @@ $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_glmer_binom
 
 
 .PHONY: heatmaps_merging_codes_pvs_goal
-heatmaps_merging_codes_pvs_goal: $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_pheatmap_codes_codes_row_clust_raw.pdf
+heatmaps_merging_codes_pvs_goal: $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_ComplexHeatmap_codes_codes_no_clust_raw_NRvsR.pdf
 
-$(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_pheatmap_codes_codes_row_clust_raw.pdf: $(RCODE)/02_heatmaps_codes_pvs.R $(RWD)/010_data/$(data)_$(panel)_expr_raw.rds $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls \
+$(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_ComplexHeatmap_codes_codes_no_clust_raw_NRvsR.pdf: $(RCODE)/02_heatmaps_codes_pvs.R $(RWD)/010_data/$(data)_$(panel)_expr_raw.rds $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls \
 $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top10.xls $(wildcard $(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_marker_selection.txt)
 	echo "\n>> $(make_file)\n>>> 02_heatmaps_codes_pvs"
 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_' outdir='$(RWD)/030_codes' path_data='$(RWD)/010_data/$(data)_$(panel)_expr_raw.rds' path_data_norm='$(RWD)/010_data/$(data)_$(panel)_expr_norm.rds' \

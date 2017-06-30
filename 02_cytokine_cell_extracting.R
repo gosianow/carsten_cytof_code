@@ -88,6 +88,7 @@ if(nrow(extract_marker) > 0){
 
 f <- file.path(dir_fcs, md$filename)
 names(f) <- md$shortname
+names(f)
 
 fcs <- lapply(f, read.FCS)
 sapply(fcs, nrow)
@@ -106,11 +107,11 @@ sapply(clust_split, length)
 ## Some checks
 stopifnot(all(sapply(fcs, nrow) == sapply(clust_split, length)))
 
-if(!all(names(fcs) == names(clust_split)))
+if(!all(names(fcs) == names(clust_split) & names(fcs) == md$shortname))
   stop("Wrong order of samples!")
 
 
-lapply(names(fcs), function(i){
+cells2keep <- lapply(names(fcs), function(i){
   # i = "base_HD1"
   
   ## Filtering based on marker expression
@@ -130,14 +131,23 @@ lapply(names(fcs), function(i){
   cells2keep2 <- clust_split[[i]] %in% extract_cluster
   table(cells2keep2)
   
-  out <- fcs[[i]][cells2keep1 & cells2keep2, ]
+  cells2keep <- cells2keep1 & cells2keep2
+  
+  out <- fcs[[i]][cells2keep, ]
   
   fn <- file.path(outdir, basename(f[i]))
   write.FCS(out, fn)
   
-  return(NULL)
+  return(cells2keep)
   
 })
+
+
+cells2keep_out <- data.frame(cell_id = clustering$cell_id, sample_id = clustering$sample_id, cells2keep = as.numeric(unlist(cells2keep))) 
+
+write.table(cells2keep_out, file.path(outdir, paste0("cells2keep.txt")), sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+
+
 
 
 
