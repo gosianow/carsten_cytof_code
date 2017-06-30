@@ -193,29 +193,29 @@ pheatmap(pvs_heat[rows_order, , drop = FALSE], cellwidth = 40, cellheight = 8, b
 
 ### Plot p-values per comparison
 
-for(i in 1:length(comparisons)){
-  # i = 1
-  
-  comparison <- comparisons[i]
-  print(comparison)
-  comparison_suffix <- paste0(gsub("adjp_", "", comparison))
-  
-  pvs_heat <- as.matrix(pvs[, comparison, drop = FALSE])
-  head(pvs_heat)
-  rownames(pvs_heat) <- pvs$cluster
-  
-  labels_row <- rownames(pvs_heat)
-  labels_col <- colnames(pvs_heat)
-  
-  ## With row clustering
-  pheatmap(pvs_heat[cluster_rows$order, , drop = FALSE], cellwidth = 40, cellheight = 8, border_color = NA, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[cluster_rows$order], display_numbers = FALSE, number_format = "%.02e", number_color = "black", fontsize_row = 8, fontsize_col = 14, fontsize = 6, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_codes_pvs_row_clust_",comparison_suffix ,".pdf")))
-  
-  
-  ## No row clustering
-  pheatmap(pvs_heat[rows_order, , drop = FALSE], cellwidth = 40, cellheight = 8, border_color = NA, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], display_numbers = FALSE, number_format = "%.02e", number_color = "black", fontsize_row = 8, fontsize_col = 14, fontsize = 6, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_codes_pvs_no_clust_", comparison_suffix, ".pdf")))
-  
-  
-}
+# for(i in 1:length(comparisons)){
+#   # i = 1
+#   
+#   comparison <- comparisons[i]
+#   print(comparison)
+#   comparison_suffix <- paste0(gsub("adjp_", "", comparison))
+#   
+#   pvs_heat <- as.matrix(pvs[, comparison, drop = FALSE])
+#   head(pvs_heat)
+#   rownames(pvs_heat) <- pvs$cluster
+#   
+#   labels_row <- rownames(pvs_heat)
+#   labels_col <- colnames(pvs_heat)
+#   
+#   ## With row clustering
+#   pheatmap(pvs_heat[cluster_rows$order, , drop = FALSE], cellwidth = 40, cellheight = 8, border_color = NA, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[cluster_rows$order], display_numbers = FALSE, number_format = "%.02e", number_color = "black", fontsize_row = 8, fontsize_col = 14, fontsize = 6, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_codes_pvs_row_clust_",comparison_suffix ,".pdf")))
+#   
+#   
+#   ## No row clustering
+#   pheatmap(pvs_heat[rows_order, , drop = FALSE], cellwidth = 40, cellheight = 8, border_color = NA, color = c("grey50", "grey70", "grey90"), breaks = c(0, 0.05, 0.1, 1), legend_breaks = c(0, 0.05, 0.1, 1), legend = FALSE, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], display_numbers = FALSE, number_format = "%.02e", number_color = "black", fontsize_row = 8, fontsize_col = 14, fontsize = 6, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_codes_pvs_no_clust_", comparison_suffix, ".pdf")))
+#   
+#   
+# }
 
 
 

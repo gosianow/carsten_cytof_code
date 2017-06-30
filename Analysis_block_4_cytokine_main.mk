@@ -38,7 +38,10 @@ all: mkdir_rout data_normalization_goal data_plot_goal \
 	cytokine_expression_calculate_goal cytokine_expression_goal \
 	cytokine_bimatrix_calculate_goal cytokine_bimatrix_frequencies_calculate_goal \
 	cytokine_bimatrix_frequencies_overall_goal \
-	cytokine_bimatrix_frequencies_clustering_calculate_goal cytokine_bimatrix_frequencies_clustering_analysis_goal cytokine_bimatrix_frequencies_clustering_plot_significant_goal
+	cytokine_bimatrix_frequencies_clustering_goal \
+	cytokine_bimatrix_frequencies_clustering_calculate_goal cytokine_bimatrix_frequencies_clustering_analysis_goal \
+	cytokine_bimatrix_frequencies_clustering_plot_significant_goal
+
 
 
 ### Make sure no intermediate files are deleted
@@ -95,7 +98,7 @@ analysis_type := all
 
 .PHONY: cytokine_expression_goal
 cytokine_expression_goal: $(foreach i,$(analysis_type),$(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(i)_expr_plot_both2.pdf) \
-	$(foreach i,$(analysis_type),$(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(i)_expr_lmer_interglht_pheatmap3pvs_top05.pdf)
+	$(foreach i,$(analysis_type),$(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(i)_expr_lmer_interglht_pheatmap3pvs_top10.pdf)
 
 define 04_expression_plot_rule
 $(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(1)_expr_plot_both2.pdf: $(RCODE)/04_expression_plot.R $(RCODE)/00_plot_expression.R $(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(1)_expr.xls
@@ -106,10 +109,10 @@ $(foreach i,$(analysis_type),$(eval $(call 04_expression_plot_rule,$(i))))
 
 
 define 04_expression_analysis_rule
-$(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(1)_expr_lmer_interglht_pheatmap3pvs_top05.pdf: $(RCODE)/04_expression_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_expr.R $(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(1)_expr.xls $(wildcard $(RWD)/010_helpfiles/$(data)_$(cytokines)_$(1)_marker_exclusion.txt)
+$(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(1)_expr_lmer_interglht_pheatmap3pvs_top10.pdf: $(RCODE)/04_expression_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_expr.R $(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(1)_expr.xls $(wildcard $(RWD)/010_helpfiles/$(data)_$(cytokines)_$(1)_marker_exclusion.txt)
 	echo "\n>> $(make_file)\n>>> 04_expression_analysis"
 	$(R) "--args prefix='$(data)_$(cytokines)_$(1)_' outdir='$(RWD)/090_cytokine_expression' path_expression='$(RWD)/090_cytokine_expression/$(data)_$(cytokines)_$(1)_expr.xls' path_metadata='$(file_metadata)' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' \
-	path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_expr.R' path_marker_exclusion='$(RWD)/010_helpfiles/$(data)_$(cytokines)_$(1)_marker_exclusion.txt' FDR_cutoff='05'" $(RCODE)/04_expression_analysis.R $(ROUT)/04_expression_analysis.Rout
+	path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_expr.R' path_marker_exclusion='$(RWD)/010_helpfiles/$(data)_$(cytokines)_$(1)_marker_exclusion.txt' FDR_cutoff='10'" $(RCODE)/04_expression_analysis.R $(ROUT)/04_expression_analysis.Rout
 endef
 $(foreach i,$(analysis_type),$(eval $(call 04_expression_analysis_rule,$(i))))
 
@@ -147,7 +150,7 @@ $(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_frequencies.xls: $(RCODE)/05_c
 ### ---------------------------------------
 
 .PHONY: cytokine_bimatrix_frequencies_overall_goal
-cytokine_bimatrix_frequencies_overall_goal: $(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencies_plot_both2.pdf  $(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf
+cytokine_bimatrix_frequencies_overall_goal: $(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencies_plot_both2.pdf  $(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top10.pdf
 
 
 $(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_frequencies.xls
@@ -155,9 +158,9 @@ $(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencie
 	$(R) "--args prefix='$(data)_$(cytokines)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_overall' path_metadata='$(file_metadata)' path_frequencies='$(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_frequencies.xls' path_fun_plot_frequencies='$(RCODE)/00_plot_frequencies.R'" $(RCODE)/04_frequencies_plot.R $(ROUT)/04_frequencies_plot.Rout
 
 
-$(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top05.pdf: $(RCODE)/05_cytokine_bimatrix_overall_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_counts.xls $(file_metadata)
+$(RWD)/090_cytokine_bimatrix_frequencies_overall/$(data)_$(cytokines)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top10.pdf: $(RCODE)/05_cytokine_bimatrix_overall_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_counts.xls $(file_metadata)
 	echo "\n>> $(make_file)\n>>> 05_cytokine_bimatrix_overall_frequencies_analysis"
-	$(R) "--args prefix='$(data)_$(cytokines)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_overall' path_metadata='$(file_metadata)' path_counts='$(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='05'" $(RCODE)/05_cytokine_bimatrix_overall_frequencies_analysis.R $(ROUT)/05_cytokine_bimatrix_overall_frequencies_analysis.Rout
+	$(R) "--args prefix='$(data)_$(cytokines)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_overall' path_metadata='$(file_metadata)' path_counts='$(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='10'" $(RCODE)/05_cytokine_bimatrix_overall_frequencies_analysis.R $(ROUT)/05_cytokine_bimatrix_overall_frequencies_analysis.Rout
 
 
 ### ---------------------------------------
@@ -202,27 +205,33 @@ $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nme
 model := glmer_binomial_interglht
 
 .PHONY: cytokine_bimatrix_frequencies_clustering_analysis_goal
-cytokine_bimatrix_frequencies_clustering_analysis_goal: $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_$(model)_pheatmap3pvs_top05.pdf
+cytokine_bimatrix_frequencies_clustering_analysis_goal: $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_$(model)_pheatmap3pvs_top10.pdf
 
 
-$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_$(model)_pheatmap3pvs_top05.pdf: $(RCODE)/04_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_counts.xls $(file_metadata)
+$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_$(model)_pheatmap3pvs_top10.pdf: $(RCODE)/04_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_counts.xls $(file_metadata)
 	echo "\n>> $(make_file)\n>>> 04_frequencies_analysis"
-	$(R) "--args prefix='$(data)_$(cytokines)_cl$(nmetaclusts)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_clustering' path_metadata='$(file_metadata)' path_counts='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='05'" $(RCODE)/04_frequencies_analysis.R $(ROUT)/04_frequencies_analysis.Rout
+	$(R) "--args prefix='$(data)_$(cytokines)_cl$(nmetaclusts)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_clustering' path_metadata='$(file_metadata)' path_counts='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='10'" $(RCODE)/04_frequencies_analysis.R $(ROUT)/04_frequencies_analysis.Rout
 
 
 
-# Plot the significant bimatrix clusters
+# Plot frequencies of the significant bimatrix clusters
 
 .PHONY: cytokine_bimatrix_frequencies_clustering_plot_significant_goal
-cytokine_bimatrix_frequencies_clustering_plot_significant_goal:  $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top_$(model)_NRvsR_base_frequencies_plot_both2.pdf
+cytokine_bimatrix_frequencies_clustering_plot_significant_goal:  $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top10_$(model)_NRvsR_base_frequencies_plot_both2.pdf $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top10_$(model)_NRvsR_base_pheatmap.pdf
 
 
-$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top_$(model)_NRvsR_base_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot_significant.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies.xls $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_pvs_$(model)_top05.xls
+$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top10_$(model)_NRvsR_base_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot_significant.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies.xls $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_pvs_$(model)_top10.xls
 	echo "\n>> $(make_file)\n>>> 04_frequencies_plot_significant"
-	$(R) "--args prefix='$(data)_$(cytokines)_cl$(nmetaclusts)_top_$(model)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_clustering' path_metadata='$(file_metadata)' path_frequencies='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies.xls' path_pvs='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_pvs_$(model)_top05.xls' path_fun_plot_frequencies='$(RCODE)/00_plot_frequencies.R' FDR_cutoff='05'" $(RCODE)/04_frequencies_plot_significant.R $(ROUT)/04_frequencies_plot_significant.Rout
+	$(R) "--args prefix='$(data)_$(cytokines)_cl$(nmetaclusts)_top10_$(model)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_clustering' path_metadata='$(file_metadata)' path_frequencies='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies.xls' path_pvs='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_pvs_$(model)_top10.xls' path_fun_plot_frequencies='$(RCODE)/00_plot_frequencies.R' FDR_cutoff='10'" $(RCODE)/04_frequencies_plot_significant.R $(ROUT)/04_frequencies_plot_significant.Rout
 
 
+# Plot a heatmap of the significant bimatrix clusters
 
+$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_top10_$(model)_NRvsR_base_pheatmap.pdf: $(RCODE)/02_heatmaps_significant.R $(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_bimatrix.rds $(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_clustering.xls
+	echo "\n>> $(make_file)\n>>> 02_heatmaps_significant"
+	$(R) "--args prefix='$(data)_$(cytokines)_cl$(nmetaclusts)_top10_$(model)_' outdir='$(RWD)/090_cytokine_bimatrix_frequencies_clustering' path_data='$(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_bimatrix.rds' \
+	path_clustering_observables='$(RWD)/090_cytokine_bimatrix/$(data)_$(cytokines)_clustering_observables.xls' path_clustering='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_clustering.xls'  path_clustering_labels='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_clustering_labels.xls' \
+	aggregate_fun='mean' path_pvs='$(RWD)/090_cytokine_bimatrix_frequencies_clustering/$(data)_$(cytokines)_cl$(nmetaclusts)_frequencies_pvs_$(model)_top10.xls' FDR_cutoff='10'" $(RCODE)/02_heatmaps_significant.R $(ROUT)/02_heatmaps_significant.Rout
 
 
 
