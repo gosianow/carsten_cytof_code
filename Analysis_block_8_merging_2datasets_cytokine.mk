@@ -56,7 +56,9 @@ make_file := Analysis_block_8_merging_2datasets_cytokine.mk
 ### --------------------------------------------------------------------------
 ## Define the default rule (makefiles are usually written so that the first target is for compiling the entire program)
 .PHONY: all
-all: mkdir_rout cytokine_expression_goal cytokine_bimatrix_frequencies_calculate_goal cytokine_bimatrix_frequencies_overall_goal \
+all: mkdir_rout cytokine_expression_goal \
+	cytokine_bimatrix_frequencies_calculate_goal \
+	cytokine_bimatrix_frequencies_overall_goal cytokine_bimatrix_frequencies_overall_cytokine_profiles_get_clustering cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps1 cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps2 \
 	cytokine_bimatrix_frequencies_clustering_goal cytokine_bimatrix_frequencies_clustering_calculate_goal cytokine_bimatrix_frequencies_clustering_analysis_goal cytokine_bimatrix_frequencies_clustering_plot_significant_goal \
 	cytokine_bimatrix_frequencies_clustering_cytokine_profiles_get_clustering cytokine_bimatrix_frequencies_clustering_cytokine_profiles_heatmaps1 cytokine_bimatrix_frequencies_clustering_cytokine_profiles_heatmaps2
 
@@ -132,6 +134,75 @@ $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/3responses_both/$(data1)
 $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/3responses_both/$(data1)_$(data2)_$(cytokines)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top10.pdf: $(RCODE)/05_cytokine_bimatrix_overall_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_2datasets_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD_MERGED)/090_cytokine_bimatrix/$(data1)_$(data2)_$(cytokines)_counts.xls $(file_metadata)
 	echo "\n>> $(make_file)\n>>> 05_cytokine_bimatrix_overall_frequencies_analysis"
 	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/3responses_both' path_metadata=c('$(file_metadata1)','$(file_metadata2)') path_counts='$(RWD_MERGED)/090_cytokine_bimatrix/$(data1)_$(data2)_$(cytokines)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_2datasets_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='10'" $(RCODE)/05_cytokine_bimatrix_overall_frequencies_analysis.R $(ROUT)/05_cytokine_bimatrix_overall_frequencies_analysis.Rout
+
+
+### ----------------------------
+### Cytokine profiles for bimatrix frequencies overall
+### ----------------------------
+
+# Get the Tmem clustering for each of the positive cytokines
+.PHONY: cytokine_bimatrix_frequencies_overall_cytokine_profiles_get_clustering
+cytokine_bimatrix_frequencies_overall_cytokine_profiles_get_clustering: $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_clPD1.txt
+
+
+$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_clPD1.txt: $(RCODE)/06_cytokine_profiles_get_clustering_overall.R $(RWD_MERGED)/090_cytokine_bimatrix/$(data1)_$(data2)_$(cytokines)_bimatrix.rds
+	echo "\n>> $(make_file)\n>>> 06_cytokine_profiles_get_clustering_overall"
+	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles' \
+	path_bimatrix='$(RWD_MERGED)/090_cytokine_bimatrix/$(data1)_$(data2)_$(cytokines)_bimatrix.rds' \
+	path_clustering=c('$(RWD_BACK1)/030_heatmaps/$(data_back1)_$(panel_back1)_$(pca_back1)_$(merging_back1)_clustering.xls','$(RWD_BACK2)/030_heatmaps/$(data_back2)_$(panel_back2)_$(pca_back2)_$(merging_back2)_clustering.xls') \
+	path_cells2keep=c('$(RWD1)/010_cleanfcs/cells2keep.txt','$(RWD2)/010_cleanfcs/cells2keep.txt') data=c('$(data_back1)','$(data_back2)')" $(RCODE)/06_cytokine_profiles_get_clustering_overall.R $(ROUT)/06_cytokine_profiles_get_clustering_overall.Rout
+
+
+### Plot heatmaps with cytokine profiles
+
+# For data_back1 RWD_BACK1
+generated_clustering := $(wildcard $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl*.txt)
+
+generated_clustering := $(foreach i,$(generated_clustering),$(subst $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl,,$(i)))
+
+generated_clustering := $(foreach i,$(generated_clustering),$(subst .txt,,$(i)))
+
+
+.PHONY: cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps1
+cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps1: $(foreach i,$(generated_clustering),$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl$(i)_pheatmap_all_all_no_clust_raw.pdf)
+
+
+define cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps_rule
+$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl$(1)_pheatmap_all_all_no_clust_raw.pdf: $(RCODE)/02_heatmaps.R $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl$(1).txt $(RWD_BACK1)/010_data/$(data_back1)_$(panel_back1)_expr_raw.rds
+	echo "\n>> $(make_file)\n>>> 02_heatmaps"
+	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl$(1)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles' path_data='$(RWD_BACK1)/010_data/$(data_back1)_$(panel_back1)_expr_raw.rds' path_data_norm='$(RWD_BACK1)/010_data/$(data_back1)_$(panel_back1)_expr_norm.rds' \
+	path_clustering_observables='$(RWD_BACK1)/030_heatmaps/$(data_back1)_$(panel_back1)_$(pca_back1)_clustering_observables.xls' path_clustering='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl$(1).txt'  path_clustering_labels='$(RWD_BACK1)/030_heatmaps/$(data_back1)_$(panel_back1)_$(pca_back1)_$(merging_back1)_clustering_labels.xls' \
+	path_marker_selection=NULL path_cluster_merging=NULL aggregate_fun='mean' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
+endef
+$(foreach i,$(generated_clustering),$(eval $(call cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps_rule,$(i))))
+
+
+
+# For data_back2 RWD_BACK2
+generated_clustering := $(wildcard $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl*.txt)
+
+generated_clustering := $(foreach i,$(generated_clustering),$(subst $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl,,$(i)))
+
+generated_clustering := $(foreach i,$(generated_clustering),$(subst .txt,,$(i)))
+
+
+.PHONY: cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps2
+cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps2: $(foreach i,$(generated_clustering),$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl$(i)_pheatmap_all_all_no_clust_raw.pdf)
+
+
+define cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps_rule
+$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl$(1)_pheatmap_all_all_no_clust_raw.pdf: $(RCODE)/02_heatmaps.R $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl$(1).txt $(RWD_BACK2)/010_data/$(data_back2)_$(panel_back2)_expr_raw.rds
+	echo "\n>> $(make_file)\n>>> 02_heatmaps"
+	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl$(1)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles' path_data='$(RWD_BACK2)/010_data/$(data_back2)_$(panel_back2)_expr_raw.rds' path_data_norm='$(RWD_BACK2)/010_data/$(data_back2)_$(panel_back2)_expr_norm.rds' \
+	path_clustering_observables='$(RWD_BACK2)/030_heatmaps/$(data_back2)_$(panel_back2)_$(pca_back2)_clustering_observables.xls' path_clustering='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl$(1).txt'  path_clustering_labels='$(RWD_BACK2)/030_heatmaps/$(data_back2)_$(panel_back2)_$(pca_back2)_$(merging_back2)_clustering_labels.xls' \
+	path_marker_selection=NULL path_cluster_merging=NULL aggregate_fun='mean' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
+endef
+$(foreach i,$(generated_clustering),$(eval $(call cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps_rule,$(i))))
+
+
+
+
+
 
 
 ### ------------------------------------------------------------------------------

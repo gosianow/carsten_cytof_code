@@ -17,14 +17,13 @@ library(ggplot2)
 ##############################################################################
 
 
-prefix='23_01_pca1_cl20_mergingNEW2_glmer_binomial_interglht_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_codes'
-path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_codes/23_01_pca1_cl20_frequencies_pvs_glmer_binomial_interglht_top05.xls'
-path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_fsom.rds'
-path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_fccp.rds'
-FDR_cutoff='05'
-path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_cluster_mergingNEW2.xlsx'
-
+prefix='23CD4_01CD4_pca1_cl5_merging5_glmer_binomial_interglht_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_codes'
+path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/050_frequencies_codes/23CD4_01CD4_pca1_cl5_frequencies_pvs_glmer_binomial_interglht_top10.xls'
+path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_fsom.rds'
+path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_fccp.rds'
+path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_helpfiles/23CD4_01CD4_pca1_cl5_cluster_merging5.xlsx'
+FDR_cutoff='10'
 
 # path_cluster_merging=NULL
 args <- NULL
@@ -322,8 +321,16 @@ if(is.null(path_cluster_merging)){
   vertex_colors <- colors_clusters_merging[ggdf$cluster_merging]
 }
 
+mark.col <- adjustcolor(vertex_colors, alpha = 0.5)
+names(mark.col) <- paste0(names(vertex_colors), 1:length(vertex_colors))
 
-### Plot MST
+mark.groups <- lapply(1:length(vertex_colors), function(x){
+  x
+})
+
+names(mark.groups) <- names(mark.col)
+
+### Plot MST colored by p-values
 
 for(i in 1:length(comparisons)){
   # i = 1
@@ -336,7 +343,7 @@ for(i in 1:length(comparisons)){
   
   pdf(file.path(outdir, paste0(prefix, "mst_codes_pvs_", comparison_suffix, ".pdf")), width = 7, height = 7)
   
-  igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_fill, edge.lty = lty)
+  igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_fill, edge.lty = lty, mark.groups = mark.groups, mark.border = NA, mark.col = mark.col, mark.shape = 1)
   
   dev.off()
   
@@ -345,6 +352,7 @@ for(i in 1:length(comparisons)){
 }
 
 
+### Plot MST colored by cell population
 
 
 pdf(file.path(outdir, paste0(prefix, "mst_codes_pvs_clusters.pdf")), width = 7, height = 7)
