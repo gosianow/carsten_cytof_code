@@ -27,7 +27,6 @@ path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1
 path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_fccp.rds'
 path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_codes/23_01_pca1_cl20_frequencies_pvs_glmer_binomial_interglht_top10.xls'
 path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_cluster_mergingNEW2.xlsx'
-comparisons='adjp_NRvsR'
 
 # path_cluster_merging=NULL
 args <- NULL
@@ -144,9 +143,11 @@ pvs <- read.table(path_pvs, header = TRUE, sep = "\t", as.is = TRUE)
 
 pvs <- pvs[order(pvs$cluster), ]
 
-# comparisons <- colnames(pvs)[grep("adjp_", colnames(pvs))]
-# comparisons
+comparisons <- colnames(pvs)[grep("adjp_", colnames(pvs))]
+comparisons
 
+
+comparisons <- "adjp_NRvsR"
 
 # ------------------------------------------------------------
 # Prepare a color annotation for heatmaps 
@@ -367,164 +368,8 @@ for(i in 1:length(comparisons)){
   dev.off()
   
   
-}
-
-
-
-## Plot only the selected markers
-if(!is.null(marker_selection)){
-  
-  expr_sub <- expr[, marker_selection, drop = FALSE]
-  
-}
-
-
-if(scale){
-  
-  # ------------------------------------------------------------
-  # Heatmaps of raw median expression scalled by marker (column) 
-  # ------------------------------------------------------------
-  
-  scalling_type <- "s01" 
-  
-  switch(scalling_type, 
-    snorm = {
-      ## scalled to mean = 0, sd = 1
-      expr_scaled <- apply(expr, 2, function(x){(x-mean(x))/sd(x)})
-      th <- 2.5
-      expr_scaled[expr_scaled > th] <- th
-      expr_scaled[expr_scaled < -th] <- -th
-      breaks = seq(from = -th, to = th, length.out = 101)
-      legend_breaks = seq(from = -round(th), to = round(th), by = 1)
-    },
-    
-    s01 = {
-      ## scalled to 01
-      expr_scaled <- apply(expr, 2, function(x){(x-min(x))/(max(x)-min(x))})
-      breaks = seq(from = 0, to = 1, length.out = 101)
-      legend_breaks = seq(from = 0, to = 1, by = 0.25)
-      
-    }
-  )
   
   
-  color <- colorRampPalette(brewer.pal(n = 8, name = "Greys"))(120)[11:110]
-  
-  
-  ## With row clustering
-  
-  ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
-  
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled)))
-  
-  ht1s <- Heatmap(expr_scaled[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
-  
-  ht1x <- Heatmap(expr_scaled[, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
-  
-  ht2 <- Heatmap(pvs_heat, name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
-  
-  pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_row_clust_scale_", comparison_suffix ,".pdf")), width = 12, height = 14)
-  draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
-  dev.off()
-  
-  ## No row clustering
-  ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
-  
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE])))
-  
-  ht1s <- Heatmap(expr_scaled[rows_order, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
-  
-  ht1x <- Heatmap(expr_scaled[rows_order, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
-  
-  ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
-  
-  pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_scale_", comparison_suffix ,".pdf")), width = 12, height = 14)
-  draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
-  dev.off()
-  
-  
-  
-  
-  ## Plot only the selected markers
-  if(!is.null(marker_selection)){
-    
-    expr_sub <- expr_scaled[, marker_selection, drop = FALSE]
-    
-    
-  }
-  
-}
-
-
-if(!is.null(path_data_norm)){
-  
-  # ------------------------------------------------------------
-  # Heatmaps of norm median expression
-  # Had to do this way because I want to plot the 01 normalized data, but I want to keep row clustering from the raw data
-  # ------------------------------------------------------------
-  
-  
-  # ------------------------------------------------------------
-  # Get the median expression
-  # ------------------------------------------------------------
-  
-  colnames(e_norm) <- fcs_panel$Antigen
-  
-  a_norm <- aggregate(e_norm, by = list(clust), FUN = aggregate_fun)
-  
-  # ------------------------------------------------------------
-  # pheatmaps of median expression
-  # ------------------------------------------------------------
-  
-  ### Use all markers for plotting
-  expr <- as.matrix(a_norm[, fcs_panel$Antigen[c(scols, xcols)]])
-  rownames(expr) <- 1:ncodes
-  
-  labels_row <- paste0(as.character(1:ncodes), " (", as.numeric(freq_clust), ")")
-  labels_col <- colnames(expr)
-  
-  
-  if(pheatmap_palette_norm_rev){
-    color <- colorRampPalette(rev(brewer.pal(n = 8, name = pheatmap_palette_norm)))(101)
-  }else{
-    color <- colorRampPalette(brewer.pal(n = 8, name = pheatmap_palette_norm))(101)
-  }
-  
-  ### Fixed legend range from 0 to 1 
-  breaks = seq(from = 0, to = 1, length.out = 101)
-  legend_breaks = seq(from = 0, to = 1, by = 0.2)
-  
-  
-  ## With row clustering
-  
-  ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
-  
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr)))
-  
-  ht1s <- Heatmap(expr[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
-  
-  ht1x <- Heatmap(expr[, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
-  
-  ht2 <- Heatmap(pvs_heat, name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
-  
-  pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_row_clust_norm_", comparison_suffix ,".pdf")), width = 12, height = 14)
-  draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
-  dev.off()
-  
-  ## No row clustering
-  ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
-  
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr[rows_order, , drop = FALSE])))
-  
-  ht1s <- Heatmap(expr[rows_order, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
-  
-  ht1x <- Heatmap(expr[rows_order, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
-  
-  ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
-  
-  pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_norm_", comparison_suffix ,".pdf")), width = 12, height = 14)
-  draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
-  dev.off()
   
   
   ## Plot only the selected markers
@@ -535,61 +380,217 @@ if(!is.null(path_data_norm)){
   }
   
   
+  if(scale){
+    
+    # ------------------------------------------------------------
+    # Heatmaps of raw median expression scalled by marker (column) 
+    # ------------------------------------------------------------
+    
+    scalling_type <- "s01" 
+    
+    switch(scalling_type, 
+      snorm = {
+        ## scalled to mean = 0, sd = 1
+        expr_scaled <- apply(expr, 2, function(x){(x-mean(x))/sd(x)})
+        th <- 2.5
+        expr_scaled[expr_scaled > th] <- th
+        expr_scaled[expr_scaled < -th] <- -th
+        breaks = seq(from = -th, to = th, length.out = 101)
+        legend_breaks = seq(from = -round(th), to = round(th), by = 1)
+      },
+      
+      s01 = {
+        ## scalled to 01
+        expr_scaled <- apply(expr, 2, function(x){(x-min(x))/(max(x)-min(x))})
+        breaks = seq(from = 0, to = 1, length.out = 101)
+        legend_breaks = seq(from = 0, to = 1, by = 0.25)
+        
+      }
+    )
+    
+    
+    color <- colorRampPalette(brewer.pal(n = 8, name = "Greys"))(120)[11:110]
+    
+    
+    ## With row clustering
+    
+    ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+    
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled)))
+    
+    ht1s <- Heatmap(expr_scaled[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+    
+    ht1x <- Heatmap(expr_scaled[, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+    
+    ht2 <- Heatmap(pvs_heat, name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+    
+    pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_row_clust_scale_", comparison_suffix ,".pdf")), width = 12, height = 14)
+    draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+    dev.off()
+    
+    ## No row clustering
+    ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+    
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE])))
+    
+    ht1s <- Heatmap(expr_scaled[rows_order, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+    
+    ht1x <- Heatmap(expr_scaled[rows_order, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+    
+    ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+    
+    pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_scale_", comparison_suffix ,".pdf")), width = 12, height = 14)
+    draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+    dev.off()
+    
+    
+    
+    
+    ## Plot only the selected markers
+    if(!is.null(marker_selection)){
+      
+      expr_sub <- expr_scaled[, marker_selection, drop = FALSE]
+      
+      
+    }
+    
+  }
+  
+  
+  if(!is.null(path_data_norm)){
+    
+    # ------------------------------------------------------------
+    # Heatmaps of norm median expression
+    # Had to do this way because I want to plot the 01 normalized data, but I want to keep row clustering from the raw data
+    # ------------------------------------------------------------
+    
+    
+    # ------------------------------------------------------------
+    # Get the median expression
+    # ------------------------------------------------------------
+    
+    colnames(e_norm) <- fcs_panel$Antigen
+    
+    a_norm <- aggregate(e_norm, by = list(clust), FUN = aggregate_fun)
+    
+    # ------------------------------------------------------------
+    # pheatmaps of median expression
+    # ------------------------------------------------------------
+    
+    ### Use all markers for plotting
+    expr_norm <- as.matrix(a_norm[, fcs_panel$Antigen[c(scols, xcols)]])
+    rownames(expr_norm) <- 1:ncodes
+    
+    labels_row <- paste0(as.character(1:ncodes), " (", as.numeric(freq_clust), ")")
+    labels_col <- colnames(expr_norm)
+    
+    
+    if(pheatmap_palette_norm_rev){
+      color <- colorRampPalette(rev(brewer.pal(n = 8, name = pheatmap_palette_norm)))(101)
+    }else{
+      color <- colorRampPalette(brewer.pal(n = 8, name = pheatmap_palette_norm))(101)
+    }
+    
+    ### Fixed legend range from 0 to 1 
+    breaks = seq(from = 0, to = 1, length.out = 101)
+    legend_breaks = seq(from = 0, to = 1, by = 0.2)
+    
+    
+    ## With row clustering
+    
+    ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+    
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm)))
+    
+    ht1s <- Heatmap(expr_norm[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+    
+    ht1x <- Heatmap(expr_norm[, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+    
+    ht2 <- Heatmap(pvs_heat, name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+    
+    pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_row_clust_norm_", comparison_suffix ,".pdf")), width = 12, height = 14)
+    draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+    dev.off()
+    
+    ## No row clustering
+    ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+    
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm[rows_order, , drop = FALSE])))
+    
+    ht1s <- Heatmap(expr_norm[rows_order, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+    
+    ht1x <- Heatmap(expr_norm[rows_order, xmarkers, drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+    
+    ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+    
+    pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_norm_", comparison_suffix ,".pdf")), width = 12, height = 14)
+    draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+    dev.off()
+    
+    
+    ## Plot only the selected markers
+    if(!is.null(marker_selection)){
+      
+      expr_sub <- expr_norm[, marker_selection, drop = FALSE]
+      
+    }
+    
+    
+  }
+  
+  
+  # ------------------------------------------------------------
+  # Heatmaps of the original codes
+  # ------------------------------------------------------------
+  
+  
+  ### Use the code markers for plotting
+  expr_codes <- codes
+  rownames(expr_codes) <- 1:ncodes
+  
+  mm <- match(colnames(codes), fcs_panel$fcs_colname)
+  colnames(expr_codes) <- fcs_panel$Antigen[mm]
+  expr_codes <- expr_codes[, fcs_panel$Antigen[scols]]  
+  
+  labels_row <- paste0(as.character(1:ncodes), " (", as.numeric(freq_clust), ")")
+  labels_col <- colnames(expr_codes)
+  
+  color <- colorRampPalette(rev(brewer.pal(n = 8, name = "Spectral")))(101)
+  
+  
+  ## With row clustering
+  
+  ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+  
+  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_codes)))
+  
+  ht1s <- Heatmap(expr_codes, name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+  
+  ht1x <- Heatmap(expr_codes, name = "out", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+  
+  ht2 <- Heatmap(pvs_heat, name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+  
+  pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_codes_row_clust_raw_", comparison_suffix ,".pdf")), width = 12, height = 14)
+  draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+  dev.off()
+  
+  ## No row clustering
+  ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+  
+  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_codes[rows_order, , drop = FALSE])))
+  
+  ht1s <- Heatmap(expr_codes[rows_order, , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+  
+  ht1x <- Heatmap(expr_codes[rows_order, , drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+  
+  ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+  
+  pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_codes_no_clust_raw_", comparison_suffix ,".pdf")), width = 12, height = 14)
+  draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+  dev.off()
+  
+  
 }
-
-
-# ------------------------------------------------------------
-# Heatmaps of the original codes
-# ------------------------------------------------------------
-
-
-### Use the code markers for plotting
-expr <- codes
-rownames(expr) <- 1:ncodes
-
-mm <- match(colnames(codes), fcs_panel$fcs_colname)
-colnames(expr) <- fcs_panel$Antigen[mm]
-expr <- expr[, fcs_panel$Antigen[scols]]  
-
-labels_row <- paste0(as.character(1:ncodes), " (", as.numeric(freq_clust), ")")
-labels_col <- colnames(expr)
-
-color <- colorRampPalette(rev(brewer.pal(n = 8, name = "Spectral")))(101)
-
-
-## With row clustering
-
-ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
-
-ha_text = rowAnnotation(text = row_anno_text(rownames(expr)))
-
-ht1s <- Heatmap(expr, name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
-
-ht1x <- Heatmap(expr, name = "out", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
-
-ht2 <- Heatmap(pvs_heat, name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
-
-pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_codes_row_clust_raw_", comparison_suffix ,".pdf")), width = 12, height = 14)
-draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
-dev.off()
-
-## No row clustering
-ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
-
-ha_text = rowAnnotation(text = row_anno_text(rownames(expr[rows_order, , drop = FALSE])))
-
-ht1s <- Heatmap(expr[rows_order, , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
-
-ht1x <- Heatmap(expr[rows_order, , drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
-
-ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
-
-pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_codes_no_clust_raw_", comparison_suffix ,".pdf")), width = 12, height = 14)
-draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
-dev.off()
-
-
-
 
 
 

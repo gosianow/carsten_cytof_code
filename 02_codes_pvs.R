@@ -11,6 +11,7 @@ library(RColorBrewer)
 library(Rtsne)
 library(igraph)
 library(ggplot2)
+library(ggraph)
 
 ##############################################################################
 # Test arguments
@@ -308,29 +309,69 @@ MST_graph <- igraph::minimum.spanning.tree(fullGraph)
 MST_l <- igraph::layout.kamada.kawai(MST_graph) 
 
 
-layout <- MST_l
-lty <- 1
+# layout <- MST_l
+# lty <- 1
+# 
+# vertex_sizes <- ggdf$code_sizes/max(ggdf$code_sizes) * 10
+# # vertex_sizes[vertex_sizes < 2] <- 2
+# 
+# 
+# if(is.null(path_cluster_merging)){
+#   vertex_colors <- colors_clusters[ggdf$cluster]
+# }else{
+#   vertex_colors <- colors_clusters_merging[ggdf$cluster_merging]
+# }
+# 
+# mark.col <- adjustcolor(vertex_colors, alpha = 0.5)
+# names(mark.col) <- paste0(names(vertex_colors), 1:length(vertex_colors))
+# 
+# mark.groups <- lapply(1:length(vertex_colors), function(x){
+#   x
+# })
+# 
+# names(mark.groups) <- names(mark.col)
+# 
+# 
+# 
+# ### Plot MST colored by p-values
+# 
+# for(i in 1:length(comparisons)){
+#   # i = 1
+#   
+#   comparison <- comparisons[i]
+#   print(comparison)
+#   comparison_suffix <- paste0(gsub("adjp_", "", comparison))
+#   
+#   vertex_fill <- colors_pvs[ggdf[, comparison]]
+#   
+#   pdf(file.path(outdir, paste0(prefix, "mst_codes_pvs_", comparison_suffix, ".pdf")), width = 7, height = 7)
+#   
+#   igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_fill, edge.lty = lty, mark.groups = mark.groups, mark.border = NA, mark.col = mark.col, mark.shape = 1)
+#   
+#   dev.off()
+#   
+# }
 
-vertex_sizes <- ggdf$code_sizes/max(ggdf$code_sizes) * 10
-# vertex_sizes[vertex_sizes < 2] <- 2
+
+### Plot MST colored by cell population
 
 
-if(is.null(path_cluster_merging)){
-  vertex_colors <- colors_clusters[ggdf$cluster]
-}else{
-  vertex_colors <- colors_clusters_merging[ggdf$cluster_merging]
-}
+# pdf(file.path(outdir, paste0(prefix, "mst_codes_pvs_clusters.pdf")), width = 7, height = 7)
+# 
+# igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_colors, edge.lty = lty)
+# 
+# dev.off()
 
-mark.col <- adjustcolor(vertex_colors, alpha = 0.5)
-names(mark.col) <- paste0(names(vertex_colors), 1:length(vertex_colors))
 
-mark.groups <- lapply(1:length(vertex_colors), function(x){
-  x
-})
 
-names(mark.groups) <- names(mark.col)
 
-### Plot MST colored by p-values
+### Plotting with ggraph
+
+
+V(MST_graph)$code_sizes <- ggdf$code_sizes
+V(MST_graph)$clustering <- as.character(ggdf[, clustering])
+
+
 
 for(i in 1:length(comparisons)){
   # i = 1
@@ -339,39 +380,33 @@ for(i in 1:length(comparisons)){
   print(comparison)
   comparison_suffix <- paste0(gsub("adjp_", "", comparison))
   
-  vertex_fill <- colors_pvs[ggdf[, comparison]]
+  V(MST_graph)$comparison <- as.character(ggdf[, comparison])
+
+  ggp <- ggraph(MST_graph, layout = 'igraph', algorithm = 'kk') + 
+    geom_edge_link() + 
+    geom_node_point(aes(size = code_sizes, fill = comparison, color = clustering), shape = 21, stroke = 2) +
+    theme_bw() +
+    theme(axis.text = element_blank(), 
+      axis.title  = element_blank(),
+      axis.ticks  = element_blank(),
+      strip.text = element_text(size = 15, hjust = 0),
+      strip.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_blank(),
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(), 
+      panel.border = element_blank()) +
+    scale_color_manual(values = colors) +
+    scale_fill_manual(values = colors_pvs) +
+    guides(colour = guide_legend(override.aes = list(size = 5)))
   
-  pdf(file.path(outdir, paste0(prefix, "mst_codes_pvs_", comparison_suffix, ".pdf")), width = 7, height = 7)
   
-  igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_fill, edge.lty = lty, mark.groups = mark.groups, mark.border = NA, mark.col = mark.col, mark.shape = 1)
-  
+  pdf(file.path(outdir, paste0(prefix, "ggraph_codes_pvs_", comparison_suffix, ".pdf")), width = 9, height = 7)       
+  print(ggp)
   dev.off()
   
-  # frame.color = vertex_colors
   
 }
-
-
-### Plot MST colored by cell population
-
-
-pdf(file.path(outdir, paste0(prefix, "mst_codes_pvs_clusters.pdf")), width = 7, height = 7)
-
-igraph::plot.igraph(MST_graph, layout = layout, vertex.size = vertex_sizes, vertex.label = NA, vertex.label.cex = 0.5, vertex.color = vertex_colors, edge.lty = lty)
-
-dev.off()
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
