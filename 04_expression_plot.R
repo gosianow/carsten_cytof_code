@@ -4,13 +4,10 @@ Sys.time()
 
 # Load packages
 library(gdata)
-library(gplots)
 library(ggplot2)
-library(plyr)
 library(reshape2)
-library(RColorBrewer)
+library(plyr)
 library(limma)
-library(pheatmap)
 
 ##############################################################################
 # Test arguments
@@ -24,11 +21,11 @@ path_expression='../carsten_cytof/PD1_project/CK_2016-06-23_01/080_expression_au
 path_fun_plot_expression='00_plot_expression.R'
 
 
-prefix='01_23m6_29m4_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/01/08_expression_merged_2responses_both'
-path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_01.xlsx')
-path_expression=c('../carsten_cytof/PD1_project/CK_2016-06-23_01/080_expression/23_01_pca1_merging6_all_expr.xls','../carsten_cytof/PD1_project/CK_2016-06-29_01/080_expression/29_01_pca1_merging4_all_expr.xls')
-path_fun_plot_expression='00_plot_expression.R'
+prefix='01CD4_23CD4merging5_29CD4merging5_clust_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/01_CD4_noHD10/080_expression/3responses_both'
+path_expression=c('../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/080_expression/23CD4_01CD4_pca1_merging5_clust_expr.xls','../carsten_cytof/PD1_project/CK_2016-06-29_01_CD4_merging2/080_expression/29CD4_01CD4_pca1_merging5_clust_expr.xls')
+path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_01_noHD10.xlsx')
+path_fun_plot_expression='./00_plot_expression.R'
 
 
 ##############################################################################
