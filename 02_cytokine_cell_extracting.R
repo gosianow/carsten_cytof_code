@@ -70,6 +70,8 @@ stopifnot(all(extract_cluster %in% labels$label))
 # Load marker expression to extract
 # ------------------------------------------------------------
 
+
+
 extract_marker <- gdata::read.xls(path_extract_marker, stringsAsFactors = FALSE)
 extract_marker <- extract_marker[complete.cases(extract_marker), , drop = FALSE]
 extract_marker
@@ -79,6 +81,8 @@ if(nrow(extract_marker) > 0){
   colnames(extract_marker) <- c("fcs_colname", "base", "tx")
   extract_marker
 }
+
+
 
 
 
@@ -124,7 +128,7 @@ cells2keep <- lapply(names(fcs), function(i){
     cells2keep1 <- colSums(t(e) > extract_marker[, day]) == nrow(extract_marker)
     table(cells2keep1)
   }else{
-    cells2keep1 <- rep(1, nrow(fcs[[i]]))
+    cells2keep1 <- rep(TRUE, nrow(fcs[[i]]))
   }
   
   ## Filtering based on clusters

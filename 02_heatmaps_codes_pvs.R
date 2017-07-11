@@ -15,18 +15,20 @@ library(RColorBrewer)
 ##############################################################################
 
 
-prefix='23_01_pca1_cl20_mergingNEW2_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_codes'
-path_data='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data/23_01_expr_raw.rds'
-path_data_norm='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data/23_01_expr_norm.rds'
-path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_clustering_observables.xls'
-path_codes_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_codes_clustering.xls'
-path_codes_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_codes_clustering_labels.xls'
-path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_marker_selection.txt'
-path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_fsom.rds'
-path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_01/030_heatmaps/23_01_pca1_cl20_fccp.rds'
-path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_codes/23_01_pca1_cl20_frequencies_pvs_glmer_binomial_interglht_top10.xls'
-path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_helpfiles/23_01_pca1_cl20_cluster_mergingNEW2.xlsx'
+prefix='23CD4_01CD4_pca1_cl5_merging5_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_codes'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_data/23CD4_01CD4_expr_raw.rds'
+path_data_norm='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_data/23CD4_01CD4_expr_norm.rds'
+path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_clustering_observables.xls'
+path_codes_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_codes_clustering.xls'
+path_codes_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_codes_clustering_labels.xls'
+path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_helpfiles/23CD4_01CD4_pca1_cl5_marker_selection.txt'
+path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_helpfiles/23CD4_01CD4_pca1_cl5_cluster_merging5.xlsx'
+path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_fsom.rds'
+path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_fccp.rds'
+path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/050_frequencies_codes/23CD4_01CD4_pca1_cl5_frequencies_pvs_glmer_binomial_interglht_top10.xls'
+FDR_cutoff='10' 
+
 
 # path_cluster_merging=NULL
 args <- NULL
@@ -67,6 +69,10 @@ if(!any(grepl("aggregate_fun=", args))){
 if(!any(grepl("scale=", args))){
   scale=TRUE
 }
+
+suffix <- paste0("_top", FDR_cutoff)
+FDR_cutoff <- as.numeric(paste0("0.", FDR_cutoff))
+FDR_cutoff
 
 
 # ------------------------------------------------------------
@@ -328,6 +334,7 @@ for(i in 1:length(comparisons)){
   
   pvs_discrete <- cut(pvs[, comparison], c(0, 0.05, 0.1, 1))
   pvs_heat <- matrix(pvs_discrete, ncol = 1)
+  colnames(pvs_heat) <- comparison
   rownames(pvs_heat) <- pvs$cluster
   head(pvs_heat)
   
@@ -369,6 +376,29 @@ for(i in 1:length(comparisons)){
   
   
   
+  
+  ## No row clustering + plot only the significant codes
+  codes_sign <- pvs[, comparison] < FDR_cutoff
+  
+  if(any(codes_sign)){
+    
+    hh <- sum(codes_sign) / 4 + 2
+    
+    ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+    
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE])))
+    
+    ht1s <- Heatmap(expr[rows_order, smarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+    
+    ht1x <- Heatmap(expr[rows_order, xmarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+    
+    ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+    
+    pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_raw_", comparison_suffix, suffix ,".pdf")), width = 12, height = hh)
+    draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+    dev.off()
+    
+  }
   
   
   
@@ -444,6 +474,29 @@ for(i in 1:length(comparisons)){
     dev.off()
     
     
+    
+    ## No row clustering + plot only the significant codes
+    codes_sign <- pvs[, comparison] < FDR_cutoff
+    
+    if(any(codes_sign)){
+      
+      hh <- sum(codes_sign) / 4 + 2
+      
+      ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+      
+      ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE])))
+      
+      ht1s <- Heatmap(expr_scaled[rows_order, smarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+      
+      ht1x <- Heatmap(expr_scaled[rows_order, xmarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+      
+      ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+      
+      pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_scale_", comparison_suffix , suffix,".pdf")), width = 12, height = hh)
+      draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+      dev.off()
+      
+    }
     
     
     ## Plot only the selected markers
@@ -526,6 +579,31 @@ for(i in 1:length(comparisons)){
     pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_norm_", comparison_suffix ,".pdf")), width = 12, height = 14)
     draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
     dev.off()
+    
+    
+    ## No row clustering + plot only the significant codes
+    codes_sign <- pvs[, comparison] < FDR_cutoff
+    
+    if(any(codes_sign)){
+      
+      hh <- sum(codes_sign) / 4 + 2
+      
+      ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+      
+      ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE])))
+      
+      ht1s <- Heatmap(expr_norm[rows_order, smarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+      
+      ht1x <- Heatmap(expr_norm[rows_order, xmarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+      
+      ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+      
+      pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_all_no_clust_norm_", comparison_suffix , suffix, ".pdf")), width = 12, height = hh)
+      draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+      dev.off()
+      
+    }
+    
     
     
     ## Plot only the selected markers
