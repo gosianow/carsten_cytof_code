@@ -153,7 +153,7 @@ comparisons <- colnames(pvs)[grep("adjp_", colnames(pvs))]
 comparisons
 
 
-comparisons <- "adjp_NRvsR"
+# comparisons <- "adjp_NRvsR"
 
 # ------------------------------------------------------------
 # Prepare a color annotation for heatmaps 
@@ -217,6 +217,11 @@ if(!is.null(path_cluster_merging)){
   
   ### Drop the "drop" cluster
   rows_order <- rows_order[annotation_row$cluster_merging[rows_order] != "drop"]
+  
+  ### Reorder the annotations so that merging is more to the left in the Figure
+  annotation_colors <- annotation_colors[2:1]
+  annotation_row <- annotation_row[, 2:1, drop = FALSE]
+  
 }
 
 

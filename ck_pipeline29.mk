@@ -411,7 +411,7 @@ file_metadata := $(METADATA)/metadata_29_02.xlsx
 file_panel_cytokines := $(PANELS)/panel2CD4_29_cytokines.xlsx
 
 data := 29CD4allall
-cytokines := 02CD4
+cytokines := 02CD4v2
 
 som_dim := 7
 nmetaclusts := 49

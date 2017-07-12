@@ -195,6 +195,8 @@ $(RWD)/050_frequencies_auto/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies
 ### Frequency analysis of the SOM codes
 ### --------------------------------------------------------------------------
 
+## Calculate frequencies
+
 .PHONY: frequencies_calculate_codes_goal
 frequencies_calculate_goal: $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
 
@@ -204,17 +206,24 @@ $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencie
 
 
 .PHONY: frequencies_codes_goal
-frequencies_goal: $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top10.pdf
+frequencies_goal: $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top10.pdf $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_top10_glmer_binomial_interglht_NRvsR_frequencies_plot_both2.pdf
 
-
+## Plot frequencies
 $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls
 	echo "\n>> $(make_file)\n>>> 04_frequencies_plot"
 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_codes' path_metadata='$(file_metadata)' path_frequencies='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls' path_fun_plot_frequencies='$(RCODE)/00_plot_frequencies.R'" $(RCODE)/04_frequencies_plot.R $(ROUT)/04_frequencies_plot.Rout
 
-
+## Do the differential abundance analysis
 $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_glmer_binomial_interglht_pheatmap3pvs_top10.pdf: $(RCODE)/04_frequencies_analysis.R $(RCODE)/00_models.R $(RCODE)/00_formulas_1dataset_3responses_both.R $(RCODE)/00_plot_heatmaps_for_sign_freqs.R $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_counts.xls $(file_metadata)
 	echo "\n>> $(make_file)\n>>> 04_frequencies_analysis"
 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_' outdir='$(RWD)/050_frequencies_codes' path_metadata='$(file_metadata)' path_counts='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_counts.xls' path_fun_models='$(RCODE)/00_models.R' path_fun_formulas='$(RCODE)/00_formulas_1dataset_3responses_both.R' path_fun_plot_heatmaps='$(RCODE)/00_plot_heatmaps_for_sign_freqs.R' FDR_cutoff='10'" $(RCODE)/04_frequencies_analysis.R $(ROUT)/04_frequencies_analysis.Rout
+
+
+## Plot significantly differential clusters
+$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_top10_glmer_binomial_interglht_NRvsR_frequencies_plot_both2.pdf: $(RCODE)/04_frequencies_plot_significant.R $(RCODE)/00_plot_frequencies.R $(file_metadata) $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top10.xls
+	echo "\n>> $(make_file)\n>>> 04_frequencies_plot_significant"
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_top10_glmer_binomial_interglht_' outdir='$(RWD)/050_frequencies_codes' path_metadata='$(file_metadata)' path_frequencies='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies.xls' path_pvs='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top10.xls' path_fun_plot_frequencies='$(RCODE)/00_plot_frequencies.R' FDR_cutoff='10'" $(RCODE)/04_frequencies_plot_significant.R $(ROUT)/04_frequencies_plot_significant.Rout
+
 
 
 ### --------------------------------------------------------------------------

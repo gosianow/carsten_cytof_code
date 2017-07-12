@@ -35,6 +35,7 @@ file_metadata := $(METADATA)/metadata_23_01.xlsx
 data := 23
 panel := 01
 pca := pca1
+merging := merging6
 
 cellcnn_files_data := panel1_base
 cellcnn_files_type := combined data23
@@ -47,16 +48,13 @@ cnn_$(data)_$(panel)_$(cellcnn_files_data)_goal: $(foreach i,$(cellcnn_files_typ
 define cnn_rule
 cnn_$(data)_$(panel)_$(cellcnn_files_data)_$(1)_goal:
 	echo "\n>> make"
-	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
+	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
 endef
 $(foreach i,$(cellcnn_files_type),$(eval $(call cnn_rule,$(i))))
 
 
-# ----------------------------------------------------------------------------------------------------
-# Analysis of CK_2016-06-23_01_CD4_mergingNEW2 using panel1CD4.xlsx
-# Use Analysis block 1
-# ----------------------------------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
+# CD4
 
 data_dir := CK_2016-06-23_01_CD4_mergingNEW2
 file_metadata := $(METADATA)/metadata_23_01.xlsx
@@ -64,6 +62,7 @@ file_metadata := $(METADATA)/metadata_23_01.xlsx
 data := 23CD4
 panel := 01CD4
 pca := pca1
+merging := merging5
 
 cellcnn_files_data := panel1_CD4_Tcells_base
 cellcnn_files_type := combined data23
@@ -76,16 +75,13 @@ cnn_$(data)_$(panel)_$(cellcnn_files_data)_goal: $(foreach i,$(cellcnn_files_typ
 define cnn_rule
 cnn_$(data)_$(panel)_$(cellcnn_files_data)_$(1)_goal:
 	echo "\n>> make"
-	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
+	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
 endef
 $(foreach i,$(cellcnn_files_type),$(eval $(call cnn_rule,$(i))))
 
 
-# ----------------------------------------------------------------------------------------------------
-# Analysis of CK_2016-06-23_01_CD8_mergingNEW2 using panel1CD8.xlsx
-# Use Analysis block 1
-# ----------------------------------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
+# CD8
 
 data_dir := CK_2016-06-23_01_CD8_mergingNEW2
 file_metadata := $(METADATA)/metadata_23_01.xlsx
@@ -93,6 +89,7 @@ file_metadata := $(METADATA)/metadata_23_01.xlsx
 data := 23CD8
 panel := 01CD8
 pca := pca1
+merging := merging6
 
 cellcnn_files_data := panel1_CD8_Tcells_base
 cellcnn_files_type := combined data23
@@ -105,7 +102,7 @@ cnn_$(data)_$(panel)_$(cellcnn_files_data)_goal: $(foreach i,$(cellcnn_files_typ
 define cnn_rule
 cnn_$(data)_$(panel)_$(cellcnn_files_data)_$(1)_goal:
 	echo "\n>> make"
-	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
+	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
 endef
 $(foreach i,$(cellcnn_files_type),$(eval $(call cnn_rule,$(i))))
 
@@ -123,7 +120,7 @@ file_metadata := $(METADATA)/metadata_23_02.xlsx
 data := 23
 panel := 02
 pca := pca1
-
+merging := merging2
 
 cellcnn_files_data := panel2_base
 cellcnn_files_type := combined data23
@@ -136,12 +133,12 @@ cnn_$(data)_$(panel)_$(cellcnn_files_data)_goal: $(foreach i,$(cellcnn_files_typ
 define cnn_rule
 cnn_$(data)_$(panel)_$(cellcnn_files_data)_$(1)_goal:
 	echo "\n>> make"
-	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
+	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
 endef
 $(foreach i,$(cellcnn_files_type),$(eval $(call cnn_rule,$(i))))
 
 
-# ----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # CD4
 
 data_dir := CK_2016-06-23_02_CD4_merging2
@@ -150,7 +147,7 @@ file_metadata := $(METADATA)/metadata_23_02.xlsx
 data := 23CD4
 panel := 02CD4
 pca := pca1
-
+merging := merging2
 
 cellcnn_files_data := panel2_CD4_Tcells_base
 cellcnn_files_type := combined data23
@@ -163,12 +160,12 @@ cnn_$(data)_$(panel)_$(cellcnn_files_data)_goal: $(foreach i,$(cellcnn_files_typ
 define cnn_rule
 cnn_$(data)_$(panel)_$(cellcnn_files_data)_$(1)_goal:
 	echo "\n>> make"
-	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
+	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
 endef
 $(foreach i,$(cellcnn_files_type),$(eval $(call cnn_rule,$(i))))
 
 
-# ----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # CD8
 
 data_dir := CK_2016-06-23_02_CD8_merging2
@@ -177,7 +174,7 @@ file_metadata := $(METADATA)/metadata_23_02.xlsx
 data := 23CD8
 panel := 02CD8
 pca := pca1
-
+merging := merging2
 
 cellcnn_files_data := panel2_CD8_Tcells_base
 cellcnn_files_type := combined data23
@@ -190,7 +187,7 @@ cnn_$(data)_$(panel)_$(cellcnn_files_data)_goal: $(foreach i,$(cellcnn_files_typ
 define cnn_rule
 cnn_$(data)_$(panel)_$(cellcnn_files_data)_$(1)_goal:
 	echo "\n>> make"
-	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
+	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
 endef
 $(foreach i,$(cellcnn_files_type),$(eval $(call cnn_rule,$(i))))
 
@@ -206,6 +203,7 @@ file_metadata := $(METADATA)/metadata_23_03all.xlsx
 data := 23all
 panel := 03v2
 pca := pca1
+merging := merging4
 
 cellcnn_files_data := panel3v3_base
 cellcnn_files_type := combined data23
@@ -218,7 +216,7 @@ cnn_$(data)_$(panel)_$(cellcnn_files_data)_goal: $(foreach i,$(cellcnn_files_typ
 define cnn_rule
 cnn_$(data)_$(panel)_$(cellcnn_files_data)_$(1)_goal:
 	echo "\n>> make"
-	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
+	make $(MAKEARGS) -f 000_cellcnn_plot_tsne.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" RWD_CELLCNN="$(RWD_CELLCNN)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" cellcnn_files_data="$(cellcnn_files_data)" cellcnn_files_type="$(1)" day="$(day)"
 endef
 $(foreach i,$(cellcnn_files_type),$(eval $(call cnn_rule,$(i))))
 

@@ -18,6 +18,7 @@ file_metadata := $(METADATA)/metadata_23_01.xlsx
 data := 23
 panel := 01
 pca := pca1
+merging := merging6
 
 cellcnn_files_data := panel1_base
 cellcnn_files_type := combined
@@ -53,13 +54,13 @@ mkdir_rout:
 
 
 .PHONY: plottsne_goal
-plottsne_goal: $(RWD_CELLCNN)/cellcnn_tsne/$(data)_$(panel)_$(pca)_$(cellcnn_files_type)_tSNEone.pdf
+plottsne_goal: $(RWD_CELLCNN)/cellcnn_tsne/$(data)_$(panel)_$(pca)_$(merging)_$(cellcnn_files_type)_tSNEone_filter_0.pdf
 
-$(RWD_CELLCNN)/cellcnn_tsne/$(data)_$(panel)_$(pca)_$(cellcnn_files_type)_tSNEone.pdf: $(RCODE)/000_cellcnn_plot_tsne.R $(RWD)/040_tsnemaps/$(data)_$(panel)_$(pca)_rtsne_out.rds $(file_metadata) $(RWD)/010_cleanfcs/*.fcs $(RWD_CELLCNN)/$(cellcnn_files_dir)/selected_cells/*.csv
+$(RWD_CELLCNN)/cellcnn_tsne/$(data)_$(panel)_$(pca)_$(merging)_$(cellcnn_files_type)_tSNEone_filter_0.pdf: $(RCODE)/000_cellcnn_plot_tsne.R $(RWD)/040_tsnemaps/$(data)_$(panel)_$(pca)_rtsne_out.rds $(file_metadata) $(RWD_CELLCNN)/$(cellcnn_files_dir)/selected_cells/*.csv
 	echo "\n>> $(make_file)\n>>> 000_cellcnn_plot_tsne"
-	$(R) "--args prefix='$(data)_$(panel)_$(pca)_$(cellcnn_files_type)_' outdir='$(RWD_CELLCNN)/cellcnn_tsne' path_metadata='$(file_metadata)' \
+	$(R) "--args prefix='$(data)_$(panel)_$(pca)_$(merging)_$(cellcnn_files_type)_' outdir='$(RWD_CELLCNN)/cellcnn_tsne' path_metadata='$(file_metadata)' \
 	path_rtsne_out='$(RWD)/040_tsnemaps/$(data)_$(panel)_$(pca)_rtsne_out.rds' path_rtsne_data='$(RWD)/040_tsnemaps/$(data)_$(panel)_$(pca)_rtsne_data.xls' \
-	dir_fcs='$(RWD)/010_cleanfcs' dir_cellcnn_files='$(RWD_CELLCNN)/$(cellcnn_files_dir)/selected_cells' day='$(day)'" $(RCODE)/000_cellcnn_plot_tsne.R $(ROUT)/000_cellcnn_plot_tsne.Rout
+	path_clustering='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_clustering.xls' path_clustering_labels='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_$(merging)_clustering_labels.xls' dir_cellcnn_files='$(RWD_CELLCNN)/$(cellcnn_files_dir)/selected_cells' day='$(day)'" $(RCODE)/000_cellcnn_plot_tsne.R $(ROUT)/000_cellcnn_plot_tsne.Rout
 
 
 

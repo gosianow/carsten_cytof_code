@@ -17,10 +17,13 @@ all: Analysis_block_8_merging_2datasets_main_01_merging6_merging4_goal Analysis_
 	Analysis_block_8_merging_2datasets_main_01CD8_merging6_merging6_goal \
 	Analysis_block_8_merging_2datasets_main_01CD4_merging5_merging5_goal_noHD10 \
 	Analysis_block_8_merging_2datasets_main_01CD8_merging6_merging6_goal_noHD10 \
+	Analysis_block_8_merging_2datasets_main_03_merging4_merging2_goal \
+	Analysis_block_8_merging_2datasets_main_03v2_merging4_merging1_goal \
 	Analysis_block_8_merging_2datasets_cytokine_23CD4TmemCD69_29CD4TmemCD69_02CD4_goal \
 	Analysis_block_8_merging_2datasets_cytokine_23CD8TmemCD69_29CD8TmemCD69_02CD8_goal \
-	Analysis_block_8_merging_2datasets_main_03_merging4_merging2_goal \
-	Analysis_block_8_merging_2datasets_main_03v2_merging4_merging1_goal
+	Analysis_block_8_merging_2datasets_cytokine_23CD4allall_29CD4allall_02CD4v2_goal \
+	Analysis_block_8_merging_2datasets_cytokine_23CD8allall_29CD8allall_02CD8v2_goal
+
 
 
 
@@ -279,6 +282,97 @@ $(eval $(call Analysis_block_8_merging_2datasets_main_$(panel)_$(merging1)_$(mer
 
 
 ###############################################################################################################
+# Merging data 23 and 29 for panel 2v2 CD4 cytokines
+###############################################################################################################
+
+## arguments for the specific data set
+data_dir_merged := CK_2016-06-merged_23_29/02v2_CD4
+
+data_dir1 := CK_2016-06-23_02_CD4_merging3_all_merging1_all
+data_dir2 := CK_2016-06-29_02_CD4_merging3_all_merging1_all
+file_metadata1 := $(METADATA)/metadata_23_02.xlsx
+file_metadata2 := $(METADATA)/metadata_29_02.xlsx
+
+data1 := 23CD4allall
+data2 := 29CD4allall
+
+cytokines := 02CD4v2
+
+som_dim := 7
+nmetaclusts := 49
+
+data_dir_back1 := CK_2016-06-23_02_CD4_merging3
+data_dir_back2 := CK_2016-06-29_02_CD4_merging3
+data_back1 := 23CD4
+data_back2 := 29CD4
+panel_back1 := 02CD4v2
+panel_back2 := 02CD4v2
+pca_back1 := pca0
+pca_back2 := pca0
+merging_back1 := merging1
+merging_back2 := merging1
+
+
+.PHONY: Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_goal
+
+define Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_rule
+Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_goal:
+	echo "\n>> make"
+	make $(MAKEARGS) -f Analysis_block_8_merging_2datasets_cytokine.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir_merged="$(data_dir_merged)" data_dir1="$(data_dir1)" data_dir2="$(data_dir2)" file_metadata1="$(file_metadata1)" file_metadata2="$(file_metadata2)" data1="$(data1)" data2="$(data2)" cytokines="$(cytokines)" som_dim="$(som_dim)" nmetaclusts="$(nmetaclusts)" \
+	data_dir_back1="$(data_dir_back1)" data_dir_back2="$(data_dir_back2)" data_back1="$(data_back1)" data_back2="$(data_back2)" panel_back1="$(panel_back1)" panel_back2="$(panel_back2)" pca_back1="$(pca_back1)" pca_back2="$(pca_back2)" merging_back1="$(merging_back1)" merging_back2="$(merging_back2)"
+endef
+
+$(eval $(call Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_rule,))
+
+
+
+
+###############################################################################################################
+# Merging data 23 and 29 for panel 2v2 CD8 cytokines
+###############################################################################################################
+
+
+## arguments for the specific data set
+data_dir_merged := CK_2016-06-merged_23_29/02v2_CD8
+
+data_dir1 := CK_2016-06-23_02_CD8_merging3_all_merging1_all
+data_dir2 := CK_2016-06-29_02_CD8_merging3_all_merging1_all
+file_metadata1 := $(METADATA)/metadata_23_02.xlsx
+file_metadata2 := $(METADATA)/metadata_29_02.xlsx
+
+data1 := 23CD8allall
+data2 := 29CD8allall
+
+cytokines := 02CD8v2
+
+som_dim := 7
+nmetaclusts := 49
+
+data_dir_back1 := CK_2016-06-23_02_CD8_merging3
+data_dir_back2 := CK_2016-06-29_02_CD8_merging3
+data_back1 := 23CD8
+data_back2 := 29CD8
+panel_back1 := 02CD8v2
+panel_back2 := 02CD8v2
+pca_back1 := pca0
+pca_back2 := pca0
+merging_back1 := merging1
+merging_back2 := merging1
+
+.PHONY: Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_goal
+
+define Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_rule
+Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_goal:
+	echo "\n>> make"
+	make $(MAKEARGS) -f Analysis_block_8_merging_2datasets_cytokine.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir_merged="$(data_dir_merged)" data_dir1="$(data_dir1)" data_dir2="$(data_dir2)" file_metadata1="$(file_metadata1)" file_metadata2="$(file_metadata2)" data1="$(data1)" data2="$(data2)" cytokines="$(cytokines)" som_dim="$(som_dim)" nmetaclusts="$(nmetaclusts)" \
+	data_dir_back1="$(data_dir_back1)" data_dir_back2="$(data_dir_back2)" data_back1="$(data_back1)" data_back2="$(data_back2)" panel_back1="$(panel_back1)" panel_back2="$(panel_back2)" pca_back1="$(pca_back1)" pca_back2="$(pca_back2)" merging_back1="$(merging_back1)" merging_back2="$(merging_back2)"
+endef
+
+$(eval $(call Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_rule,))
+
+
+
+###############################################################################################################
 # Merging data 23 and 29 for panel 2 CD4 cytokines
 ###############################################################################################################
 
@@ -366,8 +460,6 @@ Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_goal:
 endef
 
 $(eval $(call Analysis_block_8_merging_2datasets_cytokine_$(data1)_$(data2)_$(cytokines)_rule,))
-
-
 
 
 
