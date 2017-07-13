@@ -172,7 +172,7 @@ $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data
 	echo "\n>> $(make_file)\n>>> 02_heatmaps"
 	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl$(1)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles' path_data='$(RWD_BACK1)/010_data/$(data_back1)_$(panel_back1)_expr_raw.rds' path_data_norm='$(RWD_BACK1)/010_data/$(data_back1)_$(panel_back1)_expr_norm.rds' \
 	path_clustering_observables='$(RWD_BACK1)/030_heatmaps/$(data_back1)_$(panel_back1)_$(pca_back1)_clustering_observables.xls' path_clustering='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back1)_cl$(1).txt'  path_clustering_labels='$(RWD_BACK1)/030_heatmaps/$(data_back1)_$(panel_back1)_$(pca_back1)_$(merging_back1)_clustering_labels.xls' \
-	path_marker_selection=NULL path_cluster_merging=NULL aggregate_fun='mean' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
+	path_marker_selection='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/marker_selection.txt' path_cluster_merging=NULL aggregate_fun='median' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
 endef
 $(foreach i,$(generated_clustering),$(eval $(call cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps_rule,$(i))))
 
@@ -195,7 +195,7 @@ $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data
 	echo "\n>> $(make_file)\n>>> 02_heatmaps"
 	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl$(1)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles' path_data='$(RWD_BACK2)/010_data/$(data_back2)_$(panel_back2)_expr_raw.rds' path_data_norm='$(RWD_BACK2)/010_data/$(data_back2)_$(panel_back2)_expr_norm.rds' \
 	path_clustering_observables='$(RWD_BACK2)/030_heatmaps/$(data_back2)_$(panel_back2)_$(pca_back2)_clustering_observables.xls' path_clustering='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_clustering_data$(data_back2)_cl$(1).txt'  path_clustering_labels='$(RWD_BACK2)/030_heatmaps/$(data_back2)_$(panel_back2)_$(pca_back2)_$(merging_back2)_clustering_labels.xls' \
-	path_marker_selection=NULL path_cluster_merging=NULL aggregate_fun='mean' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
+	path_marker_selection='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_overall/marker_selection.txt' path_cluster_merging=NULL aggregate_fun='median' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
 endef
 $(foreach i,$(generated_clustering),$(eval $(call cytokine_bimatrix_frequencies_overall_cytokine_profiles_heatmaps_rule,$(i))))
 
@@ -313,7 +313,7 @@ $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/$(d
 	echo "\n>> $(make_file)\n>>> 02_heatmaps"
 	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_cl$(nmetaclusts)_clustering_data$(data_back1)_cl$(1)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles' path_data='$(RWD_BACK1)/010_data/$(data_back1)_$(panel_back1)_expr_raw.rds' path_data_norm='$(RWD_BACK1)/010_data/$(data_back1)_$(panel_back1)_expr_norm.rds' \
 	path_clustering_observables='$(RWD_BACK1)/030_heatmaps/$(data_back1)_$(panel_back1)_$(pca_back1)_clustering_observables.xls' path_clustering='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_cl$(nmetaclusts)_clustering_data$(data_back1)_cl$(1).txt'  path_clustering_labels='$(RWD_BACK1)/030_heatmaps/$(data_back1)_$(panel_back1)_$(pca_back1)_$(merging_back1)_clustering_labels.xls' \
-	path_marker_selection=NULL path_cluster_merging=NULL aggregate_fun='mean' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
+	path_marker_selection='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/marker_selection.txt' path_cluster_merging=NULL aggregate_fun='median' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
 endef
 $(foreach i,$(generated_clustering),$(eval $(call cytokine_bimatrix_frequencies_clustering_cytokine_profiles_heatmaps_rule,$(i))))
 
@@ -335,7 +335,7 @@ $(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/$(d
 	echo "\n>> $(make_file)\n>>> 02_heatmaps"
 	$(R) "--args prefix='$(data1)_$(data2)_$(cytokines)_cl$(nmetaclusts)_clustering_data$(data_back2)_cl$(1)_' outdir='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles' path_data='$(RWD_BACK2)/010_data/$(data_back2)_$(panel_back2)_expr_raw.rds' path_data_norm='$(RWD_BACK2)/010_data/$(data_back2)_$(panel_back2)_expr_norm.rds' \
 	path_clustering_observables='$(RWD_BACK2)/030_heatmaps/$(data_back2)_$(panel_back2)_$(pca_back2)_clustering_observables.xls' path_clustering='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/$(data1)_$(data2)_$(cytokines)_cl$(nmetaclusts)_clustering_data$(data_back2)_cl$(1).txt'  path_clustering_labels='$(RWD_BACK2)/030_heatmaps/$(data_back2)_$(panel_back2)_$(pca_back2)_$(merging_back2)_clustering_labels.xls' \
-	path_marker_selection=NULL path_cluster_merging=NULL aggregate_fun='mean' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
+	path_marker_selection='$(RWD_MERGED)/090_cytokine_bimatrix_frequencies_clustering/marker_selection.txt' path_cluster_merging=NULL aggregate_fun='median' scale=FALSE" $(RCODE)/02_heatmaps.R $(ROUT)/02_heatmaps.Rout
 endef
 $(foreach i,$(generated_clustering),$(eval $(call cytokine_bimatrix_frequencies_clustering_cytokine_profiles_heatmaps_rule,$(i))))
 

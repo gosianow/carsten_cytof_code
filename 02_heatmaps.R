@@ -352,7 +352,7 @@ for(ii in 1:length(subset_samp)){
   
   
   ## No row clustering
-  pheatmap(expr[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_raw.pdf")))
+  pheatmap(expr[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], display_numbers = FALSE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_raw.pdf")))
   
   
   ## Plot only the selected markers
@@ -405,7 +405,7 @@ for(ii in 1:length(subset_samp)){
       pheatmap(expr_scaled, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_scale.pdf")))
     
     ## No row clustering
-    pheatmap(expr_scaled[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_scale.pdf")))
+    pheatmap(expr_scaled[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = FALSE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_scale.pdf")))
     
     
     ## Plot only the selected markers
@@ -467,12 +467,16 @@ for(ii in 1:length(subset_samp)){
     if(nrow(expr) > 1)
       pheatmap(expr, color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = cluster_rows, labels_col = labels_col, labels_row = labels_row, breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_row_clust_norm.pdf")))
     
+    color <- colorRampPalette(brewer.pal(n = 8, name = "Greys"))(110)[11:110]
+    
     ## No row clustering
-    pheatmap(expr[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = TRUE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_norm.pdf")))
+    pheatmap(expr[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], breaks = breaks, legend_breaks = legend_breaks, display_numbers = FALSE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, annotation_row = annotation_row, annotation_colors = annotation_colors, filename = file.path(outdir, paste0(prefix, "pheatmap_", subset_name, "_all_no_clust_norm.pdf")))
     
     
     ## Plot only the selected markers
     if(!is.null(marker_selection)){
+      
+      color <- colorRampPalette(brewer.pal(n = 8, name = "Greys"))(110)[11:110]
       
       expr_sub <- expr[, marker_selection, drop = FALSE]
       labels_col_sub <- colnames(expr_sub)

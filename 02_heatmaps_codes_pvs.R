@@ -330,15 +330,19 @@ if(pheatmap_palette_rev){
 }
 
 
+comparisons <- list("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", c("adjp_NRvsR_base", "adjp_NRvsR_tx"))
+comparison_suffixs <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_baseANDtx")
+
+
 for(i in 1:length(comparisons)){
   # i = 1
   
-  comparison <- comparisons[i]
+  comparison <- comparisons[[i]]
   print(comparison)
-  comparison_suffix <- paste0(gsub("adjp_", "", comparison))
+  comparison_suffix <- comparison_suffixs[i]
   
-  pvs_discrete <- cut(pvs[, comparison], c(0, 0.05, 0.1, 1))
-  pvs_heat <- matrix(pvs_discrete, ncol = 1)
+  pvs_discrete <- cut(as.numeric(as.matrix(pvs[, comparison])), c(0, 0.05, 0.1, 1))
+  pvs_heat <- matrix(pvs_discrete, ncol = length(comparison), byrow = FALSE)
   colnames(pvs_heat) <- comparison
   rownames(pvs_heat) <- pvs$cluster
   head(pvs_heat)
@@ -352,7 +356,7 @@ for(i in 1:length(comparisons)){
   
   ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
   
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr)))
+  ha_text = rowAnnotation(text = row_anno_text(rownames(expr), gp = gpar(fontsize = 8)))
   
   ht1s <- Heatmap(expr[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
   
@@ -383,7 +387,7 @@ for(i in 1:length(comparisons)){
   
   
   ## No row clustering + plot only the significant codes
-  codes_sign <- pvs[, comparison] < FDR_cutoff
+  codes_sign <- rowSums(pvs[, comparison] < FDR_cutoff) > 0
   
   if(any(codes_sign)){
     
@@ -481,7 +485,7 @@ for(i in 1:length(comparisons)){
     
     
     ## No row clustering + plot only the significant codes
-    codes_sign <- pvs[, comparison] < FDR_cutoff
+    codes_sign <- rowSums(pvs[, comparison] < FDR_cutoff) > 0
     
     if(any(codes_sign)){
       
@@ -587,7 +591,7 @@ for(i in 1:length(comparisons)){
     
     
     ## No row clustering + plot only the significant codes
-    codes_sign <- pvs[, comparison] < FDR_cutoff
+    codes_sign <- rowSums(pvs[, comparison] < FDR_cutoff) > 0
     
     if(any(codes_sign)){
       
