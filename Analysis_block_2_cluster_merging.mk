@@ -194,12 +194,12 @@ $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_glmer_binom
 heatmaps_merging_codes_pvs_goal: $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_ComplexHeatmap_codes_codes_no_clust_raw_NRvsR.pdf
 
 $(RWD)/030_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_ComplexHeatmap_codes_codes_no_clust_raw_NRvsR.pdf: $(RCODE)/02_heatmaps_codes_pvs.R $(RWD)/010_data/$(data)_$(panel)_expr_raw.rds $(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls \
-$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top10.xls $(wildcard $(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_marker_selection.txt)
+$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds $(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top10.xls $(wildcard $(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_$(merging)_marker_selection_codes.txt)
 	echo "\n>> $(make_file)\n>>> 02_heatmaps_codes_pvs"
 	$(R) "--args prefix='$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_$(merging)_' outdir='$(RWD)/030_codes' path_data='$(RWD)/010_data/$(data)_$(panel)_expr_raw.rds' path_data_norm='$(RWD)/010_data/$(data)_$(panel)_expr_norm.rds' \
 	path_clustering_observables='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_clustering_observables.xls' path_codes_clustering='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering.xls'  path_codes_clustering_labels='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_codes_clustering_labels.xls' \
-	path_marker_selection='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_marker_selection.txt' path_cluster_merging='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_cluster_$(merging).xlsx' \
-	path_fsom='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds' path_fccp='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fccp.rds' path_pvs='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top10.xls' FDR_cutoff='10'" $(RCODE)/02_heatmaps_codes_pvs.R $(ROUT)/02_heatmaps_codes_pvs.Rout
+	path_marker_selection='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_$(merging)_marker_selection_codes.txt' path_cluster_merging='$(RWD)/010_helpfiles/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_cluster_$(merging).xlsx' \
+	path_fsom='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fsom.rds' path_fccp='$(RWD)/030_heatmaps/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_fccp.rds' path_pvs='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_pvs_glmer_binomial_interglht_top10.xls' path_coeffs='$(RWD)/050_frequencies_codes/$(data)_$(panel)_$(pca)_cl$(nmetaclusts)_frequencies_coeffs_glmer_binomial_interglht_top10.xls' FDR_cutoff='10'" $(RCODE)/02_heatmaps_codes_pvs.R $(ROUT)/02_heatmaps_codes_pvs.Rout
 
 
 

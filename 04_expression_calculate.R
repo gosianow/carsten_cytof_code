@@ -115,7 +115,7 @@ colnames(e) <- fcs_panel$Antigen
 
 ### Median expression per cluster
 
-min_cells <- 20
+min_cells <- 5
 table_samp <- aggregate(e[, 1, drop = FALSE], by = list(cluster = clust, sample = samp), FUN = length, drop = FALSE)
 keep_samps <- table_samp[, 3] > min_cells
 

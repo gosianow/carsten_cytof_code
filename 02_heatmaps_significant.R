@@ -13,16 +13,15 @@ library(RColorBrewer)
 ##############################################################################
 
 
-prefix='23CD4TmemCD69_02CD4_cl49_top05_glmer_binomial_interglht_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering'
-path_data='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix/23CD4TmemCD69_02CD4_bimatrix.rds'
-path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix/23CD4TmemCD69_02CD4_clustering_observables.xls'
-path_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering/23CD4TmemCD69_02CD4_cl49_clustering.xls'
-path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering/23CD4TmemCD69_02CD4_cl49_clustering_labels.xls'
+prefix='23CD8allall_29CD8allall_02CD8v2_cl49_top10_glmer_binomial_interglht_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/3responses_both'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix/23CD8allall_29CD8allall_02CD8v2_bimatrix.rds'
+path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix/23CD8allall_29CD8allall_02CD8v2_clustering_observables.xls'
+path_clustering='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/23CD8allall_29CD8allall_02CD8v2_cl49_clustering.xls'
+path_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/23CD8allall_29CD8allall_02CD8v2_cl49_clustering_labels.xls'
 aggregate_fun='mean'
-path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering/23CD4TmemCD69_02CD4_cl49_frequencies_pvs_glmer_binomial_interglht_top05.xls'
-FDR_cutoff='05'
-
+path_pvs='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/3responses_both/23CD8allall_29CD8allall_02CD8v2_cl49_frequencies_pvs_glmer_binomial_interglht_top10.xls'
+FDR_cutoff='10'
 
 args <- NULL
 
@@ -158,6 +157,7 @@ freq_clust <- table(clust)
 expr <- as.matrix(a[, fcs_panel$Antigen[c(scols, xcols)]])
 rownames(expr) <- labels$label
 
+# labels_row <- paste0(rownames(expr), " (", round(as.numeric(freq_clust)/sum(freq_clust)*100, 2), "%)")
 labels_row <- as.character(labels$label)
 names(labels_row) <- as.character(labels$label)
 labels_col <- colnames(expr)
@@ -187,7 +187,7 @@ for(i in 1:length(comparisons)){
     
   }else{
     
-    pvs_sign <- pvs_sign[order(pvs_sign[, comparison]), , drop = FALSE]
+    pvs_sign <- pvs_sign[order(pvs_sign[, gsub("adjp_", "pval_", comparison)]), , drop = FALSE]
     
     rows_order <- as.character(pvs_sign$label)
     
@@ -195,10 +195,7 @@ for(i in 1:length(comparisons)){
     pheatmap(expr[rows_order, , drop = FALSE], color = color, cellwidth = 24, cellheight = 24, cluster_cols = FALSE, cluster_rows = FALSE, labels_col = labels_col, labels_row = labels_row[rows_order], display_numbers = FALSE, number_color = "black", fontsize_number = 8, gaps_col = length(scols), fontsize_row = 14, fontsize_col = 14, fontsize = 12, filename = file.path(outdir, paste0(prefix_sign, "pheatmap.pdf")))
     
     
-    
   }
-  
-  
   
 }
 

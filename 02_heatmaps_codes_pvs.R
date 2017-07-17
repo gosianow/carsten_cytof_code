@@ -15,19 +15,20 @@ library(RColorBrewer)
 ##############################################################################
 
 
-prefix='23CD4_01CD4_pca1_cl5_merging5_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_codes'
-path_data='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_data/23CD4_01CD4_expr_raw.rds'
-path_data_norm='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_data/23CD4_01CD4_expr_norm.rds'
-path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_clustering_observables.xls'
-path_codes_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_codes_clustering.xls'
-path_codes_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_codes_clustering_labels.xls'
-path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_helpfiles/23CD4_01CD4_pca1_cl5_marker_selection.txt'
-path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/010_helpfiles/23CD4_01CD4_pca1_cl5_cluster_merging5.xlsx'
-path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_fsom.rds'
-path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/030_heatmaps/23CD4_01CD4_pca1_cl5_fccp.rds'
-path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_01_CD4_mergingNEW2/050_frequencies_codes/23CD4_01CD4_pca1_cl5_frequencies_pvs_glmer_binomial_interglht_top10.xls'
-FDR_cutoff='10' 
+prefix='23_03_pca1_cl20_merging4_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_codes'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_data/23_03_expr_raw.rds'
+path_data_norm='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_data/23_03_expr_norm.rds'
+path_clustering_observables='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_clustering_observables.xls'
+path_codes_clustering='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_cl20_codes_clustering.xls'
+path_codes_clustering_labels='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_cl20_codes_clustering_labels.xls'
+path_marker_selection='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_helpfiles/23_03_pca1_merging4_marker_selection_codes.txt'
+path_cluster_merging='../carsten_cytof/PD1_project/CK_2016-06-23_03/010_helpfiles/23_03_pca1_cl20_cluster_merging4.xlsx'
+path_fsom='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_cl20_fsom.rds'
+path_fccp='../carsten_cytof/PD1_project/CK_2016-06-23_03/030_heatmaps/23_03_pca1_cl20_fccp.rds'
+path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_03/050_frequencies_codes/23_03_pca1_cl20_frequencies_pvs_glmer_binomial_interglht_top10.xls'
+path_coeffs='../carsten_cytof/PD1_project/CK_2016-06-23_03/050_frequencies_codes/23_03_pca1_cl20_frequencies_coeffs_glmer_binomial_interglht_top10.xls'
+FDR_cutoff='10'
 
 
 # path_cluster_merging=NULL
@@ -152,8 +153,21 @@ pvs <- pvs[order(pvs$cluster), ]
 comparisons <- colnames(pvs)[grep("adjp_", colnames(pvs))]
 comparisons
 
-
 # comparisons <- "adjp_NRvsR"
+
+# ------------------------------------------------------------
+# Load coeffs
+# ------------------------------------------------------------
+
+coeffs <- read.table(path_coeffs, header = TRUE, sep = "\t", as.is = TRUE)
+
+coeffs <- coeffs[order(coeffs$cluster), ]
+
+
+### Check
+
+stopifnot(all(pvs$label == coeffs$label))
+
 
 # ------------------------------------------------------------
 # Prepare a color annotation for heatmaps 
@@ -244,7 +258,7 @@ if(!is.null(path_marker_selection)){
   }
 }
 
-
+marker_selection
 
 # ------------------------------------------------------------
 # Marker information
@@ -330,25 +344,40 @@ if(pheatmap_palette_rev){
 }
 
 
+
+pvs_cut_tmp <- cut(c(0.01, 0.05, 0.1, 1), c(0, 0.01, 0.05, 0.1, 1))
+pvs_cut_tmp
+
+pvs_cut_tmp <- factor(c(paste0("up", pvs_cut_tmp), paste0("down", pvs_cut_tmp)), levels = c(paste0("up", pvs_cut_tmp), paste0("down", pvs_cut_tmp)))
+pvs_cut_tmp
+
+
+colors_pvs <- c(colorRampPalette(c("#00008b", "#f5f5f5"), space = "Lab")(4), colorRampPalette(c("#dc143c", "#f5f5f5"), space = "Lab")(4))
+names(colors_pvs) <- levels(pvs_cut_tmp)
+
+
+
 comparisons <- list("adjp_NRvsR", "adjp_NRvsR_base", "adjp_NRvsR_tx", c("adjp_NRvsR_base", "adjp_NRvsR_tx"))
 comparison_suffixs <- c("NRvsR", "NRvsR_base", "NRvsR_tx", "NRvsR_baseANDtx")
 
 
 for(i in 1:length(comparisons)){
-  # i = 1
+  # i = 2
   
   comparison <- comparisons[[i]]
   print(comparison)
   comparison_suffix <- comparison_suffixs[i]
   
-  pvs_discrete <- cut(as.numeric(as.matrix(pvs[, comparison])), c(0, 0.05, 0.1, 1))
+  pvs_discrete <- cut(as.numeric(as.matrix(pvs[, comparison, drop = FALSE])), c(0, 0.01, 0.05, 0.1, 1))
+  sign_discrete <- sign(as.numeric(as.matrix(coeffs[, gsub("adjp_" , "", comparison), drop = FALSE])))
+  sign_discrete <- ifelse(sign_discrete == 1, "up", "down")
+  
+  pvs_discrete <- paste0(sign_discrete, pvs_discrete)
+  
   pvs_heat <- matrix(pvs_discrete, ncol = length(comparison), byrow = FALSE)
   colnames(pvs_heat) <- comparison
   rownames(pvs_heat) <- pvs$cluster
   head(pvs_heat)
-  
-  colors_pvs <- c("grey40", "grey60", "grey90")
-  names(colors_pvs) <- levels(pvs_discrete)
   
   legend_breaks <- seq(from = floor(min(expr)), to = ceiling(max(expr)), by = 1)
   
@@ -356,7 +385,7 @@ for(i in 1:length(comparisons)){
   
   ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
   
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr), gp = gpar(fontsize = 8)))
+  ha_text = rowAnnotation(text = row_anno_text(rownames(expr), gp = gpar(fontsize = 10)))
   
   ht1s <- Heatmap(expr[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
   
@@ -368,10 +397,11 @@ for(i in 1:length(comparisons)){
   draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
   dev.off()
   
+  
   ## No row clustering
   ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
   
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr[rows_order, , drop = FALSE])))
+  ha_text = rowAnnotation(text = row_anno_text(rownames(expr[rows_order, , drop = FALSE]), gp = gpar(fontsize = 10)))
   
   ht1s <- Heatmap(expr[rows_order, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
   
@@ -384,10 +414,8 @@ for(i in 1:length(comparisons)){
   dev.off()
   
   
-  
-  
   ## No row clustering + plot only the significant codes
-  codes_sign <- rowSums(pvs[, comparison] < FDR_cutoff) > 0
+  codes_sign <- rowSums(pvs[, comparison, drop = FALSE] < FDR_cutoff) > 0
   
   if(any(codes_sign)){
     
@@ -395,7 +423,7 @@ for(i in 1:length(comparisons)){
     
     ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
     
-    ha_text = rowAnnotation(text = row_anno_text(rownames(expr[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE])))
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE]), gp = gpar(fontsize = 10)))
     
     ht1s <- Heatmap(expr[rows_order, smarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
     
@@ -455,7 +483,7 @@ for(i in 1:length(comparisons)){
     
     ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
     
-    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled)))
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled), gp = gpar(fontsize = 10)))
     
     ht1s <- Heatmap(expr_scaled[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
     
@@ -470,7 +498,7 @@ for(i in 1:length(comparisons)){
     ## No row clustering
     ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
     
-    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE])))
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE]), gp = gpar(fontsize = 10)))
     
     ht1s <- Heatmap(expr_scaled[rows_order, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
     
@@ -485,7 +513,7 @@ for(i in 1:length(comparisons)){
     
     
     ## No row clustering + plot only the significant codes
-    codes_sign <- rowSums(pvs[, comparison] < FDR_cutoff) > 0
+    codes_sign <- rowSums(pvs[, comparison, drop = FALSE] < FDR_cutoff) > 0
     
     if(any(codes_sign)){
       
@@ -493,7 +521,7 @@ for(i in 1:length(comparisons)){
       
       ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
       
-      ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE])))
+      ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE]), gp = gpar(fontsize = 10)))
       
       ht1s <- Heatmap(expr_scaled[rows_order, smarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
       
@@ -511,10 +539,24 @@ for(i in 1:length(comparisons)){
     ## Plot only the selected markers
     if(!is.null(marker_selection)){
       
-      expr_sub <- expr_scaled[, marker_selection, drop = FALSE]
+      ## No row clustering
+      ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
+      
+      ha_text = rowAnnotation(text = row_anno_text(rownames(expr_scaled[rows_order, , drop = FALSE]), gp = gpar(fontsize = 10)))
+      
+      ht1s <- Heatmap(expr_scaled[rows_order, intersect(marker_selection, smarkers), drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
+      
+      ht1x <- Heatmap(expr_scaled[rows_order, intersect(marker_selection, xmarkers), drop = FALSE], name = "out", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE)
+      
+      ht2 <- Heatmap(pvs_heat[rows_order, , drop = FALSE], name = "apvs", col = colors_pvs, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, show_row_names = FALSE, width = unit(1, "cm"))
+      
+      pdf(file.path(outdir, paste0(prefix, "ComplexHeatmap_codes_sel_no_clust_scale_", comparison_suffix ,".pdf")), width = 12, height = 14)
+      draw(ha + ht1s + ht1x + ht2 + ha_text, row_dend_side = "left")
+      dev.off()
       
       
     }
+    
     
   }
   
@@ -562,7 +604,7 @@ for(i in 1:length(comparisons)){
     
     ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
     
-    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm)))
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm), gp = gpar(fontsize = 10)))
     
     ht1s <- Heatmap(expr_norm[, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
     
@@ -577,7 +619,7 @@ for(i in 1:length(comparisons)){
     ## No row clustering
     ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
     
-    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm[rows_order, , drop = FALSE])))
+    ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm[rows_order, , drop = FALSE]), gp = gpar(fontsize = 10)))
     
     ht1s <- Heatmap(expr_norm[rows_order, smarkers, drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
     
@@ -591,7 +633,7 @@ for(i in 1:length(comparisons)){
     
     
     ## No row clustering + plot only the significant codes
-    codes_sign <- rowSums(pvs[, comparison] < FDR_cutoff) > 0
+    codes_sign <- rowSums(pvs[, comparison, drop = FALSE] < FDR_cutoff) > 0
     
     if(any(codes_sign)){
       
@@ -599,7 +641,7 @@ for(i in 1:length(comparisons)){
       
       ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
       
-      ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE])))
+      ha_text = rowAnnotation(text = row_anno_text(rownames(expr_norm[rows_order, , drop = FALSE][codes_sign[rows_order], , drop = FALSE]), gp = gpar(fontsize = 10)))
       
       ht1s <- Heatmap(expr_norm[rows_order, smarkers, drop = FALSE][codes_sign[rows_order], , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
       
@@ -649,7 +691,7 @@ for(i in 1:length(comparisons)){
   
   ha <-  HeatmapAnnotation(df = annotation_row, col = annotation_colors, which = "row", width = unit(1.5, "cm"))
   
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_codes)))
+  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_codes), gp = gpar(fontsize = 10)))
   
   ht1s <- Heatmap(expr_codes, name = "in", col = color, cluster_columns = FALSE, cluster_rows = cluster_rows, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
   
@@ -664,7 +706,7 @@ for(i in 1:length(comparisons)){
   ## No row clustering
   ha <-  HeatmapAnnotation(df = annotation_row[rows_order, , drop = FALSE], col = annotation_colors, which = "row", width = unit(1.5, "cm"))
   
-  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_codes[rows_order, , drop = FALSE])))
+  ha_text = rowAnnotation(text = row_anno_text(rownames(expr_codes[rows_order, , drop = FALSE]), gp = gpar(fontsize = 10)))
   
   ht1s <- Heatmap(expr_codes[rows_order, , drop = FALSE], name = "in", col = color, cluster_columns = FALSE, cluster_rows = FALSE, row_dend_reorder = FALSE, heatmap_legend_param = list(at = legend_breaks, labels = legend_breaks, color_bar = "continuous"), show_row_names = FALSE, row_dend_width = unit(20, "mm"))
   

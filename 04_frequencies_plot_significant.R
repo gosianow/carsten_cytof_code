@@ -18,13 +18,13 @@ library(plyr) # for rbind.fill
 # Test arguments
 ##############################################################################
 
-prefix='23CD4TmemCD69_02CD4_cl49_top_glmer_binomial_interglht_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering'
-path_metadata='../carsten_cytof/PD1_project/CK_metadata/metadata_23_02.xlsx'
-path_frequencies='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering/23CD4TmemCD69_02CD4_cl49_frequencies.xls'
-path_pvs='../carsten_cytof/PD1_project/CK_2016-06-23_02_CD4_merging2_Tmem_merging2_CD69/090_cytokine_bimatrix_frequencies_clustering/23CD4TmemCD69_02CD4_cl49_frequencies_pvs_glmer_binomial_interglht_top05.xls'
+prefix='23CD8allall_29CD8allall_02CD8v2_cl49_top10_glmer_binomial_interglht_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/3responses_both'
+path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_02.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_02.xlsx')
+path_frequencies='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/3responses_both/23CD8allall_29CD8allall_02CD8v2_cl49_frequencies.xls'
+path_pvs='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/3responses_both/23CD8allall_29CD8allall_02CD8v2_cl49_frequencies_pvs_glmer_binomial_interglht_top10.xls'
 path_fun_plot_frequencies='./00_plot_frequencies.R'
-FDR_cutoff='05'
+FDR_cutoff='10'
 
 ##############################################################################
 # Read in the arguments
@@ -175,13 +175,17 @@ for(i in 1:length(comparisons)){
     
   }else{
     
-    prop_sign <- prop_out[prop_out$label %in% pvs_sign$label, , drop = FALSE]
+    ### Order by the significance
+    pvs_sign <- pvs_sign[order(pvs_sign[, gsub("adjp_", "pval_", comparison)]), , drop = FALSE]
+    
+    labels_sign <- as.character(pvs_sign$label)
+    
+    prop_sign <- prop_out[prop_out$label %in% labels_sign, , drop = FALSE]
     
     ggdf <- melt(prop_sign, id.vars = c("cluster", "label"), value.name = "prop", variable.name = "samp")
     
     ## use labels as clusters
-    ggdf$cluster <- factor(ggdf$label, levels = labels$label)
-    ggdf$cluster <- factor(ggdf$cluster)
+    ggdf$cluster <- factor(ggdf$label, levels = labels_sign)
     
     # add more info about samples
     mm <- match(ggdf$samp, md$shortname)
