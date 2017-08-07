@@ -55,7 +55,9 @@ analysis_panel2v2: Analysis_block_1_main_29_02v2_goal Analysis_block_2_cluster_m
 		Analysis_block_3_cytokine_cell_extracting_29CD4_02CD4v2_goal \
 		Analysis_block_4_cytokine_main_02CD4v2_goal \
 		Analysis_block_3_cytokine_cell_extracting_29CD8_02CD8v2_goal \
-		Analysis_block_4_cytokine_main_02CD8v2_goal
+		Analysis_block_4_cytokine_main_02CD8v2_goal \
+		Analysis_block_3_cytokine_cell_extracting_29_02v2_goal \
+		Analysis_block_4_cytokine_main_02Tregsv2_goal
 
 analysis_panel3: Analysis_block_1_main_29_03_goal Analysis_block_2_cluster_merging_29_03_cl6_goal \
 	Analysis_block_1_main_29_03_goal Analysis_block_2_cluster_merging_29_03_cl6_goal \
@@ -536,6 +538,78 @@ $(foreach i,$(extract_cluster),$(eval $(call Analysis_block_4_cytokine_main_$(cy
 
 
 ####################################################
+
+
+# ----------------------------------------------------------------------------------------------------
+# Analysis of CK_2016-06-29_02 Tregs using panel2CD4_v2.xlsx
+# Use Analysis block 1
+# ----------------------------------------------------------------------------------------------------
+
+data_dir := CK_2016-06-29_02
+file_panel := $(PANELS)/panel2CD4.xlsx
+file_metadata := $(METADATA)/metadata_29_02.xlsx
+
+data := 29
+panel := 02v2
+pca := pca0
+
+####################################################
+# CYTOKINE ANALYSIS
+
+
+# --------------------------------------------------
+# Analysis of CK_2016-06-29_02 Tregs cytokine extracting
+# Use Analysis block 3
+# --------------------------------------------------
+
+file_extract_marker := $(PANELS)/panel2CD4_23_cytokines_all.xlsx
+extract_marker := all
+
+merging := merging3
+extract_cluster := Tregs
+
+
+.PHONY: Analysis_block_3_cytokine_cell_extracting_$(data)_$(panel)_goal
+Analysis_block_3_cytokine_cell_extracting_$(data)_$(panel)_goal: $(foreach i,$(extract_cluster),Analysis_block_3_cytokine_cell_extracting_$(data)_$(panel)_goal$(i))
+
+define Analysis_block_3_cytokine_cell_extracting_$(data)_$(panel)_rule
+Analysis_block_3_cytokine_cell_extracting_$(data)_$(panel)_goal$(1):
+	echo "\n>> make"
+	make $(MAKEARGS) -f Analysis_block_3_cytokine_cell_extracting.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)" file_metadata="$(file_metadata)" data="$(data)" panel="$(panel)" pca="$(pca)" merging="$(merging)" extract_cluster="$(1)" file_extract_marker="$(file_extract_marker)" extract_marker="$(extract_marker)"
+endef
+$(foreach i,$(extract_cluster),$(eval $(call Analysis_block_3_cytokine_cell_extracting_$(data)_$(panel)_rule,$(i))))
+
+
+# --------------------------------------------------
+# Analysis of CK_2016-06-29_02_Tregs_merging3_all cytokine analysis
+# Use Analysis block 4
+# --------------------------------------------------
+
+data_dir := CK_2016-06-29_02
+file_metadata := $(METADATA)/metadata_29_02.xlsx
+file_panel_cytokines := $(PANELS)/panel2CD4_29_cytokines.xlsx
+
+data := 29
+cytokines := 02Tregsv2
+
+som_dim := 2
+nmetaclusts := 4
+
+
+.PHONY: Analysis_block_4_cytokine_main_$(cytokines)_goal
+Analysis_block_4_cytokine_main_$(cytokines)_goal: $(foreach i,$(extract_cluster),Analysis_block_4_cytokine_main_$(cytokines)_goal$(i))
+
+define Analysis_block_4_cytokine_main_$(cytokines)_rule
+Analysis_block_4_cytokine_main_$(cytokines)_goal$(1):
+	echo "\n>> make"
+	make $(MAKEARGS) -f Analysis_block_4_cytokine_main.mk R="$(R)" RWD_MAIN="$(RWD_MAIN)" RCODE="$(RCODE)" data_dir="$(data_dir)_$(1)_$(merging)_$(extract_marker)" file_metadata="$(file_metadata)" file_panel_cytokines="$(file_panel_cytokines)" data="$(data)$(1)$(extract_marker)" cytokines="$(cytokines)" som_dim="$(som_dim)" nmetaclusts="$(nmetaclusts)"
+endef
+$(foreach i,$(extract_cluster),$(eval $(call Analysis_block_4_cytokine_main_$(cytokines)_rule,$(i))))
+
+
+
+####################################################
+
 
 
 ###############################################################################################################
