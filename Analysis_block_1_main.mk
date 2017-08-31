@@ -39,7 +39,7 @@ make_file := Analysis_block_1_main.mk
 ### --------------------------------------------------------------------------
 ## Define the default rule (makefiles are usually written so that the first target is for compiling the entire program)
 .PHONY: all
-all: mkdir_rout data_normalization_goal data_plot_goal pcascores_goal select_observables_goal flowsom_goal heatmaps_goal heatmaps_codes_goal runtsne_goal plottsne_goal frequencies_calculate_goal frequencies_goal frequencies_calculate_codes_goal frequencies_codes_goal codes_pvs_goal heatmaps_codes_pvs_goal expression_calculate_goal expression_goal
+all: mkdir_rout data_normalization_goal data_plot_goal mds_goal pcascores_goal select_observables_goal flowsom_goal heatmaps_goal heatmaps_codes_goal runtsne_goal plottsne_goal frequencies_calculate_goal frequencies_goal frequencies_calculate_codes_goal frequencies_codes_goal codes_pvs_goal heatmaps_codes_pvs_goal expression_calculate_goal expression_goal
 
 
 ### Make sure no intermediate files are deleted
@@ -74,6 +74,16 @@ $(RWD)/010_data/$(data)_$(panel)_distrosgrp_raw.pdf: $(RCODE)/01_data_plot.R $(f
 $(RWD)/010_data/$(data)_$(panel)_distrosgrp_norm.pdf: $(RCODE)/01_data_plot.R $(file_metadata) $(file_panel) $(RWD)/010_data/$(data)_$(panel)_expr_norm.rds
 	echo "\n>> $(make_file)\n>>> 01_data_plot"
 	$(R) "--args path_data='$(RWD)/010_data/$(data)_$(panel)_expr_norm.rds' path_metadata='$(file_metadata)' path_panel='$(file_panel)' outdir='$(RWD)/010_data' prefix='$(data)_$(panel)_' suffix='_norm'" $(RCODE)/01_data_plot.R $(ROUT)/01_data_plot.Rout
+
+### MDS plot
+
+.PHONY: mds_goal
+mds_goal: $(RWD)/010_data/$(data)_$(panel)_mds_raw.pdf
+
+### For raw data
+$(RWD)/010_data/$(data)_$(panel)_mds_raw.pdf: $(RCODE)/01_mds.R $(file_metadata) $(RWD)/010_data/$(data)_$(panel)_expr_raw.rds
+	echo "\n>> $(make_file)\n>>> 01_mds"
+	$(R) "--args path_data='$(RWD)/010_data/$(data)_$(panel)_expr_raw.rds' path_metadata='$(file_metadata)' outdir='$(RWD)/010_data' prefix='$(data)_$(panel)_' suffix='_raw'" $(RCODE)/01_mds.R $(ROUT)/01_mds.Rout
 
 
 ### --------------------------------------------------------------------------

@@ -14,12 +14,12 @@ library(limma)
 
 args <- NULL
 
-path_data='CK_2016-06-23_01/010_data/23_01_expr_raw.rds'
-path_panel='CK_panels/panel1.xlsx'
-path_metadata='CK_metadata/metadata_23_01.xlsx'
+path_data='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data/23_01_expr_raw.rds'
+path_panel='../carsten_cytof/PD1_project/CK_panels/panel1.xlsx'
+path_metadata='../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx'
 prefix='23_01_'
 suffix='_raw'
-outdir='CK_2016-06-23_01/010_data'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data'
 
 ##############################################################################
 # Read in the arguments

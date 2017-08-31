@@ -43,7 +43,7 @@ make_file := Analysis_block_8_merging_2datasets_main.mk
 ### --------------------------------------------------------------------------
 ## Define the default rule (makefiles are usually written so that the first target is for compiling the entire program)
 .PHONY: all
-all: mkdir_rout frequencies_goal expression_goal
+all: mkdir_rout mds_goal frequencies_goal expression_goal
 
 
 ### Make sure no intermediate files are deleted
@@ -52,6 +52,20 @@ all: mkdir_rout frequencies_goal expression_goal
 .PHONY: mkdir_rout
 mkdir_rout:
 	mkdir -p $(ROUT)
+
+
+### --------------------------------------------------------------------------
+### MDS plots
+### --------------------------------------------------------------------------
+
+.PHONY: mds_goal
+mds_goal: $(RWD_MERGED)/010_data/$(panel)_$(data1)_$(data2)_mds_raw.pdf
+
+### For raw data
+$(RWD_MERGED)/010_data/$(panel)_$(data1)_$(data2)_mds_raw.pdf: $(RCODE)/01_mds.R $(file_metadata1)  $(file_metadata2) $(RWD1)/010_data/$(data1)_$(panel)_expr_raw.rds $(RWD2)/010_data/$(data2)_$(panel)_expr_raw.rds
+	echo "\n>> $(make_file)\n>>> 01_mds"
+	$(R) "--args path_data=c('$(RWD1)/010_data/$(data1)_$(panel)_expr_raw.rds','$(RWD2)/010_data/$(data2)_$(panel)_expr_raw.rds') path_metadata=c('$(file_metadata1)','$(file_metadata2)') outdir='$(RWD_MERGED)/010_data' prefix='$(panel)_$(data1)_$(data2)_' suffix='_raw'" $(RCODE)/01_mds.R $(ROUT)/01_mds.Rout
+
 
 ### --------------------------------------------------------------------------
 ### Frequency analysis
