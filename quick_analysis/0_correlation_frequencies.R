@@ -174,8 +174,9 @@ for(i in 1:(length(gglabels) - 1)){
       geom_point(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]), shape = "data_day", color = "group"), size = 3, alpha = 0.8) +
       geom_smooth(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]))) +
       theme_bw() +
-      theme(axis.text = element_text(size = 14), 
-        axis.title = element_text(size = 16), 
+      theme(axis.text = element_text(size = 20, face = "bold", color = "black"), 
+        axis.title = element_text(size = 22, face = "bold", color = "black"), 
+        legend.text = element_text(size = 14), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         panel.border = element_blank(), 
@@ -196,8 +197,9 @@ for(i in 1:(length(gglabels) - 1)){
         geom_point(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]), shape = "data_day", color = "group"), size = 3, alpha = 0.8) +
         geom_smooth(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]))) +
         theme_bw() +
-        theme(axis.text = element_text(size = 14), 
-          axis.title = element_text(size = 16), 
+        theme(axis.text = element_text(size = 20, face = "bold", color = "black"), 
+        axis.title = element_text(size = 22, face = "bold", color = "black"), 
+        legend.text = element_text(size = 14), 
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
           panel.border = element_blank(), 
@@ -301,9 +303,10 @@ for(m in 1:length(corr_methods)){
         geom_smooth(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]))) +
         ggtitle(ggp_title) +
         theme_bw() +
-        theme(title = element_text(size = 16), 
-          axis.text = element_text(size = 14), 
-          axis.title = element_text(size = 16), 
+        theme(title = element_text(size = 22), 
+          axis.text = element_text(size = 20, face = "bold", color = "black"), 
+          axis.title = element_text(size = 20, face = "bold", color = "black"), 
+          legend.text = element_text(size = 14), 
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
           panel.border = element_blank(), 
@@ -376,9 +379,10 @@ for(m in 1:length(corr_methods)){
           geom_smooth(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]))) +
           ggtitle(ggp_title) +
           theme_bw() +
-          theme(title = element_text(size = 16),
-            axis.text = element_text(size = 14), 
-            axis.title = element_text(size = 16), 
+          theme(title = element_text(size = 22),
+            axis.text = element_text(size = 20, face = "bold", color = "black"), 
+            axis.title = element_text(size = 20, face = "bold", color = "black"), 
+            legend.text = element_text(size = 14), 
             panel.grid.major = element_blank(), 
             panel.grid.minor = element_blank(), 
             panel.border = element_blank(), 

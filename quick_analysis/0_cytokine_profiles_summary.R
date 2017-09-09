@@ -15,16 +15,16 @@ library(plyr) # for rbind.fill
 ##############################################################################
 
 ## CD4
-# prefix='23CD4allall_29CD4allall_02CD4v2_cl49_clustering_data23CD4_'
-# outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/cytokine_profiles_summary'
-# path_pvs='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD4/090_cytokine_bimatrix_frequencies_clustering/3responses_both/23CD4allall_29CD4allall_02CD4v2_cl49_frequencies_pvs_glmer_binomial_interglht_top10.xls'
-# path_profiles_prefix='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD4/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/23CD4allall_29CD4allall_02CD4v2_cl49_clustering_data23CD4_'
+prefix='23CD4allall_29CD4allall_02CD4v2_cl49_clustering_data23CD4_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/cytokine_profiles_summary'
+path_pvs='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD4/090_cytokine_bimatrix_frequencies_clustering/3responses_both/23CD4allall_29CD4allall_02CD4v2_cl49_frequencies_pvs_glmer_binomial_interglht_top10.xls'
+path_profiles_prefix='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD4/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/23CD4allall_29CD4allall_02CD4v2_cl49_clustering_data23CD4_'
 
 ## CD8
-prefix='23CD8allall_29CD8allall_02CD8v2_cl49_clustering_data23CD8_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/cytokine_profiles_summary'
-path_pvs='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/3responses_both/23CD8allall_29CD8allall_02CD8v2_cl49_frequencies_pvs_glmer_binomial_interglht_top10.xls'
-path_profiles_prefix='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/23CD8allall_29CD8allall_02CD8v2_cl49_clustering_data23CD8_'
+# prefix='23CD8allall_29CD8allall_02CD8v2_cl49_clustering_data23CD8_'
+# outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/cytokine_profiles_summary'
+# path_pvs='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/3responses_both/23CD8allall_29CD8allall_02CD8v2_cl49_frequencies_pvs_glmer_binomial_interglht_top10.xls'
+# path_profiles_prefix='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix_frequencies_clustering/cytokine_profiles/23CD8allall_29CD8allall_02CD8v2_cl49_clustering_data23CD8_'
 
 
 FDR_cutoff='10'
@@ -108,9 +108,9 @@ ggp <- ggplot(mexpr, aes(x = label, y = frequencies)) +
   ylab("Frequencies") + 
   xlab("") + 
   theme_bw() +
-  theme(axis.text = element_text(size = 12), 
-    axis.title  = element_text(size = 15),
-    strip.text = element_text(size = 15, hjust = 0), 
+  theme(axis.text = element_text(size = 14, face = "bold", color = "black"), 
+    axis.title  = element_text(size = 22, face = "bold"),
+    strip.text = element_text(size = 20, hjust = 0), 
     strip.background = element_blank(),
     legend.key = element_blank(),
     legend.title = element_blank(),

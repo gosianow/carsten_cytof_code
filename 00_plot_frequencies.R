@@ -142,6 +142,7 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
         ylab("Frequency") +
         xlab("") +
         theme(axis.text.x = element_blank(), 
+          axis.text.y = element_text(size = 14, face = "bold", color = "black"),
           axis.ticks.x = element_blank(),
           axis.title.y = element_text(size = 12), 
           panel.grid.major = element_blank(), 
@@ -149,8 +150,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
           panel.border = element_blank(), 
           axis.line.x = element_line(size = 0.5, linetype = "solid", color = "black"), 
           axis.line.y = element_line(size = 0.5, linetype = "solid", color = "black"),
-          legend.title = element_blank(), legend.position = "right", legend.key = element_blank(),
-          strip.background = element_blank(), strip.text = element_text(size = 12, hjust = 0)) +
+          legend.title = element_blank(), legend.position = "right", 
+          legend.key = element_blank(), legend.text = element_text(size = 14),
+          strip.background = element_blank(), strip.text = element_text(size = 16, hjust = 0, face = "bold")) +
         scale_color_manual(values = color_groups) +
         scale_fill_manual(values = color_groupsb) +
         facet_wrap(~ cluster, scales = "free", ncol = nr_in_one_row)

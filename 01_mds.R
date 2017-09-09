@@ -25,11 +25,11 @@ outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data'
 
 
 
-path_data=c('../carsten_cytof/PD1_project/CK_2016-06-23_01/010_data/23_01_expr_raw.rds','../carsten_cytof/PD1_project/CK_2016-06-29_01/010_data/29_01_expr_raw.rds')
-path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_01.xlsx')
-prefix='01_23_29_'
+path_data=c('../carsten_cytof/PD1_project/CK_2016-06-23_02/010_data/23_02v2_expr_raw.rds','../carsten_cytof/PD1_project/CK_2016-06-29_02/010_data/29_02v2_expr_raw.rds')
+path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_02.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_02.xlsx')
+prefix='02v2_23_29_'
 suffix='_raw'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/01/010_data'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2/010_data'
 
 
 
@@ -145,6 +145,10 @@ ggp <- ggplot(ggdf, aes(x = MDS1, y = MDS2, color = response, shape = data)) +
   geom_point(size = 2, alpha = 0.8) +
   geom_label_repel(aes(label = samp)) +
   theme_bw() +
+  theme(axis.text = element_text(size = 14, face = "bold", color = "black"), 
+        axis.title = element_text(size = 16, face = "bold", color = "black"), 
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 14)) +
   scale_color_manual(values = color_response) 
 
 
