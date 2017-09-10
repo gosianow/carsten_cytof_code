@@ -356,6 +356,110 @@ fit_glmer_interglht <- function(data, md, family = "binomial", formula, K, skipp
   
 }
 
+# -----------------------------
+# Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
+# Response is 0s or 1s
+# -----------------------------
+
+
+
+fit_glmer_interglht_01 <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
+  
+  contrast_names <- rownames(K)
+  
+  ### Fit the GLM
+  fit <- lapply(1:nrow(data), function(i){
+    # i = 1
+    print(i)
+    
+    y <- data[i, md$shortname]
+    NAs <- is.na(y)
+
+    data_tmp <- data.frame(y = as.numeric(y), md)[!NAs, , drop = FALSE]
+    
+    out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
+    colnames(out) <- c("coeff", "pval")
+    rownames(out) <- contrast_names
+    
+    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
+    if(any(NAs) && skippNAs)
+      return(out)
+    
+    switch(family, 
+      binomial = {
+        fit_tmp <- glmer(formula, family = binomial, data = data_tmp)
+        summary(fit_tmp)
+      }      
+    )
+    
+    if(is.null(fit_tmp))
+      return(out)
+    
+    ## fit contrasts one by one
+    out <- t(apply(K, 1, function(k){
+      # k = K[1, ]
+      
+      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
+      summ_tmp <- summary(contr_tmp)
+      summ_tmp
+      
+      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
+      names(out) <- c("coeff", "pval")
+      out
+      
+    }))
+    out
+    
+    return(out)
+    
+  })
+  
+  ### Extract p-values
+  pvals <- lapply(fit, function(x){
+    x[, "pval"]
+  })
+  pvals <- do.call(rbind, pvals)
+  
+  ### Extract fitted coefficients
+  coeffs <- lapply(fit, function(x){
+    x[, "coeff"]
+  })
+  coeffs <- do.call(rbind, coeffs)
+  
+  movars <- contrast_names
+  
+  colnames(pvals) <- paste0("pval_", movars)
+  colnames(coeffs) <- movars
+  
+  colnames(pvals) <- paste0("pval_", movars)
+  
+  ## get adjusted p-values
+  adjp <- apply(pvals, 2, p.adjust, method = "BH")
+  colnames(adjp) <- paste0("adjp_", movars)
+  
+  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
+  
+  return(out)
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3,7 +3,8 @@
 md <- md[md$response %in% c("NR", "R"), , drop = FALSE]
 md$response <- factor(md$response)
 
-if(identical(levels(md$day), "base") && identical(levels(md$response), c("NR", "R"))){
+if(identical(levels(md$response), c("NR", "R"))){
+  
   ## create formulas
   formula_lm <- y ~ response
   formula_lmer <- y ~ response + (1|patient_id)
@@ -11,6 +12,7 @@ if(identical(levels(md$day), "base") && identical(levels(md$response), c("NR", "
   formula_glm_binomial <- cbind(y, total-y) ~ response
   formula_glm_beta <- y/total ~ response
   formula_glmer_binomial <- y/total ~ response + (1|patient_id)
+
   formula_glmer_binomial_01 <- y ~ response + (1|patient_id)
   formula_glm_beta_01 <- y ~ response
   

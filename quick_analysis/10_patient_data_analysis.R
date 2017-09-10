@@ -17,13 +17,14 @@ library(gtools) # for logit
 # Test arguments
 ##############################################################################
 
-outdir <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_analysis2"
+outdir <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_analysis3"
 
-path_data <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files2/2017_06_07_updated_info_CyTOF_patients.xlsx"
-path_variables <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files2/variables_to_use2.xlsx"
+path_data <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files3/2017_09_06_updated_info_CyTOF_patients.xlsx"
+path_variables <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files3/variables_to_use3.xlsx"
 
+### Analysis between NA and R from base 
 path_fun_models <- '00_models.R'
-path_fun_formulas <- '00_formulas_2datasets_2responses_both.R'
+path_fun_formulas <- '00_formulas_1dataset_2responses_base.R'
 path_fun_plot_heatmaps <- "00_plot_heatmaps_for_sign_expr.R"
 
 
@@ -51,7 +52,7 @@ FDR_cutoff
 
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
-prefix <- ""
+
 suffix <- ""
 out_name <- "patientdata"
 
@@ -59,29 +60,116 @@ out_name <- "patientdata"
 color_groups <- c(base_NR = "#CC79A7", base_R = "#009E73", tx_NR = "#CC79A7", tx_R = "#009E73")
 color_response <- c(NR = "#CC79A7", R = "#009E73")
 
+
+###############################################################################
+###
+### Analysis of:
+### CyTOF samples (baseline)
+### FACS samples (baseline)
+### CyTOF + FACS samples (baseline)
+###
+###############################################################################
+
+
 # ----------------------------------------------------------
 # Read in the data
 # ----------------------------------------------------------
 
-data_orig <- read.xls(path_data, as.is = TRUE, check.names = FALSE)
-
-data_orig <- data_orig[data_orig$use == "CyTOF", , drop = FALSE]
-
-variables_orig <- read.xls(path_variables, as.is = TRUE, check.names = FALSE)
+analysis_of <- "CyTOFandFACS"
 
 
-### Create metadata
+if(analysis_of == "CyTOF"){
+  
+  prefix <- paste0(analysis_of, "_")
+  
+  data_orig <- read.xls(path_data, as.is = TRUE, check.names = FALSE)
+  
+  variables_orig <- read.xls(path_variables, as.is = TRUE, check.names = FALSE)
+  
+  data_orig <- data_orig[data_orig$use == analysis_of & data_orig$TP == "baseline", , drop = FALSE]
+  
+  
+  ### Create metadata
+  
+  md <- data.frame(patient_id = data_orig[, "ID"], day = data_orig[, "TP"], response = data_orig[, "RESPONSE"], shortname = data_orig[, "shortname"], data = data_orig[, "batches"], stringsAsFactors = FALSE)
+  
+  md$patient_id <- factor(md$patient_id)
+  md$day <- factor(md$day, levels = c("baseline", "TP1"), labels = c("base", "tx"))
+  md$data <- factor(md$data, levels = c("1", "2"), labels = c("data23", "data29"))
+  md$response <- factor(md$response, levels = c(0, 1), labels = c("NR", "R"))
+  
+  md$group <- interaction(md$day, md$response, lex.order = TRUE, sep = "_")
+  md$shortname <- paste0(md$day, "_", md$shortname)
+  md$data_day <- interaction(md$data, md$day, lex.order = TRUE, drop = TRUE)
+  
+  ### More adjustments
+  # We use only the base samples
+  md$day <- factor(md$day)
+  
+}
 
-md <- data.frame(patient_id = data_orig[, "ID"], day = data_orig[, "TP"], response = data_orig[, "RESPONSE"], shortname = data_orig[, "shortname"], data = data_orig[, "batches"], stringsAsFactors = FALSE)
 
-md$patient_id <- factor(md$patient_id)
-md$day <- factor(md$day, levels = c("baseline", "TP1"), labels = c("base", "tx"))
-md$data <- factor(md$data, levels = c("1", "2"), labels = c("data23", "data29"))
-md$response <- factor(md$response, levels = c(0, 1), labels = c("NR", "R"))
-md$group <- interaction(md$day, md$response, lex.order = TRUE, sep = "_")
-md$shortname <- paste0(md$day, "_", md$shortname)
-md$data_day <- interaction(md$data, md$day, lex.order = TRUE, drop = TRUE)
+if(analysis_of == "FACS"){
+  
+  prefix <- paste0(analysis_of, "_")
+  
+  data_orig <- read.xls(path_data, as.is = TRUE, check.names = FALSE)
+  
+  variables_orig <- read.xls(path_variables, as.is = TRUE, check.names = FALSE)
+  
+  data_orig <- data_orig[data_orig$use == analysis_of & data_orig$TP == "baseline", , drop = FALSE]
+  
+  
+  ### Create metadata
+  
+  md <- data.frame(patient_id = data_orig[, "ID"], day = data_orig[, "TP"], response = data_orig[, "RESPONSE"], shortname = data_orig[, "shortname"], data = data_orig[, "batches"], stringsAsFactors = FALSE)
+  
+  md$patient_id <- factor(md$patient_id)
+  md$day <- factor(md$day, levels = c("baseline", "TP1"), labels = c("base", "tx"))
+  md$data[is.na(md$data)] <- "3"
+  md$data <- factor(md$data, levels = c("1", "2", "3"), labels = c("data23", "data29", "data30"))
+  md$response <- factor(md$response, levels = c(0, 1), labels = c("NR", "R"))
+  
+  md$group <- interaction(md$day, md$response, lex.order = TRUE, sep = "_")
+  md$shortname <- paste0(md$day, "_", md$shortname)
+  md$data_day <- interaction(md$data, md$day, lex.order = TRUE, drop = TRUE)
+  
+  ### More adjustments
+  # We use only the base samples
+  md$day <- factor(md$day)
+  
+}
 
+if(analysis_of == "CyTOFandFACS"){
+  
+  prefix <- paste0(analysis_of, "_")
+  
+  data_orig <- read.xls(path_data, as.is = TRUE, check.names = FALSE)
+  
+  variables_orig <- read.xls(path_variables, as.is = TRUE, check.names = FALSE)
+  
+  data_orig <- data_orig[data_orig$TP == "baseline", , drop = FALSE]
+  
+  
+  ### Create metadata
+  
+  md <- data.frame(patient_id = data_orig[, "ID"], day = data_orig[, "TP"], response = data_orig[, "RESPONSE"], shortname = data_orig[, "shortname"], data = data_orig[, "batches"], stringsAsFactors = FALSE)
+  
+  md$patient_id <- factor(md$patient_id)
+  md$day <- factor(md$day, levels = c("baseline", "TP1"), labels = c("base", "tx"))
+  md$data[is.na(md$data)] <- "3"
+  md$data <- factor(md$data, levels = c("1", "2", "3"), labels = c("data23", "data29", "data30"))
+  md$response <- factor(md$response, levels = c(0, 1), labels = c("NR", "R"))
+  
+  md$group <- interaction(md$day, md$response, lex.order = TRUE, sep = "_")
+  md$shortname <- paste0(md$day, "_", md$shortname)
+  md$data_day <- interaction(md$data, md$day, lex.order = TRUE, drop = TRUE)
+  
+  ### More adjustments
+  # We use only the base samples
+  md$day <- factor(md$day)
+  
+}
 
 ###############################################################################
 ### Analysis for continous variables
@@ -124,25 +212,33 @@ ggdf$marker <- factor(ggdf$marker, levels = vars_cont)
 
 # ------------------------------------
 
+nr_marker <- nlevels(ggdf$marker)
+nr_in_one_row <- 10
+nrow <- ceiling(nr_marker/nr_in_one_row)
+hh <- nrow * 2.5
+ncol <- ceiling(nr_marker/nrow)
+ww <- ncol * 2 + 1
+
 ggp <- ggplot(ggdf, aes(x = group, y = expr, color = group, shape = data)) +
-    geom_boxplot(width = 0.9, position = position_dodge(width = 0.95), outlier.colour = NA) +
-    geom_point(size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 0.95, jitter.height = 0, dodge.width = 0.95)) +
-      theme_bw() +
-      ylab("Expression") +
-      xlab("") +
-      theme(axis.text.x = element_text(size=10, face="bold"),
-        axis.title.y = element_text(size=10, face="bold"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"),
-        axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
-        legend.position = "none") +
-      scale_color_manual(values = color_groups) +
-      facet_wrap(~ marker, scales = "free")
+  geom_boxplot(width = 0.9, position = position_dodge(width = 0.95), outlier.colour = NA) +
+  geom_point(size=2, alpha = 0.8, position = position_jitterdodge(jitter.width = 0.95, jitter.height = 0, dodge.width = 0.95)) +
+  theme_bw() +
+  ylab("Expression") +
+  xlab("") +
+  theme(axis.text.x = element_text(size=10, face="bold"),
+    axis.title.y = element_text(size=10, face="bold"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    axis.line.x = element_line(size = 0.5, linetype = "solid", colour = "black"),
+    axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
+    legend.position = "right",
+    strip.background = element_blank(),) +
+  scale_color_manual(values = color_groups) +
+  facet_wrap(~ marker, scales = "free", nrow = nrow)
 
 
-pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_plot.pdf")), w=18, h=16, onefile=TRUE)
+pdf(file.path(outdir, paste0(prefix, "expr_", out_name, "_plot.pdf")), w = ww, h = hh)
 print(ggp)
 dev.off()
 
@@ -202,19 +298,21 @@ source(path_fun_models)
 source(path_fun_formulas)
 source(path_fun_plot_heatmaps)
 
-
-models2fit <- c("lmer_interglht")
+### LMM when there are base and tx samples
+# models2fit <- c("lmer_interglht")
+### LM when there are only base samples
+models2fit <- c("lm_interglht")
 
 
 for(k in models2fit){
-  # k = "lmer_interglht"
+  # k = "lm_interglht"
   print(k)
   
   switch(k,
     lm_interglht = {
       
       # Fit a LM with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_lm_interglht(data = exprc, md, method = "lm", formula = formula_lm, K = K, skippNAs = FALSE)
+      fit_out <- fit_lm_interglht(data = exprc, md, formula = formula_lm, K = K, skippNAs = FALSE)
       
     }, 
     lmer_interglht = {
@@ -272,11 +370,16 @@ vars_bi
 
 data_bi <- data_orig[, vars_bi, drop = FALSE]
 
+check_bi <- apply(data_bi, 2, function(x){
+  nlevels(factor(x))
+})
+
+data_bi <- data_bi[, check_bi == 2, drop = FALSE]
+
+
 data_bi <- apply(data_bi, 2, function(x){
-
-ifelse( x == "yes", 1, 0)
-
-  })
+  as.numeric(factor(x)) -1
+})
 
 data_bi <- data.frame(t(data_bi))
 colnames(data_bi) <- md$shortname
@@ -285,7 +388,7 @@ data_bi$marker <- rownames(data_bi)
 data_bi$cluster <- ""
 data_bi$label <- ""
 rownames(data_bi) <- NULL
-
+head(data_bi)
 
 
 # ----------------------------------------------------------
@@ -308,13 +411,19 @@ ggdf <- ggdf[complete.cases(ggdf), ]
 
 # ------------------------------------
 
-ggp <- ggplot(ggdf, aes(x = group, color = group, fill = expr)) +
+nr_marker <- nlevels(ggdf$marker)
+nr_in_one_row <- 5
+nrow <- ceiling(nr_marker/nr_in_one_row)
+hh <- nrow * 2.5
+ncol <- ceiling(nr_marker/nrow)
+ww <- ncol * 2 + 1
+
+ggp <- ggplot(ggdf, aes(x = interaction(data, group), color = group, fill = expr)) +
   geom_bar() +
   theme_bw() +
   ylab("") +
   xlab("") +
-  facet_wrap(~ marker, scale = "fixed") +
-  theme(axis.text.x = element_text(size=10, face="bold"), 
+  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size=10, face="bold"), 
     axis.title.y = element_text(size=10, face="bold"), 
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), 
@@ -324,9 +433,10 @@ ggp <- ggplot(ggdf, aes(x = group, color = group, fill = expr)) +
     legend.position = "right",
     strip.text = element_text(size = 10, hjust = 0), strip.background = element_blank()) +
   scale_color_manual(values = color_groups) +
-  scale_fill_manual(values = c("gray50", "gray80"))
+  scale_fill_manual(values = c("gray50", "gray80")) +
+  facet_wrap(~ marker, scale = "free", nrow = nrow)
 
-pdf(file.path(outdir, paste0(prefix, "frequencies_", out_name, "_plot.pdf")), w=8, h=6, onefile=TRUE)
+pdf(file.path(outdir, paste0(prefix, "frequencies_", out_name, "_plot.pdf")), w = ww, h = hh)
 print(ggp)
 dev.off()
 
@@ -381,100 +491,6 @@ legend_breaks = seq(from = -round(th), to = round(th), by = 1)
 # ----------------------------------------------------------
 
 source(path_fun_models)
-
-
-# -----------------------------
-### Fit a logit GLMM with inteactions + test contrasts with multcomp pckg
-### Response is 0s and 1s
-# -----------------------------
-
-
-fit_glmer_interglht_01 <- function(data, md, family = "binomial", formula, K, skippNAs = TRUE){
-  
-  contrast_names <- rownames(K)
-  
-  ### Fit the GLM
-  fit <- lapply(1:nrow(data), function(i){
-    # i = 2
-    print(i)
-    
-    y <- data[i, md$shortname]
-    NAs <- is.na(y)
-    data_tmp <- data.frame(y = as.numeric(y), md)[!NAs, , drop = FALSE]
-    
-    out <- matrix(NA, nrow = length(contrast_names), ncol = 2)
-    colnames(out) <- c("coeff", "pval")
-    rownames(out) <- contrast_names
-    
-    if(sum(y[!NAs] == 0) > length(y[!NAs])/2)
-      return(out)
-      
-    ## do not anlyse a cluster with NAs; for merged data it means such cluster was not present in all the datasets
-    if(any(NAs) && skippNAs)
-      return(out)
-    
-    switch(family, 
-      binomial = {
-        fit_tmp <- glmer(formula, family = binomial, data = data_tmp)
-        summary(fit_tmp)
-      }      
-    )
-    
-    if(is.null(fit_tmp))
-      return(out)
-    
-    ## fit contrasts one by one
-    out <- t(apply(K, 1, function(k){
-      # k = K[1, ]
-      
-      contr_tmp <- glht(fit_tmp, linfct = matrix(k, 1))
-      summ_tmp <- summary(contr_tmp)
-      summ_tmp
-      
-      out <- c(summ_tmp$test$coefficients, summ_tmp$test$pvalues)
-      names(out) <- c("coeff", "pval")
-      out
-      
-    }))
-    out
-    
-    return(out)
-    
-  })
-  
-  ### Extract p-values
-  pvals <- lapply(fit, function(x){
-    x[, "pval"]
-  })
-  pvals <- do.call(rbind, pvals)
-  
-  ### Extract fitted coefficients
-  coeffs <- lapply(fit, function(x){
-    x[, "coeff"]
-  })
-  coeffs <- do.call(rbind, coeffs)
-  
-  movars <- contrast_names
-  
-  colnames(pvals) <- paste0("pval_", movars)
-  colnames(coeffs) <- movars
-  
-  colnames(pvals) <- paste0("pval_", movars)
-  
-  ## get adjusted p-values
-  adjp <- apply(pvals, 2, p.adjust, method = "BH")
-  colnames(adjp) <- paste0("adjp_", movars)
-  
-  out <- list(pvals = cbind(pvals, adjp), coeffs = coeffs)
-  
-  return(out)
-  
-}
-
-
-formula_glmer_binomial_01 <- y ~ response + data_day + response:data_day + (1|patient_id)
-
-
 source(path_fun_formulas)
 source(path_fun_plot_heatmaps)
 
@@ -482,7 +498,7 @@ source(path_fun_plot_heatmaps)
 models2fit <- c("glmer_binomial_interglht_01")
 
 freq_out <- data_bi
-
+# freq_out <- data_bi[freq_out <- data_bi$marker %in% c("prev.chemo", "bone.met"), , drop = FALSE]
 
 for(k in models2fit){
   # k = "glmer_binomial_interglht_01"
@@ -492,7 +508,7 @@ for(k in models2fit){
     
     glmer_binomial_interglht_01 = {
       # Fit a GLMM binomial with interactions + test contrasts with multcomp pckg
-      fit_out <- fit_glmer_interglht_01(data = freq_out, md, family = "binomial", formula = formula_glmer_binomial_01, K = K, skippNAs = FALSE)
+      fit_out <- fit_glmer_interglht_01(data = freq_out, md = md, family = "binomial", formula = formula_glmer_binomial_01, K = K, skippNAs = FALSE)
       
     }
     

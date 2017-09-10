@@ -9,7 +9,7 @@ RCODE := .
 
 ## Define the default rule (makefiles are usually written so that the first target is for compiling the entire program)
 .PHONY: all
-all: ck_pipeline_merging_2datasets # ck_pipeline23 ck_pipeline29
+all: ck_pipeline23 ck_pipeline29 ck_pipeline_merging_2datasets 
 
 
 ### Make sure no intermediate files are deleted
