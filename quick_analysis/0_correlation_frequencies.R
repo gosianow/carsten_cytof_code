@@ -55,7 +55,7 @@ md <- plyr::rbind.fill(md)
 rownames(md) <- md$shortname
 
 ### Factor arrangment
-md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+md$response <- factor(md$response, levels = c("HD", "NR", "R")) ### For plotting HD is a reference!!!
 md$response <- factor(md$response)
 md$day <- factor(md$day, levels = c("base", "tx"))
 md$day <- factor(md$day)
@@ -137,7 +137,7 @@ ggadf$group <- factor(md[rownames(ggadf), "condition"])
 ## replace _ with \n
 levels(ggadf$group) <- gsub("_", "\n", levels(ggadf$group))
 ggadf$data_day <- md[rownames(ggadf), "data_day"]
-
+ggadf$response <- md[rownames(ggadf), "response"]
 
 head(ggadf)
 
@@ -171,12 +171,12 @@ for(i in 1:(length(gglabels) - 1)){
     # i = 1; j = 2
     
     ggp <- ggplot(ggadf) +
-      geom_point(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]), shape = "data_day", color = "group"), size = 3, alpha = 0.8) +
+      geom_point(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]), shape = "data_day", color = "response"), size = 5, alpha = 0.8) +
       geom_smooth(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]))) +
       theme_bw() +
-      theme(axis.text = element_text(size = 20, face = "bold", color = "black"), 
-        axis.title = element_text(size = 22, face = "bold", color = "black"), 
-        legend.text = element_text(size = 14), 
+      theme(axis.text = element_text(size = 24, face = "bold", color = "black"), 
+        axis.title = element_text(size = 24, face = "bold", color = "black"), 
+        legend.text = element_text(size = 20), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         panel.border = element_blank(), 
@@ -184,7 +184,9 @@ for(i in 1:(length(gglabels) - 1)){
         axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
         legend.title = element_blank()) +
       scale_shape_manual(values = shape_data_day) +
-      scale_color_manual(values = color_groups)
+      scale_color_manual(values = color_response) +
+      guides(shape = guide_legend(override.aes = list(size = 4)), 
+                  color = guide_legend(override.aes = list(size = 4)))
     
     pdf(file.path(outdir, paste0(prefix, "frequencies_plot_corr_pairs_", gglabels[i], "_", gglabels[j] ,"_dataALL.pdf")), width = 7, height = 5)
     print(ggp)
@@ -295,18 +297,18 @@ for(m in 1:length(corr_methods)){
       out <- cor.test(x = ggadf[, gglabels[i]], y = ggadf[, gglabels[j]], alternative = "two.sided", method = corr_methods[m])
       corr_pvs[j, i] <- out$p.value
       
-      ggp_title <- paste0(round(out$estimate, 2))
+      ggp_title <- paste0("R = ", round(out$estimate, 2))
       
       ### Plot
       ggp <- ggplot(ggadf) +
-        geom_point(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]), shape = "data_day", color = "group"), size = 3, alpha = 0.8) +
+        geom_point(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]), shape = "data_day", color = "response"), size = 5, alpha = 0.8) +
         geom_smooth(aes_string(x = as.character(gglabels[i]), y = as.character(gglabels[j]))) +
         ggtitle(ggp_title) +
         theme_bw() +
-        theme(title = element_text(size = 22), 
-          axis.text = element_text(size = 20, face = "bold", color = "black"), 
-          axis.title = element_text(size = 20, face = "bold", color = "black"), 
-          legend.text = element_text(size = 14), 
+        theme(title = element_text(size = 24, face = "bold"), 
+          axis.text = element_text(size = 24, face = "bold", color = "black"), 
+          axis.title = element_text(size = 24, face = "bold", color = "black"), 
+          legend.text = element_text(size = 20), 
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
           panel.border = element_blank(), 
@@ -314,9 +316,11 @@ for(m in 1:length(corr_methods)){
           axis.line.y = element_line(size = 0.5, linetype = "solid", colour = "black"),
           legend.title = element_blank()) +
         scale_shape_manual(values = shape_data_day) +
-        scale_color_manual(values = color_groups)
+        scale_color_manual(values = color_response) +
+        guides(shape = guide_legend(override.aes = list(size = 5)), 
+                    color = guide_legend(override.aes = list(size = 6)))
       
-      pdf(file.path(outdir, paste0(prefix, "frequencies_plot_corr_pairs_", corr_methods[m], "_", gglabels[i], "_", gglabels[j] ,"_dataALL.pdf")), width = 7, height = 5)
+      pdf(file.path(outdir, paste0(prefix, "frequencies_plot_corr_pairs_", corr_methods[m], "_", gglabels[i], "_", gglabels[j] ,"_dataALL.pdf")), width = 8, height = 5)
       print(ggp)
       dev.off()
       

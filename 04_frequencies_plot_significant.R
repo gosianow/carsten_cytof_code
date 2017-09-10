@@ -63,7 +63,7 @@ md <- plyr::rbind.fill(md)
 rownames(md) <- md$shortname
 
 ### Factor arrangment
-md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+md$response <- factor(md$response, levels = c("HD", "NR", "R")) ### For plotting HD is a reference!!!
 md$response <- factor(md$response)
 md$day <- factor(md$day, levels = c("base", "tx"))
 md$day <- factor(md$day)
@@ -192,6 +192,7 @@ for(i in 1:length(comparisons)){
     ggdf$group <- factor(md$condition[mm])
     ggdf$day <- factor(md$day[mm])
     ggdf$data <- factor(md$data[mm])
+    ggdf$response <- factor(md$response[mm])
     
     ## replace _ with \n
     levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
@@ -200,7 +201,7 @@ for(i in 1:length(comparisons)){
   
   prefix_sign <- paste0(prefix, comparison_prefix)
   
-  plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, colors_clusters = colors_clusters, outdir = outdir, prefix = prefix_sign)
+  plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, colors_clusters = colors_clusters, color_response = color_response, outdir = outdir, prefix = prefix_sign)
   
   
 }

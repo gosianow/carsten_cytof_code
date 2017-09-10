@@ -23,8 +23,8 @@ path_frequencies='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_
 path_fun_plot_frequencies='00_plot_frequencies.R'
 
 
-prefix='01_23m6_29m4_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/01/08_frequencies_merged_2responses_both'
+prefix='01_23merging6_29merging4_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/01/050_frequencies/3responses_both'
 path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_01.xlsx')
 path_frequencies=c('../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies/23_01_pca1_merging6_frequencies.xls','../carsten_cytof/PD1_project/CK_2016-06-29_01/050_frequencies/29_01_pca1_merging4_frequencies.xls')
 path_fun_plot_frequencies='00_plot_frequencies.R'
@@ -62,7 +62,7 @@ md <- plyr::rbind.fill(md)
 rownames(md) <- md$shortname
 
 ### Factor arrangment
-md$response <- factor(md$response, levels = c("NR", "R", "HD"))
+md$response <- factor(md$response, levels = c("HD", "NR", "R")) ### For plotting HD is a reference!!!
 md$response <- factor(md$response)
 md$day <- factor(md$day, levels = c("base", "tx"))
 md$day <- factor(md$day)
@@ -78,17 +78,19 @@ levels(colors$condition) <- gsub("_", "\n", levels(colors$condition ))
 
 color_groups <- colors$color
 names(color_groups) <- colors$condition
+color_groups
 
 color_groupsb <- adjustcolor(color_groups, alpha = 0.3)
 names(color_groupsb) <- colors$condition
 
 color_samples <- md$color
 names(color_samples) <- md$shortname
+color_samples
 
 colors <- unique(md[, c("response", "color")])
 color_response <- colors$color
 names(color_response) <- colors$response
-
+color_response
 
 # ------------------------------------------------------------
 # Load cluster frequencies
@@ -155,14 +157,16 @@ mm <- match(ggdf$samp, md$shortname)
 ggdf$group <- factor(md$condition[mm])
 ggdf$day <- factor(md$day[mm])
 ggdf$data <- factor(md$data[mm])
+ggdf$response <- factor(md$response[mm])
 
 ## replace _ with \n
 levels(ggdf$group) <- gsub("_", "\n", levels(ggdf$group))
 
 
+
 source(path_fun_plot_frequencies)
 
-plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, colors_clusters = colors_clusters, outdir = outdir, prefix = prefix)
+plot_frequencies(ggdf = ggdf, color_groups = color_groups, color_groupsb = color_groupsb, colors_clusters = colors_clusters, color_response = color_response, outdir = outdir, prefix = prefix)
 
 
 
