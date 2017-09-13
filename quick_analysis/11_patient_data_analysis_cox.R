@@ -18,6 +18,7 @@
 # library(devtools)
 # library(ggcorrplot)
 # library(gdata)
+library(glmnet)
 
 ##############################################################################
 
@@ -598,26 +599,39 @@ test_CF <- select(list_base_norm, PFS.months, PFS.status, Classical.Monocytes,no
 # COX_CyTOF_FACS_STEP2 <- step(COX_CyTOF_FACS_STEP1, direction="both")
 
 
+##############################################################################
+
+### TEST elastic nets
+### Does not work for categorical variables
+##############################################################################
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# NAs <- apply(list_base_norm[, list.3], 2, function(x){
+#   any(is.na(x))
+# })
+# 
+# list.3noNAs <- list.3[!NAs]
+# 
+# x <- as.matrix(list_base_norm[, list.3noNAs])
+# 
+# x <- as.matrix(list_base_norm[, c("normalized.class.monos", "age.sampling", "leukocytes.count")])
+# 
+# cv.fit <- cv.glmnet(x, cbind(time = list_base_norm$PFS.months, status = list_base_norm$PFS.status), family = "cox")
+# 
+# fit <- glmnet(x, cbind(time = list_base_norm$PFS.months, status = list_base_norm$PFS.status), family = "cox")
+# 
+# 
+# plot(cv.fit)
+# 
+# cv.fit$lambda.min
+# 
+# 
+# Coefficients <- coef(fit, s = cv.fit$lambda.min)
+# Coefficients
+# 
+# Active.Index <- which(Coefficients != 0)
+# 
+# Active.Coefficients <- Coefficients[Active.Index]
 
 
 
