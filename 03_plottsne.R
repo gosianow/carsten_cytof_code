@@ -100,7 +100,8 @@ gg_color_hue <- function(n) {
 
 # color blind palette
 
-colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+# colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+colors_muted <- c("#DC050C", "#FB8072", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#4EB265", "#CAEDAB", "#E7298A", "#E78AC3", "#666666", "#999999", "#FF7F00", "#FDB462")
 color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(labels$label) - length(colors_muted))))
 
 colors_tsne <- color_ramp[1:nlevels(labels$label)]

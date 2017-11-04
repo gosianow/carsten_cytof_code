@@ -108,7 +108,8 @@ gg_color_hue <- function(n) {
 
 # color blind palette
 
-colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+# colors_muted <- c("#DC050C", "#E8601C", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#F1932D", "#F6C141", "#F7EE55", "#4EB265", "#90C987", "#CAEDAB")
+colors_muted <- c("#DC050C", "#FB8072", "#1965B0", "#7BAFDE", "#882E72", "#B17BA6", "#4EB265", "#CAEDAB", "#E7298A", "#E78AC3", "#666666", "#999999", "#FF7F00", "#FDB462")
 color_ramp <- c(colors_muted, gg_color_hue(max(1, nlevels(labels$label) - length(colors_muted))))
 
 colors_tsne <- color_ramp[1:nlevels(labels$label)]
@@ -241,7 +242,7 @@ for(i in 1:length(name_filters)){
   
   ## one plot 
   ggp <- ggplot(ggdf, aes_string(x = "tSNE1", y = "tSNE2", color = name_filters[i])) +
-    geom_point(size = 1) +
+    geom_point(size = 2) +
     labs(x = "t-SNE1", y="t-SNE2")+ 
     theme_bw() +
     theme(axis.text = element_text(size = 12), 
@@ -263,8 +264,8 @@ for(i in 1:length(name_filters)){
 
   ## one plot + colored by cluster
   ggp <- ggplot() +
-    geom_point(data = ggdf[ggdf[, name_filters[i]] == "0", , drop = FALSE], aes(x = tSNE1, y = tSNE2, color = label), shape = 16, alpha = 0.8) +
-    geom_point(data = ggdf[ggdf[, name_filters[i]] == "1", , drop = FALSE], aes(x = tSNE1, y = tSNE2, fill = label), shape = 21, show.legend = FALSE) +
+    geom_point(data = ggdf[ggdf[, name_filters[i]] == "0", , drop = FALSE], aes(x = tSNE1, y = tSNE2, color = label), shape = 16, alpha = 1, size = 2) +
+    geom_point(data = ggdf[ggdf[, name_filters[i]] == "1", , drop = FALSE], aes(x = tSNE1, y = tSNE2, fill = label), shape = 21, show.legend = FALSE, size = 2) +
     labs(x = "t-SNE1", y="t-SNE2") + 
     theme_bw() +
     theme(axis.text = element_text(size = 12), 
@@ -288,7 +289,7 @@ for(i in 1:length(name_filters)){
   
   ## facet per group
   ggp <- ggplot(ggdf, aes_string(x = "tSNE1", y = "tSNE2", color = name_filters[i])) +
-    geom_point(size=1) +
+    geom_point(size = 2) +
     labs(x = "t-SNE1", y="t-SNE2")+
     theme_bw() +
     theme(axis.text = element_text(size = 12), 
@@ -309,10 +310,10 @@ for(i in 1:length(name_filters)){
   dev.off()
   
   
-  ## one plot + colored by cluster
+  ## facet per group + colored by cluster
   ggp <- ggplot() +
-    geom_point(data = ggdf[ggdf[, name_filters[i]] == "0", , drop = FALSE], aes(x = tSNE1, y = tSNE2, color = label), shape = 16, alpha = 0.8) +
-    geom_point(data = ggdf[ggdf[, name_filters[i]] == "1", , drop = FALSE], aes(x = tSNE1, y = tSNE2, fill = label), shape = 21, show.legend = FALSE) +
+    geom_point(data = ggdf[ggdf[, name_filters[i]] == "0", , drop = FALSE], aes(x = tSNE1, y = tSNE2, color = label), shape = 16, alpha = 1, size = 2) +
+    geom_point(data = ggdf[ggdf[, name_filters[i]] == "1", , drop = FALSE], aes(x = tSNE1, y = tSNE2, fill = label), shape = 21, show.legend = FALSE, size = 2, stroke = 1.5) +
     labs(x = "t-SNE1", y="t-SNE2") + 
     theme_bw() +
     theme(axis.text = element_text(size = 12), 
