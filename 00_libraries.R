@@ -28,6 +28,7 @@ library(cytofkit)
 library(citrus)
 library(FlowSOM)
 library(ConsensusClusterPlus)
+library(Rtsne)
 
 ### Mixed models
 library(lme4) # for fitting mixed models
