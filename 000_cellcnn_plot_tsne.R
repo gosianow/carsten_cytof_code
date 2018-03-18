@@ -121,6 +121,7 @@ colors_tsne
 # Load cell cnn results
 # ------------------------------------------------------------
 
+### CellCNN was run only on the R and NR samples 
 samps2keep <- md$day == day & md$response %in% c("R", "NR")
 samps2keep
 

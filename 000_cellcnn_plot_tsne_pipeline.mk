@@ -203,7 +203,7 @@ file_metadata := $(METADATA)/metadata_23_03all.xlsx
 data := 23all
 panel := 03v2
 pca := pca1
-merging := merging4
+merging := merging5
 
 cellcnn_files_data := panel3v3_base
 cellcnn_files_type := combined data23

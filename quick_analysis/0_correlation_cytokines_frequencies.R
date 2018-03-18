@@ -21,15 +21,15 @@ library(ComplexHeatmap)
 outdir='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/correlation'
 path_metadata=c('../carsten_cytof/PD1_project/CK_metadata/metadata_23_03.xlsx','../carsten_cytof/PD1_project/CK_metadata/metadata_29_03.xlsx')
 
-path_frequencies=c('../carsten_cytof/PD1_project/CK_2016-06-23_03/050_frequencies/23_03_pca1_merging4_frequencies.xls','../carsten_cytof/PD1_project/CK_2016-06-29_03/050_frequencies/29_03_pca1_merging2_frequencies.xls')
+path_frequencies=c('../carsten_cytof/PD1_project/CK_2016-06-23_03/050_frequencies/23_03_pca1_merging5_frequencies.xls','../carsten_cytof/PD1_project/CK_2016-06-29_03/050_frequencies/29_03_pca1_merging2_frequencies.xls')
 
 ## CD4
-# prefix='02_IFN_myeloid_CD4_'
-# path_bimatrix_frequencies='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD4/090_cytokine_bimatrix/23CD4allall_29CD4allall_02CD4v2_frequencies.xls'
+prefix='02_IFN_myeloid_CD4_'
+path_bimatrix_frequencies='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD4/090_cytokine_bimatrix/23CD4allall_29CD4allall_02CD4v2_frequencies.xls'
 
 ## CD8
-prefix='02_IFN_myeloid_CD8_'
-path_bimatrix_frequencies='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix/23CD8allall_29CD8allall_02CD8v2_frequencies.xls'
+# prefix='02_IFN_myeloid_CD8_'
+# path_bimatrix_frequencies='../carsten_cytof/PD1_project/CK_2016-06-merged_23_29/02v2_CD8/090_cytokine_bimatrix/23CD8allall_29CD8allall_02CD8v2_frequencies.xls'
 
 
 ##############################################################################

@@ -17,8 +17,8 @@ all: Analysis_block_8_merging_2datasets_main_01_merging6_merging4_goal Analysis_
 	Analysis_block_8_merging_2datasets_main_01CD8_merging6_merging6_goal \
 	Analysis_block_8_merging_2datasets_main_01CD4_merging5_merging5_goal_noHD10 \
 	Analysis_block_8_merging_2datasets_main_01CD8_merging6_merging6_goal_noHD10 \
-	Analysis_block_8_merging_2datasets_main_03_merging4_merging2_goal \
-	Analysis_block_8_merging_2datasets_main_03v2_merging4_merging1_goal \
+	Analysis_block_8_merging_2datasets_main_03_merging5_merging2_goal \
+	Analysis_block_8_merging_2datasets_main_03v2_merging5_merging1_goal \
 	Analysis_block_8_merging_2datasets_cytokine_23CD4TmemCD69_29CD4TmemCD69_02CD4_goal \
 	Analysis_block_8_merging_2datasets_cytokine_23CD8TmemCD69_29CD8TmemCD69_02CD8_goal \
 	Analysis_block_8_merging_2datasets_cytokine_02CD4v2_goal \
@@ -233,7 +233,7 @@ pca2 := pca1
 
 panel := 03
 
-merging1 := merging4
+merging1 := merging5
 merging2 := merging2
 
 
@@ -267,7 +267,7 @@ pca2 := pca1
 
 panel := 03v2
 
-merging1 := merging4
+merging1 := merging5
 merging2 := merging1
 
 .PHONY: Analysis_block_8_merging_2datasets_main_$(panel)_$(merging1)_$(merging2)_goal

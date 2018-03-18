@@ -163,7 +163,7 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
         ylab("Frequency") +
         xlab("") +
         theme(axis.text.x = element_blank(), 
-          axis.text.y = element_text(size = 15, face = "bold", color = "black"),
+          axis.text.y = element_text(size = 14, color = "black"),
           axis.ticks.x = element_blank(),
           axis.title.y = element_text(size = 14), 
           panel.grid.major = element_blank(), 
@@ -174,9 +174,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
           legend.title = element_blank(), 
           legend.position = "right", 
           legend.key = element_blank(), 
-          legend.text = element_text(size = 18, face = "bold"),
+          legend.text = element_text(size = 14),
           strip.background = element_blank(), 
-          strip.text = element_text(size = 18, hjust = 0, face = "bold")) +
+          strip.text = element_text(size = 14, hjust = 0)) +
         scale_color_manual(values = color_groups) +
         scale_fill_manual(values = color_groupsb) +
         facet_wrap(~ cluster, scales = "free", nrow = nrow)
@@ -196,9 +196,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
           ylab("Frequency (%)") +
           xlab("") +
           theme(axis.text.x = element_blank(), 
-            axis.text.y = element_text(size = 15, face = "bold", color = "black"),
+            axis.text.y = element_text(size = 14, color = "black"),
             axis.ticks.x = element_blank(),
-            axis.title.y = element_text(size = 15, face = "bold"), 
+            axis.title.y = element_text(size = 14), 
             panel.grid.major = element_blank(), 
             panel.grid.minor = element_blank(), 
             panel.border = element_blank(), 
@@ -207,9 +207,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
             legend.title = element_blank(), 
             legend.position = "right", 
             legend.key = element_blank(), 
-            legend.text = element_text(size = 18, face = "bold"),
+            legend.text = element_text(size = 14),
             strip.background = element_blank(), 
-            strip.text = element_text(size = 18, hjust = 0, face = "bold")) +
+            strip.text = element_text(size = 14, hjust = 0)) +
           scale_color_manual(values = color_response) +
           scale_fill_manual(values = color_response) +
           facet_wrap(~ cluster, scales = "free", nrow = nrow) +
@@ -229,9 +229,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
           ylab("Frequency (%)") +
           xlab("") +
           theme(axis.text.x = element_blank(), 
-            axis.text.y = element_text(size = 15, face = "bold", color = "black"),
+            axis.text.y = element_text(size = 14, color = "black"),
             axis.ticks.x = element_blank(),
-            axis.title.y = element_text(size = 15, face = "bold"), 
+            axis.title.y = element_text(size = 14), 
             panel.grid.major = element_blank(), 
             panel.grid.minor = element_blank(), 
             panel.border = element_blank(), 
@@ -240,9 +240,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
             legend.title = element_blank(), 
             legend.position = "right", 
             legend.key = element_blank(), 
-            legend.text = element_text(size = 18, face = "bold"),
+            legend.text = element_text(size = 14),
             strip.background = element_blank(), 
-            strip.text = element_text(size = 15, hjust = 0, face = "bold")) +
+            strip.text = element_text(size = 14, hjust = 0, face = "bold")) +
           scale_color_manual(values = color_response) +
           scale_fill_manual(values = color_response) +
           facet_wrap(~ cluster + data, scales = "free", nrow = nrow) +
@@ -269,16 +269,17 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
       # i = 1
       
       df <- ggdf[ggdf$day == days[i], , drop = FALSE]
+      df$cluster <- factor(df$cluster, levels = rev(levels(df$cluster)))
       
       ggp <- ggplot(df, aes(x = samp, y = prop, fill = cluster)) +
         geom_bar(stat = "identity") +
         theme_bw() +
         ylab("Frequency") +
         xlab("") +
-        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 15, face = "bold", color = "black"),
-          axis.text.y = element_text(size = 15, face = "bold", color = "black"),
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 14, color = "black"),
+          axis.text.y = element_text(size = 14, color = "black"),
           axis.ticks.x = element_blank(),
-          axis.title.y = element_text(size = 15, face = "bold"), 
+          axis.title.y = element_text(size = 14), 
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
           panel.border = element_blank(), 
@@ -287,9 +288,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
           legend.title = element_blank(), 
           legend.position = "right", 
           legend.key = element_blank(), 
-          legend.text = element_text(size = 18, face = "bold"),
+          legend.text = element_text(size = 14),
           strip.background = element_blank(), 
-          strip.text = element_text(size = 18, hjust = 0, face = "bold")) +
+          strip.text = element_text(size = 14, hjust = 0)) +
         scale_fill_manual(values = colors_clusters) +
         facet_wrap(~ group, scales = "free_x") 
       

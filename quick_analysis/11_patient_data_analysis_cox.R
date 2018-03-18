@@ -1,33 +1,112 @@
 
-# library(dplyr)
-# library(ggplot2)
-# library(tidyr)
-# library(survival)
-# library(gridExtra)
-# library(reshape2)
-# library(data.table)
-# library(knitr)
-# library(ROCR)
-# library(grid)
-# library(OptimalCutpoints)
-# library(lubridate)
-# library(plotrix)
-# library(rmeta)
-# library(broom)
-# library(survminer)
-# library(devtools)
-# library(ggcorrplot)
-# library(gdata)
-library(glmnet)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(survival)
+library(gridExtra)
+library(reshape2)
+library(data.table)
+library(knitr)
+library(ROCR)
+library(grid)
+library(OptimalCutpoints)
+library(lubridate)
+library(plotrix)
+library(rmeta)
+library(broom)
+library(survminer)
+library(devtools)
+library(ggcorrplot)
+library(gdata)
+# library(glmnet)
 
 ##############################################################################
 
 
-outdir <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_analysis3_cox"
+# outdir <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_analysis_cox3"
+# 
+# path_data <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files3/2017_09_06_updated_info_CyTOF_patients.xlsx"
+# 
+# path_variables <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files3/list_variables_names_units_17_07_17.txt"
+# 
+# cytof <- read.xls(path_data, as.is = TRUE)
 
-path_data <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files3/2017_09_06_updated_info_CyTOF_patients.xlsx"
 
-path_variables <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files3/list_variables_names_units_17_07_17.txt"
+
+
+outdir <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_analysis_cox4"
+
+path_data <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files4/2017_09_06_updated_info_CyTOF_patients.xlsx"
+
+path_variables <- "../carsten_cytof/PD1_project/PD-1_PatientClinicalData/ck_orig_files4/list_variables_names_units_17_07_17.txt"
+
+
+path_frequencies_data23 <- "../carsten_cytof/PD1_project/CK_2016-06-23_03/050_frequencies/23_03_pca1_merging5_frequencies.xls"
+
+path_frequencies_data29 <- "../carsten_cytof/PD1_project/CK_2016-06-29_03/050_frequencies/29_03_pca1_merging2_frequencies.xls"
+
+
+
+##############################################################################
+### Read in frequencies
+##############################################################################
+
+
+frequencies_data23 <- read.table(path_frequencies_data23, header = TRUE, sep = "\t", check.names = FALSE, stringsAsFactors = FALSE)
+
+frequencies_data29 <- read.table(path_frequencies_data29, header = TRUE, sep = "\t", check.names = FALSE, stringsAsFactors = FALSE)
+
+
+frequencies_classical_monocytes <- data.frame(
+  shortmane = c(colnames(frequencies_data23)[-c(1:2)],
+    colnames(frequencies_data29)[-c(1:2)]),
+  Classical.Monocytes = unlist(c(frequencies_data23[frequencies_data23$label == "CD14+_monos", -c(1:2)],
+    frequencies_data29[frequencies_data29$label == "CD14+_monos", -c(1:2)])),
+  row.names = NULL, stringsAsFactors = FALSE)
+
+frequencies_classical_monocytes$Classical.Monocytes <- round(frequencies_classical_monocytes$Classical.Monocytes, 2)
+
+
+
+##############################################################################
+### Update values for Classical.Monocytes for CyTOF
+##############################################################################
+
+
+cytof <- read.xls(path_data, as.is = TRUE)
+
+
+cytof$Classical.Monocytes
+cytof$TP
+
+
+cytof$shortmane2 <- paste0(ifelse(cytof$TP == "baseline", "base", "tx"), "_", cytof$shortname)
+cytof$shortmane2 <- ifelse(cytof$use == "CyTOF", cytof$shortmane2, NA)
+
+
+cytof$Classical.Monocytes_old <- cytof$Classical.Monocytes
+
+
+mm <- match(cytof$shortmane2, frequencies_classical_monocytes$shortmane)
+cytof$Classical.Monocytes <- frequencies_classical_monocytes$Classical.Monocytes[mm]
+
+
+
+plot(cytof$Classical.Monocytes_old, cytof$Classical.Monocytes)
+
+
+table(is.na(cytof$Classical.Monocytes), cytof$use)
+
+dim(cytof)
+
+cytof$Classical.Monocytes[cytof$use == "FACS"] <- cytof$Classical.Monocytes_old[cytof$use == "FACS"]
+
+
+### Clean up additional variables 
+
+cytof$shortmane2 <- NULL
+cytof$Classical.Monocytes_old <- NULL
+
 
 ##############################################################################
 
@@ -39,7 +118,6 @@ var.names <- read.delim(path_variables, comment.char="#", na.strings = c("NA"," 
 var.names <- select(var.names, variables, clean.names)
 
 
-cytof <- read.xls(path_data, as.is = TRUE)
 
 
 cytof$start.treatment.date <- ymd(cytof$start.treatment.date)
@@ -572,66 +650,6 @@ dev.off()
 
 
 
-
-
-
-
-
-
-##############################################################################
-
-### TEST STEPWISE MODEL
-
-##############################################################################
-
-test_C <- select(CYTOFlist_base, PFS.months, PFS.status, Classical.Monocytes,normalized.class.monos, sex, age.sampling, prev.ipi, prev.chemo, prev.radio, leukocytes.count, LDH, ANC, ALC, ANC.ALC, S100,  monocytes )
-test_F <- select(FACSlist, PFS.months, PFS.status, Classical.Monocytes,normalized.class.monos, sex, age.sampling, prev.ipi, prev.chemo, prev.radio, leukocytes.count, LDH, ANC, ALC, ANC.ALC, S100,  monocytes )
-test_CF <- select(list_base_norm, PFS.months, PFS.status, Classical.Monocytes,normalized.class.monos, sex, age.sampling, prev.ipi, prev.chemo, prev.radio, leukocytes.count, LDH, ANC, ALC, ANC.ALC, S100,  monocytes )
-
-
-# COX_CyTOF_STEP1 <- coxph(Surv(PFS.months,PFS.status) ~ .  ,data= test_C)
-# COX_CyTOF_STEP2 <- step(COX_CyTOF_STEP1, direction="both")
-# 
-# COX_FACS_STEP1 <- coxph(Surv(PFS.months,PFS.status) ~ .  ,data= test_F)
-# COX_FACS_STEP2 <- step(COX_FACS_STEP1, direction="both")
-# 
-# COX_CyTOF_FACS_STEP1 <- coxph(Surv(PFS.months,PFS.status) ~ .  ,data= test_CF)
-# COX_CyTOF_FACS_STEP2 <- step(COX_CyTOF_FACS_STEP1, direction="both")
-
-
-##############################################################################
-
-### TEST elastic nets
-### Does not work for categorical variables
-##############################################################################
-
-
-# NAs <- apply(list_base_norm[, list.3], 2, function(x){
-#   any(is.na(x))
-# })
-# 
-# list.3noNAs <- list.3[!NAs]
-# 
-# x <- as.matrix(list_base_norm[, list.3noNAs])
-# 
-# x <- as.matrix(list_base_norm[, c("normalized.class.monos", "age.sampling", "leukocytes.count")])
-# 
-# cv.fit <- cv.glmnet(x, cbind(time = list_base_norm$PFS.months, status = list_base_norm$PFS.status), family = "cox")
-# 
-# fit <- glmnet(x, cbind(time = list_base_norm$PFS.months, status = list_base_norm$PFS.status), family = "cox")
-# 
-# 
-# plot(cv.fit)
-# 
-# cv.fit$lambda.min
-# 
-# 
-# Coefficients <- coef(fit, s = cv.fit$lambda.min)
-# Coefficients
-# 
-# Active.Index <- which(Coefficients != 0)
-# 
-# Active.Coefficients <- Coefficients[Active.Index]
 
 
 

@@ -16,11 +16,11 @@ library(plyr) # for rbind.fill
 # Test arguments
 ##############################################################################
 
-prefix='23_01_pca1_cl20_'
-outdir='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_auto'
-path_metadata='../carsten_cytof/PD1_project/CK_metadata/metadata_23_01.xlsx'
-path_frequencies='../carsten_cytof/PD1_project/CK_2016-06-23_01/050_frequencies_auto/23_01_pca1_cl20_frequencies.xls'
-path_fun_plot_frequencies='00_plot_frequencies.R'
+prefix='23_03_pca1_merging5_'
+outdir='../carsten_cytof/PD1_project/CK_2016-06-23_03/050_frequencies'
+path_metadata='../carsten_cytof/PD1_project/CK_metadata/metadata_23_03.xlsx'
+path_frequencies='../carsten_cytof/PD1_project/CK_2016-06-23_03/050_frequencies/23_03_pca1_merging5_frequencies.xls'
+path_fun_plot_frequencies='./00_plot_frequencies.R'
 
 
 prefix='01_23merging6_29merging4_'

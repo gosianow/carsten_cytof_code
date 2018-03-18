@@ -928,7 +928,7 @@ $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 # --------------------------------------------------
 
 nmetaclusts := 20
-merging := merging3 merging4
+merging := merging5
 
 
 .PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
@@ -978,7 +978,7 @@ $(foreach i,$(nmetaclusts),$(eval $(call Analysis_block_1_main_rule,$(i))))
 # --------------------------------------------------
 
 nmetaclusts := 20
-merging := merging4
+merging := merging5
 
 .PHONY: Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal
 Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal: $(foreach i,$(merging),Analysis_block_2_cluster_merging_$(data)_$(panel)_cl$(nmetaclusts)_goal$(i))
