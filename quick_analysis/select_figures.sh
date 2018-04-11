@@ -6,7 +6,7 @@
 RWD_MAIN=../../carsten_cytof/PD1_project
 MAIN_FIGURE_DIR=${RWD_MAIN}/CK_figures
 
-mkdir -p MAIN_FIGURE_DIR
+mkdir -p ${MAIN_FIGURE_DIR}
 
 ###############################################################################################################
 

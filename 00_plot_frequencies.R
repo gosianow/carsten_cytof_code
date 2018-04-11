@@ -163,9 +163,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
         ylab("Frequency") +
         xlab("") +
         theme(axis.text.x = element_blank(), 
-          axis.text.y = element_text(size = 14, color = "black"),
+          axis.text.y = element_text(size = 14, color = "black", face = "bold"),
           axis.ticks.x = element_blank(),
-          axis.title.y = element_text(size = 14), 
+          axis.title.y = element_text(size = 14, face = "bold"), 
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(), 
           panel.border = element_blank(), 
@@ -174,9 +174,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
           legend.title = element_blank(), 
           legend.position = "right", 
           legend.key = element_blank(), 
-          legend.text = element_text(size = 14),
+          legend.text = element_text(size = 14, face = "bold"),
           strip.background = element_blank(), 
-          strip.text = element_text(size = 14, hjust = 0)) +
+          strip.text = element_text(size = 14, hjust = 0, face = "bold")) +
         scale_color_manual(values = color_groups) +
         scale_fill_manual(values = color_groupsb) +
         facet_wrap(~ cluster, scales = "free", nrow = nrow)
@@ -196,9 +196,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
           ylab("Frequency (%)") +
           xlab("") +
           theme(axis.text.x = element_blank(), 
-            axis.text.y = element_text(size = 14, color = "black"),
+            axis.text.y = element_text(size = 14, color = "black", face = "bold"),
             axis.ticks.x = element_blank(),
-            axis.title.y = element_text(size = 14), 
+            axis.title.y = element_text(size = 14, face = "bold"), 
             panel.grid.major = element_blank(), 
             panel.grid.minor = element_blank(), 
             panel.border = element_blank(), 
@@ -207,9 +207,9 @@ plot_frequencies <- function(ggdf, color_groups, color_groupsb, colors_clusters 
             legend.title = element_blank(), 
             legend.position = "right", 
             legend.key = element_blank(), 
-            legend.text = element_text(size = 14),
+            legend.text = element_text(size = 14, face = "bold"),
             strip.background = element_blank(), 
-            strip.text = element_text(size = 14, hjust = 0)) +
+            strip.text = element_text(size = 14, hjust = 0, face = "bold")) +
           scale_color_manual(values = color_response) +
           scale_fill_manual(values = color_response) +
           facet_wrap(~ cluster, scales = "free", nrow = nrow) +
